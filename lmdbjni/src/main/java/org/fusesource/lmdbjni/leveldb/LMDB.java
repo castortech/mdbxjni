@@ -314,7 +314,7 @@ public class LMDB implements DB {
         public void seekToFirst() {
             try {
                 prev = null;
-                next = cursor.get(GetOp.FIRST);
+                next = cursor.get(CursorOp.FIRST);
             } catch (LMDBException e) {
                 throw new DBException(e.getMessage(), e);
             }
@@ -323,7 +323,7 @@ public class LMDB implements DB {
         public void seekToLast() {
             try {
                 next = null;
-                prev = cursor.get(GetOp.LAST);
+                prev = cursor.get(CursorOp.LAST);
             } catch (LMDBException e) {
                 throw new DBException(e.getMessage(), e);
             }
@@ -331,9 +331,9 @@ public class LMDB implements DB {
 
         public void seek(byte[] bytes) {
             try {
-                next = cursor.seek(SeekOp.RANGE, bytes);
-                prev = cursor.get(GetOp.PREV);
-                cursor.get(GetOp.NEXT);
+                next = cursor.get(CursorOp.SET_RANGE, bytes);
+                prev = cursor.get(CursorOp.PREV);
+                cursor.get(CursorOp.NEXT);
             } catch (LMDBException e) {
                 throw new DBException(e.getMessage(), e);
             }
@@ -346,7 +346,7 @@ public class LMDB implements DB {
             try {
                 Entry rc = prev;
                 next = prev;
-                prev = cursor.get(GetOp.PREV);
+                prev = cursor.get(CursorOp.PREV);
                 return rc;
             } catch (LMDBException e) {
                 throw new DBException(e.getMessage(), e);
@@ -361,7 +361,7 @@ public class LMDB implements DB {
             try {
                 Entry rc = next;
                 prev = next;
-                next = cursor.get(GetOp.NEXT);
+                next = cursor.get(CursorOp.NEXT);
                 return rc;
             } catch (LMDBException e) {
                 throw new DBException(e.getMessage(), e);

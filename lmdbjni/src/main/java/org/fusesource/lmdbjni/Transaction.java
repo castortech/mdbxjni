@@ -39,6 +39,7 @@ public class Transaction extends NativeObject {
 
     public void commit() {
         if( self != 0  ) {
+//        	System.err.println("JNI committing transaction " + self);
             checkErrorCode(mdb_txn_commit(self));
             self = 0;
         }

@@ -26,15 +26,17 @@ import static org.fusesource.lmdbjni.JNI.*;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Constants {
-
     public static final int FIXEDMAP    = MDB_FIXEDMAP    ;
     public static final int NOSUBDIR    = MDB_NOSUBDIR    ;
-    public static final int NOSYNC      = MDB_NOSYNC      ;
     public static final int RDONLY      = MDB_RDONLY      ;
-    public static final int NOMETASYNC  = MDB_NOMETASYNC  ;
     public static final int WRITEMAP    = MDB_WRITEMAP    ;
+    public static final int NOMETASYNC  = MDB_NOMETASYNC  ;
+    public static final int NOSYNC      = MDB_NOSYNC      ;
     public static final int MAPASYNC    = MDB_MAPASYNC    ;
     public static final int NOTLS       = MDB_NOTLS       ;
+    public static final int NOLOCK      = MDB_NOLOCK      ;
+    public static final int NORDAAHEAD  = MDB_NORDAHEAD   ;
+    public static final int NOMEMINIT   = MDB_NOMEMINIT   ;
 
     //====================================================//
     // Database Flags
@@ -58,24 +60,27 @@ public class Constants {
     public static final int APPENDDUP   = MDB_APPENDDUP   ;
     public static final int MULTIPLE    = MDB_MULTIPLE    ;
 
-    public static final GetOp FIRST          = GetOp.FIRST          ;
-    public static final GetOp FIRST_DUP      = GetOp.FIRST_DUP      ;
-    public static final GetOp GET_BOTH       = GetOp.GET_BOTH       ;
-    public static final GetOp GET_BOTH_RANGE = GetOp.GET_BOTH_RANGE ;
-    public static final GetOp GET_CURRENT    = GetOp.GET_CURRENT    ;
-    public static final GetOp GET_MULTIPLE   = GetOp.GET_MULTIPLE   ;
-    public static final GetOp LAST           = GetOp.LAST           ;
-    public static final GetOp LAST_DUP       = GetOp.LAST_DUP       ;
-    public static final GetOp NEXT           = GetOp.NEXT           ;
-    public static final GetOp NEXT_DUP       = GetOp.NEXT_DUP       ;
-    public static final GetOp NEXT_MULTIPLE  = GetOp.NEXT_MULTIPLE  ;
-    public static final GetOp NEXT_NODUP     = GetOp.NEXT_NODUP     ;
-    public static final GetOp PREV           = GetOp.PREV           ;
-    public static final GetOp PREV_DUP       = GetOp.PREV_DUP       ;
-    public static final GetOp PREV_NODUP     = GetOp.PREV_NODUP     ;
-
-    public static final SeekOp KEY        = SeekOp.KEY;
-    public static final SeekOp RANGE      = SeekOp.RANGE;
+    public static final CursorOp FIRST          = CursorOp.FIRST          ;
+    public static final CursorOp FIRST_DUP      = CursorOp.FIRST_DUP      ;
+    public static final CursorOp GET_BOTH       = CursorOp.GET_BOTH       ;
+    public static final CursorOp GET_BOTH_RANGE = CursorOp.GET_BOTH_RANGE ;
+    public static final CursorOp GET_CURRENT    = CursorOp.GET_CURRENT    ;
+    public static final CursorOp GET_MULTIPLE   = CursorOp.GET_MULTIPLE   ;
+    public static final CursorOp LAST           = CursorOp.LAST           ;
+    public static final CursorOp LAST_DUP       = CursorOp.LAST_DUP       ;
+    public static final CursorOp NEXT           = CursorOp.NEXT           ;
+    public static final CursorOp NEXT_DUP       = CursorOp.NEXT_DUP       ;
+    public static final CursorOp NEXT_MULTIPLE  = CursorOp.NEXT_MULTIPLE  ;
+    public static final CursorOp NEXT_NODUP     = CursorOp.NEXT_NODUP     ;
+    public static final CursorOp PREV           = CursorOp.PREV           ;
+    public static final CursorOp PREV_DUP       = CursorOp.PREV_DUP       ;
+    public static final CursorOp PREV_NODUP     = CursorOp.PREV_NODUP     ;
+    public static final CursorOp SET	        = CursorOp.SET			  ;
+    public static final CursorOp SET_KEY    	= CursorOp.SET_KEY        ;
+    public static final CursorOp SET_RANGE      = CursorOp.SET_RANGE      ;
+    
+    
+    public static final int IMMUTABLE_KEY = 0x2;  //used for secondary db
 
     public static byte[] bytes(String value) {
         if( value == null) {

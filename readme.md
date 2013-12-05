@@ -22,7 +22,7 @@ Just add the following jar to your java project:
 
 ### Using as a Maven Dependency
 
-You just nee to add the following dependency and repository to your Maven `pom.xml`.
+You just need to add the following dependency and repository to your Maven `pom.xml`.
 
     <dependencies>
       <dependency>
@@ -43,7 +43,7 @@ You just nee to add the following dependency and repository to your Maven `pom.x
 ## API Usage:
 
 The [Javadocs](http://lmdbjni.fusesource.org/maven/99-master-SNAPSHOT/apidocs/org/fusesource/lmdbjni/package-summary.html) 
-dont' have too many details yet.  Please send patches to improve them!
+don't have too many details yet.  Please send patches to improve them!
 
 Recommended Package imports:
 
@@ -90,7 +90,7 @@ Performing Atomic/Transacted Updates:
 
 Working against a Snapshot view of the Database:
 
-    // cerate a read-only transaction...
+    // create a read-only transaction...
     Transaction tx = env.createTransaction(true);
     try {
       
@@ -116,7 +116,7 @@ Iterating key/values:
             System.out.println(key+" = "+value);
         }
       } finally {
-        // Make sure you close the cursor to avoid leaking reasources.
+        // Make sure you close the cursor to avoid leaking resources.
         cursor.close();
       }
 
@@ -141,7 +141,7 @@ The LevelDB API is simpler than the LMDB API.  If you can live with the restrict
 provides you might want to use the LevelDB API instead. 
 
 The [Javadocs](http://lmdbjni.fusesource.org/maven/99-master-SNAPSHOT/apidocs/org/fusesource/lmdbjni/leveldb/package-summary.html) 
-dont' have too many details yet.  Please send patches to improve them!
+don't have too many details yet.  Please send patches to improve them!
 
 ### Additional Maven Dependencies
 

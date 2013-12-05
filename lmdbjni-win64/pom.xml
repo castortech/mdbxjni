@@ -29,12 +29,12 @@
   </parent>
 
   <groupId>org.fusesource.lmdbjni</groupId>
-  <artifactId>lmdbjni-osx64</artifactId>
+  <artifactId>lmdbjni-win64</artifactId>
   <version>99-master-SNAPSHOT</version>
   
   <name>${project.artifactId}</name>
-  <description>The lmdbjni OS X 64 bit native libraries</description>
-
+  <description>The lmdbjni Windows 64 bit native libraries</description>
+      
   <dependencies>
     <dependency>
       <groupId>org.fusesource.lmdbjni</groupId>
@@ -81,9 +81,7 @@
             <classifier>native-src</classifier>
             <type>zip</type>
           </nativeSrcDependency>
-          <configureArgs>
-            <arg>--with-lmdb=${env.LMDB_HOME}</arg>
-          </configureArgs>
+          <packageDirectory>${basedir}/../lmdbjni/target/generated-sources/hawtjni/native-package</packageDirectory>
         </configuration>
       </plugin>
     </plugins>

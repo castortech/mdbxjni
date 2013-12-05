@@ -41,8 +41,6 @@ import static org.fusesource.lmdbjni.Constants.string;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class LevelDBTest extends TestCase {
-
-
     DBFactory factory = LMDBFactory.factory;
 
     static public void assertEquals(byte[] arg1, byte[] arg2) {
@@ -57,9 +55,7 @@ public class LevelDBTest extends TestCase {
 
     @Test
     public void testOpen() throws IOException {
-
         Options options = new Options().createIfMissing(true);
-
         File path = getTestDirectory(getName());
         DB db = factory.open(path, options);
 
@@ -77,9 +73,7 @@ public class LevelDBTest extends TestCase {
 
     @Test
     public void testCRUD() throws IOException, DBException {
-
         Options options = new Options().createIfMissing(true);
-
         File path = getTestDirectory(getName());
         DB db = factory.open(path, options);
 
@@ -105,9 +99,7 @@ public class LevelDBTest extends TestCase {
 
     @Test
     public void testIterator() throws IOException, DBException {
-
         Options options = new Options().createIfMissing(true);
-
         File path = getTestDirectory(getName());
         DB db = factory.open(path, options);
 
@@ -153,9 +145,7 @@ public class LevelDBTest extends TestCase {
 
     @Test
     public void testSnapshot() throws IOException, DBException {
-
         Options options = new Options().createIfMissing(true);
-
         File path = getTestDirectory(getName());
         DB db = factory.open(path, options);
 
@@ -185,9 +175,7 @@ public class LevelDBTest extends TestCase {
 
     @Test
     public void testWriteBatch() throws IOException, DBException {
-
         Options options = new Options().createIfMissing(true);
-
         File path = getTestDirectory(getName());
         DB db = factory.open(path, options);
 
@@ -220,7 +208,6 @@ public class LevelDBTest extends TestCase {
 
     @Test
     public void testIssue26() throws IOException {
-
         LMDBFactory.pushMemoryPool(1024 * 512);
         try {
             LMDBOptions options = new LMDBOptions();
@@ -245,20 +232,21 @@ public class LevelDBTest extends TestCase {
 
     }
 
-    @Test
-    public void testIssue27() throws IOException {
+	@Test
+	public void testIssue27() throws IOException {
 
-        Options options = new Options();
-        options.createIfMissing(true);
-        DB db = factory.open(getTestDirectory(getName()), options);
-        db.close();
+		Options options = new Options();
+		options.createIfMissing(true);
+		DB db = factory.open(getTestDirectory(getName()), options);
+		db.close();
 
-        try {
-            db.iterator();
-            fail("Expected a DBException");
-        } catch(DBException e) {
-        }
+		try {
+			db.iterator();
+			fail("Expected a DBException");
+		} 
+		catch (DBException e) {
+		}
 
-    }
+	}
 
 }

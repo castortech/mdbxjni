@@ -58,6 +58,12 @@
       <version>${leveldb-api-version}</version>
       <optional>true</optional>
     </dependency>
+    <dependency>
+      <groupId>org.fusesource.lmdbjni</groupId>
+      <artifactId>lmdbjni-win64</artifactId>
+      <version>99-master-SNAPSHOT</version>
+    </dependency>
+    
   </dependencies>
 
   <build>
@@ -89,6 +95,7 @@
             </Embed-Dependency>
             <Embed-Transitive>true</Embed-Transitive>
             <Bundle-NativeCode>
+              META-INF/native/windows64/lmdbjni.dll;osname=Win32;processor=x86-64,
               META-INF/native/osx64/liblmdbjni.jnilib;osname=macosx;processor=x86-64,
               META-INF/native/linux64/liblmdbjni.so;osname=Linux;processor=x86-64
             </Bundle-NativeCode>

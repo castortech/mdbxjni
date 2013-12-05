@@ -27,7 +27,6 @@ import static org.fusesource.lmdbjni.Util.*;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Env extends NativeObject implements Closeable {
-
     public static String version() {
         return string(JNI.MDB_VERSION_STRING);
     }
@@ -58,6 +57,74 @@ public class Env extends NativeObject implements Closeable {
         }
         checkErrorCode(rc);
     }
+    
+    public void open(String path, EnvConfig config) {
+        checkArgNotNull(config, "config");
+        int flags = 0;
+        
+        if (config.isFixedMap()) {
+        	flags |= Constants.FIXEDMAP;
+        }
+        
+        if (config.isNoSubDir()) {
+        	flags |= Constants.NOSUBDIR;
+        }
+        
+        if (config.isReadOnly()) {
+        	flags |= Constants.RDONLY;
+        }
+        
+        if (config.isWriteMap()) {
+        	flags |= Constants.WRITEMAP;
+        }
+        
+        if (config.isNoMetaSync()) {
+        	flags |= Constants.NOMETASYNC;
+        }
+        
+        if (config.isNoSync()) {
+        	flags |= Constants.NOSYNC;
+        }
+        
+        if (config.isMapAsync()) {
+        	flags |= Constants.MAPASYNC;
+        }
+        
+        if (config.isNoTLS()) {
+        	flags |= Constants.NOTLS;
+        }
+
+        if (config.isNoLock()) {
+        	flags |= Constants.NOLOCK;
+        }
+        
+        if (config.isNoReadAhead()) {
+        	flags |= Constants.NORDAAHEAD;
+        }
+        
+        if (config.isNoMemInit()) {
+        	flags |= Constants.NOMEMINIT;
+        }
+        
+        if (config.getMaxDbs() != -1) {
+        	setMaxDbs(config.getMaxDbs());
+        }
+        
+        if (config.getMaxReaders() != -1) {
+        	setMaxReaders(config.getMaxReaders());
+        }
+        
+        if (config.getMapSize() != -1) {
+        	setMapSize(config.getMapSize());
+        }
+
+        int rc = mdb_env_open(pointer(), path, flags, config.getMode());
+        if (rc != 0) {
+            close();
+        }
+        checkErrorCode(rc);
+    }
+
 
     public void close() {
         if( self!=0 ) {
@@ -131,24 +198,43 @@ public class Env extends NativeObject implements Closeable {
 
     public Transaction createTransaction(Transaction parent, boolean readOnly) {
         long txpointer [] = new long[1];
+//    	System.err.println("JNI creating transaction, parent: " + (parent == null ? null :parent.self) + ",id:" + self);
+
         checkErrorCode(mdb_txn_begin(pointer(), parent==null ? 0 : parent.pointer(), readOnly ? MDB_RDONLY : 0, txpointer));
         return new Transaction(this, txpointer[0]);
     }
 
     public Database openDatabase(Transaction tx, String name, int flags) {
+        if (tx == null) {
+            return openDatabase(name, flags);
+        }
+        
         checkArgNotNull(tx, "tx");
-        checkArgNotNull(name, "name");
+//        checkArgNotNull(name, "name");
         long dbi[] = new long[1];
         checkErrorCode(mdb_dbi_open(tx.pointer(), name, flags, dbi));
-        return new Database(this, dbi[0]);
+        return new Database(this, dbi[0], name);
+    }
+
+    public Database openDatabase(Transaction tx, String name, DatabaseConfig config) {
+        checkArgNotNull(config, "config");
+
+        if (tx == null) {
+            return openDatabase(name, config);
+        }
+        
+        checkArgNotNull(tx, "tx");
+        int flags = setFlags(config);
+        return openDatabase(tx, name, flags);
     }
 
     public Database openDatabase(String name) {
-        checkArgNotNull(name, "name");
+//        checkArgNotNull(name, "name");
         return openDatabase(name, Constants.CREATE);
     }
+
     public Database openDatabase(String name, int flags) {
-        checkArgNotNull(name, "name");
+//        checkArgNotNull(name, "name");
         Transaction tx = createTransaction();
         try {
             return openDatabase(tx, name, flags);
@@ -157,11 +243,132 @@ public class Env extends NativeObject implements Closeable {
         }
     }
 
+    public Database openDatabase(String name, DatabaseConfig config) {
+      Transaction tx = createTransaction();
+      try {
+          return openDatabase(tx, name, config);
+      } finally {
+          tx.commit();
+      }
+    }
+
+    public SecondaryDatabase openSecondaryDatabase(Database primary, String name, int flags) {
+        Transaction tx = createTransaction();
+        try {
+            return openSecondaryDatabase(tx, primary, name, flags);
+        } finally {
+            tx.commit();
+        }
+    }
+    
+    public SecondaryDatabase openSecondaryDatabase(Transaction tx, Database primary, String name, int flags) {
+        if (tx == null) {
+            return openSecondaryDatabase(primary, name, flags);
+        }
+        
+        checkArgNotNull(tx, "tx");
+        checkArgNotNull(primary, "primary");
+//        checkArgNotNull(name, "name");
+        long dbi[] = new long[1];
+        checkErrorCode(mdb_dbi_open(tx.pointer(), name, flags, dbi));
+        SecondaryDbConfig config = new SecondaryDbConfig();
+        SecondaryDatabase secDb = new SecondaryDatabase(this, primary, dbi[0], name, config); 
+        
+        if (associateDbs(tx, primary, secDb)) {
+        	return secDb;
+        }
+        else {
+        	throw new LMDBException("Error associate databases");
+        }
+    }
+
+    public SecondaryDatabase openSecondaryDatabase(Database primary, String name, SecondaryDbConfig config) {
+        Transaction tx = createTransaction();
+        try {
+            return openSecondaryDatabase(tx, primary, name, config);
+        } finally {
+            tx.commit();
+        }
+    }
+    
+    public SecondaryDatabase openSecondaryDatabase(Transaction tx, Database primary, String name, SecondaryDbConfig config) {
+        if (tx == null) {
+            return openSecondaryDatabase(primary, name, config);
+        }
+        
+        checkArgNotNull(tx, "tx");
+        checkArgNotNull(primary, "primary");
+        checkArgNotNull(config, "config");
+        
+        int flags = setFlags(config);
+        long dbi[] = new long[1];
+        checkErrorCode(mdb_dbi_open(tx.pointer(), name, flags, dbi));
+        SecondaryDatabase secDb = new SecondaryDatabase(this, primary, dbi[0], name, config);
+        
+        if (associateDbs(tx, primary, secDb)) {
+        	return secDb;
+        }
+        else {
+        	throw new LMDBException("Error associate databases");
+        }
+    }
+    
+    private boolean associateDbs(Transaction tx, Database primary, SecondaryDatabase secondary) {
+		boolean succeeded = false;
+		try {
+			primary.associate(tx, secondary);
+			succeeded = true;
+		} 
+		finally {
+			if (!succeeded)
+				try {
+					primary.close();
+				} catch (Throwable t) {
+					// Ignore it -- there is already an exception in flight.
+				}
+		}
+		return succeeded;
+    }
+
     public static void pushMemoryPool(int size) {
         NativeBuffer.pushMemoryPool(size);
     }
 
     public static void popMemoryPool() {
         NativeBuffer.popMemoryPool();
+    }
+    
+    private int setFlags(DatabaseConfig config) {
+        int flags = 0;
+        
+        if (config.isReverseKey()) {
+        	flags |= Constants.REVERSEKEY;
+        }
+        
+        if (config.isReverseDup()) {
+        	flags |= Constants.REVERSEDUP;
+        }
+        
+        if (config.isDupSort()) {
+        	flags |= Constants.DUPSORT;
+        }
+        
+        if (config.isDupFixed()) {
+        	flags |= Constants.DUPFIXED;
+        }
+        
+        if (config.isIntegerKey()) {
+        	flags |= Constants.INTEGERKEY;
+        }
+        
+        if (config.isIntegerDup()) {
+        	flags |= Constants.INTEGERDUP;
+        }
+        
+        if (config.isCreate()) {
+        	flags |= Constants.CREATE;
+        }
+        
+        return flags;
     }
 }

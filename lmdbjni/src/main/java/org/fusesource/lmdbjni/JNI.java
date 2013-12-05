@@ -33,8 +33,7 @@ import static org.fusesource.hawtjni.runtime.ArgFlag.*;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 @JniClass
-class JNI {
-
+public class JNI {
     public static final Library LIBRARY = new Library("lmdbjni", JNI.class);
 
     static {
@@ -128,7 +127,13 @@ class JNI {
     static public int MDB_MAPASYNC;
     @JniField(flags = {CONSTANT})
     static public int MDB_NOTLS;
-
+    @JniField(flags = {CONSTANT})
+    static public int MDB_NOLOCK;
+    @JniField(flags = {CONSTANT})
+    static public int MDB_NORDAHEAD;
+    @JniField(flags = {CONSTANT})
+    static public int MDB_NOMEMINIT;
+    
     //====================================================//
     // Database Flags
     //====================================================//
@@ -212,6 +217,10 @@ class JNI {
     static public int EINVAL;
     @JniField(flags = {CONSTANT})
     static public int EACCES;
+    @JniField(flags = {CONSTANT})
+    static public int ENOENT;
+    @JniField(flags = {CONSTANT})
+    static public int EAGAIN;
     @JniField(flags = {CONSTANT})
     static public int MDB_SUCCESS;
     @JniField(flags = {CONSTANT})
@@ -486,12 +495,29 @@ class JNI {
     /**
      * <a href="http://symas.com/mdb/doc/group__mdb.html#">details</a>
      */
+    @JniMethod(cast = "MDB_env *")
+    public static final native long mdb_txn_env(
+            @JniArg(cast = "MDB_txn *") long txn);
+
+    /**
+     * <a href="http://symas.com/mdb/doc/group__mdb.html#">details</a>
+     */
     @JniMethod
     public static final native int mdb_dbi_open(
             @JniArg(cast = "MDB_txn *") long txn,
             @JniArg(cast = "const char *") String name,
             @JniArg(cast = "unsigned int") long flags,
             @JniArg(cast = "unsigned int *") long[] dbi);
+
+    
+    /**
+     * <a href="http://symas.com/mdb/doc/group__mdb.html#">details</a>
+     */
+    @JniMethod
+    public static final native int mdb_dbi_flags(
+            @JniArg(cast = "MDB_txn *") long txn,
+            @JniArg(cast = "unsigned int ") long dbi,
+            @JniArg(cast = "unsigned int *") long[] flags);
 
     /**
      * <a href="http://symas.com/mdb/doc/group__mdb.html#">details</a>

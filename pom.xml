@@ -31,7 +31,7 @@
   <packaging>pom</packaging>
   
   <name>${project.artifactId}</name>
-  <description>lmdbjni is a jni library for accessing leveldb.</description>
+  <description>lmdbjni is a jni library for accessing lmdb.</description>
   
   <properties>
     <forge-project-id>lmdbjni</forge-project-id>
@@ -327,6 +327,7 @@
       <modules>
         <module>lmdbjni-osx64</module>
         <module>lmdbjni-linux64</module>
+        <module>lmdbjni-win64</module>
         <module>lmdbjni-all</module>
       </modules>
     </profile>    
@@ -343,14 +344,21 @@
         <module>lmdbjni-osx64</module>
       </modules>
     </profile>
-
     <profile>
       <id>linux64</id>
       <modules>
         <module>lmdbjni-linux64</module>
       </modules>
     </profile>
-
+    <profile>
+      <id>win64</id>
+      <properties>
+        <skipAutogen>true</skipAutogen>
+      </properties>
+      <modules>
+        <module>lmdbjni-win64</module>
+      </modules>
+    </profile>
 
     <!--
         Do a license check by running       : mvn -P license license:check

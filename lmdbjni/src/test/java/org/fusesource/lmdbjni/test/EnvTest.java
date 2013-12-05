@@ -53,6 +53,7 @@ public class EnvTest extends TestCase {
 
         String path = getTestDirectory(getName()).getCanonicalPath();
         Env env = new Env();
+        System.out.println("path:" + path);
         env.open(path);
         Database db = env.openDatabase("foo");
 
@@ -94,7 +95,7 @@ public class EnvTest extends TestCase {
             db.put(tx, bytes("New York"), bytes("silver"));
             fail("Expected LMDBException");
         } catch (LMDBException e) {
-            assertEquals( LMDBException.EACCES, e.getErrorCode());
+            assertEquals( LMDBException.Status.EACCES.ordinal(), e.getErrorCode());
         }
 
         db.close();

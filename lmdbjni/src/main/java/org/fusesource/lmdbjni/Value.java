@@ -22,37 +22,36 @@ package org.fusesource.lmdbjni;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 class Value extends JNI.MDB_val {
+	public Value() {
+	}
 
-    public Value() {
-    }
+	public Value(long data, long length) {
+		this.mv_data = data;
+		this.mv_size = length;
+	}
 
-    public Value(long data, long length) {
-        this.mv_data = data;
-        this.mv_size = length;
-    }
+	public Value(NativeBuffer buffer) {
+		this(buffer.pointer(), buffer.capacity());
+	}
 
-    public Value(NativeBuffer buffer) {
-        this(buffer.pointer(), buffer.capacity());
-    }
+	public static Value create(NativeBuffer buffer) {
+		if (buffer == null) {
+			return null;
+		} else {
+			return new Value(buffer);
+		}
+	}
 
-    public static Value create(NativeBuffer buffer) {
-        if(buffer == null ) {
-            return null;
-        } else {
-            return new Value(buffer);
-        }
-    }
-
-    public byte[] toByteArray() {
-        if( mv_data == 0  ) {
-            return null;
-        }
-        if( mv_size > Integer.MAX_VALUE ) {
-            throw new ArrayIndexOutOfBoundsException("Native slice is larger than the maximum Java array");
-        }
-        byte []rc = new byte[(int) mv_size];
-        JNI.buffer_copy(mv_data, 0, rc, 0, rc.length);
-        return rc;
-    }
-
+	public byte[] toByteArray() {
+		if (mv_data == 0) {
+			return null;
+		}
+		if (mv_size > Integer.MAX_VALUE) {
+			throw new ArrayIndexOutOfBoundsException(
+					"Native slice is larger than the maximum Java array");
+		}
+		byte[] rc = new byte[(int) mv_size];
+		JNI.buffer_copy(mv_data, 0, rc, 0, rc.length);
+		return rc;
+	}
 }

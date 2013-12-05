@@ -20,6 +20,8 @@ package org.fusesource.lmdbjni;
 
 
 import java.io.Closeable;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.fusesource.lmdbjni.JNI.*;
 import static org.fusesource.lmdbjni.Util.checkArgNotNull;
@@ -29,12 +31,14 @@ import static org.fusesource.lmdbjni.Util.checkErrorCode;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Database extends NativeObject implements Closeable {
-
     private final Env env;
+    private final String name;
+    private List<SecondaryDatabase> secondaries = null;
 
-    Database(Env env, long self) {
+    Database(Env env, long self, String name) {
         super(self);
         this.env = env;
+        this.name = name;
     }
 
     public void close() {
@@ -43,7 +47,6 @@ public class Database extends NativeObject implements Closeable {
             self=0;
         }
     }
-
 
     public MDB_stat stat() {
         Transaction tx = env.createTransaction();
@@ -78,7 +81,10 @@ public class Database extends NativeObject implements Closeable {
         }
     }
 
-
+    public String getName() {
+    	return name;
+    }
+    
     public byte[] get(byte[] key) {
         checkArgNotNull(key, "key");
         Transaction tx = env.createTransaction();
@@ -90,8 +96,12 @@ public class Database extends NativeObject implements Closeable {
     }
 
     public byte[] get(Transaction tx, byte[] key) {
-        checkArgNotNull(tx, "tx");
         checkArgNotNull(key, "key");
+        if (tx == null) {
+            return get(key);
+        }
+        
+        checkArgNotNull(tx, "tx");
         NativeBuffer keyBuffer = NativeBuffer.create(key);
         try {
             return get(tx, keyBuffer);
@@ -104,7 +114,7 @@ public class Database extends NativeObject implements Closeable {
         return get(tx, new Value(keyBuffer));
     }
 
-    private byte[] get(Transaction tx, Value key) {
+    /*package*/byte[] get(Transaction tx, Value key) {
         Value value = new Value();
         int rc = mdb_get(tx.pointer(), pointer(), key, value);
         if( rc == MDB_NOTFOUND ) {
@@ -133,9 +143,14 @@ public class Database extends NativeObject implements Closeable {
     }
 
     public byte[] put(Transaction tx, byte[] key, byte[] value, int flags) {
-        checkArgNotNull(tx, "tx");
         checkArgNotNull(key, "key");
         checkArgNotNull(value, "value");
+        
+        if (tx == null) {
+            return put(key, value, flags);
+        }
+        
+        checkArgNotNull(tx, "tx");
         NativeBuffer keyBuffer = NativeBuffer.create(key);
         try {
             NativeBuffer valueBuffer = NativeBuffer.create(value);
@@ -155,14 +170,25 @@ public class Database extends NativeObject implements Closeable {
 
     private byte[] put(Transaction tx, Value keySlice, Value valueSlice, int flags) {
         int rc = mdb_put(tx.pointer(), pointer(), keySlice, valueSlice, flags);
-        if( (flags & MDB_NOOVERWRITE)!=0 && rc == MDB_KEYEXIST ) {
+        if ( ((flags & MDB_NOOVERWRITE)!=0 || (flags & MDB_NODUPDATA)!=0) && rc == MDB_KEYEXIST ) {
             // Return the existing value if it was a dup insert attempt.
             return valueSlice.toByteArray();
-        } else {
+        } 
+        else {
             // If the put failed, throw an exception..
-            if( rc != 0) {
+            if (rc != 0) {
                 throw new LMDBException("put failed", rc);
             }
+            
+            if (secondaries != null) {
+            	for (SecondaryDatabase secDb : secondaries) {
+            		SecondaryDbConfig secConfig = (SecondaryDbConfig) secDb.getConfig();
+            		byte[] pKey = keySlice.toByteArray();
+            		byte[] secKey = secConfig.getKeyCreator().createSecondaryKey(secDb, pKey, valueSlice.toByteArray());
+            		secDb.put(tx, secKey, pKey);
+            	}
+            }
+            
             return null;
         }
     }
@@ -187,8 +213,13 @@ public class Database extends NativeObject implements Closeable {
     }
 
     public boolean delete(Transaction tx, byte[] key, byte[] value) {
-        checkArgNotNull(tx, "tx");
         checkArgNotNull(key, "key");
+        
+        if (tx == null) {
+            return delete(key, value);
+        }
+        
+        checkArgNotNull(tx, "tx");
         NativeBuffer keyBuffer = NativeBuffer.create(key);
         try {
             NativeBuffer valueBuffer = NativeBuffer.create(value);
@@ -214,13 +245,81 @@ public class Database extends NativeObject implements Closeable {
             return false;
         }
         checkErrorCode(rc);
+        
+        if (secondaries != null) {
+        	for (SecondaryDatabase secDb : secondaries) {
+        		SecondaryDbConfig secConfig = (SecondaryDbConfig) secDb.getConfig();
+        		byte[] pKey = keySlice.toByteArray();
+        		byte[] secKey = secConfig.getKeyCreator().createSecondaryKey(secDb, pKey, valueSlice.toByteArray());
+        		secDb.delete(tx, secKey, pKey);
+        	}
+        }
+        
         return true;
     }
 
     public Cursor openCursor(Transaction tx) {
+        checkArgNotNull(tx, "tx");
+    	
         long cursor[] = new long[1];
         checkErrorCode(mdb_cursor_open(tx.pointer(), pointer(), cursor));
-        return new Cursor(env, cursor[0]);
+        return new Cursor(env, cursor[0], tx, this);
     }
+    
+    public SecondaryCursor openSecondaryCursor(Transaction tx) {
+        checkArgNotNull(tx, "tx");
+    	
+        long cursor[] = new long[1];
+        checkErrorCode(mdb_cursor_open(tx.pointer(), pointer(), cursor));
+        return new SecondaryCursor(env, cursor[0], tx, this);
+    }
+    
+    public int getFlags() {
+        Transaction tx = env.createTransaction();
+        try {
+            return getFlags(tx);
+        } finally {
+            tx.commit();
+        }
+    }
+
+    public int getFlags(Transaction tx) {
+        long[] flags = new long[1];
+        checkErrorCode(mdb_dbi_flags(tx.pointer(), pointer(), flags));
+        return (int) flags[0];
+    }
+    
+    public DatabaseConfig getConfig() {
+        Transaction tx = env.createTransaction();
+        try {
+            return getConfig(tx);
+        } finally {
+            tx.commit();
+        }
+    }
+    
+    public DatabaseConfig getConfig(Transaction tx) {
+    	int flags = getFlags(tx);
+    	return new DatabaseConfig(flags);
+    }
+    
+    
+    /*package*/void associate(Transaction tx, SecondaryDatabase secondary) {
+    	if (secondaries == null) {
+    		secondaries = new ArrayList<SecondaryDatabase>();
+    	}
+    	
+    	secondaries.add(secondary);
+    }
+    
+	
+//	int associateFlags = 0;
+//	associateFlags |= config.getAllowPopulate() ? Constants.CREATE : 0;
+//	if (config.getImmutableSecondaryKey())
+//		associateFlags |= Constants.IMMUTABLE_KEY;
+//
+//	config.getKeyCreator()
+//	
+//	}
 
 }
