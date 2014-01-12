@@ -258,6 +258,10 @@ public class JNI {
     @JniField(flags = {CONSTANT})
     static public int MDB_BAD_RSLOT;
     @JniField(flags = {CONSTANT})
+    static public int MDB_BAD_TXN;
+    @JniField(flags = {CONSTANT})
+    static public int MDB_BAD_VALSIZE;
+    @JniField(flags = {CONSTANT})
     static public int MDB_LAST_ERRCODE;
 
     /**

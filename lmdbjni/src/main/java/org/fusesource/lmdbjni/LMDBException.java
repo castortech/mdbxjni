@@ -46,7 +46,10 @@ public class LMDBException extends RuntimeException {
         PAGE_FULL(JNI.MDB_PAGE_FULL, ""),
         MAP_RESIZED(JNI.MDB_MAP_RESIZED, ""),
         INCOMPATIBLE(JNI.MDB_INCOMPATIBLE, ""),
-        BAD_RSLOT(JNI.MDB_BAD_RSLOT, "");
+        BAD_RSLOT(JNI.MDB_BAD_RSLOT, ""),
+        BAD_TXN(JNI.MDB_BAD_TXN, ""),
+        BAD_VALSIZE(JNI.MDB_BAD_VALSIZE, ""),
+        ;
 
         private final int code;
         private final String reason;

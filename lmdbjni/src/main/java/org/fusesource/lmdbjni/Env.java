@@ -20,6 +20,9 @@ package org.fusesource.lmdbjni;
 
 import java.io.Closeable;
 
+import org.fusesource.lmdbjni.JNI.MDB_envinfo;
+import org.fusesource.lmdbjni.JNI.MDB_stat;
+
 import static org.fusesource.lmdbjni.JNI.*;
 import static org.fusesource.lmdbjni.Util.*;
 
@@ -185,7 +188,15 @@ public class Env extends NativeObject implements Closeable {
         mdb_env_stat(pointer(), rc);
         return rc;
     }
-
+    
+    public float percentageFull() {
+        MDB_stat stat2 = stat();
+    	MDB_envinfo info2 = info();
+    	long nbr_pages = info2.me_mapsize / stat2.ms_psize;
+    	float percent_used = (info2.me_last_pgno/ (float)nbr_pages) * 100;
+    	return percent_used;
+    }
+    
     public Transaction createTransaction() {
         return createTransaction(null, false);
     }
@@ -371,4 +382,5 @@ public class Env extends NativeObject implements Closeable {
         
         return flags;
     }
+    
 }
