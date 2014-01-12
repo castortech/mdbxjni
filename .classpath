@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="src" path="lmdbjni/src/main/java"/>
+	<classpathentry kind="src" path="lmdbjni/src/test/java"/>
+	<classpathentry kind="lib" path="C:/Users/alpic.BENCHMARK/.m2/repository/org/fusesource/hawtjni/hawtjni-runtime/1.9/hawtjni-runtime-1.9.jar"/>
+	<classpathentry kind="lib" path="C:/Users/alpic.BENCHMARK/.m2/repository/org/iq80/leveldb/leveldb-api/0.5/leveldb-api-0.5.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

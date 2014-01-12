@@ -7,8 +7,4 @@
 *.iws
 target
 .DS_Store
-.project
-.classpath
-.settings
-eclipse-classes
 /bin
