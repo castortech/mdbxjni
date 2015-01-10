@@ -26,6 +26,7 @@ import java.util.List;
 import static org.fusesource.lmdbjni.JNI.*;
 import static org.fusesource.lmdbjni.Util.checkArgNotNull;
 import static org.fusesource.lmdbjni.Util.checkErrorCode;
+import static org.fusesource.lmdbjni.Util.checkSize;
 
 /**
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
@@ -169,6 +170,11 @@ public class Database extends NativeObject implements Closeable {
     }
 
     private byte[] put(Transaction tx, Value keySlice, Value valueSlice, int flags) {
+    	checkSize(env, keySlice);
+    	if ((flags & MDB_DUPSORT) != 0) {
+        	checkSize(env, valueSlice);
+    	}
+    	
         int rc = mdb_put(tx.pointer(), pointer(), keySlice, valueSlice, flags);
         if ( ((flags & MDB_NOOVERWRITE)!=0 || (flags & MDB_NODUPDATA)!=0) && rc == MDB_KEYEXIST ) {
             // Return the existing value if it was a dup insert attempt.
@@ -240,6 +246,7 @@ public class Database extends NativeObject implements Closeable {
     }
 
     private boolean delete(Transaction tx, Value keySlice, Value valueSlice) {
+    	checkSize(env, keySlice);
         int rc = mdb_del(tx.pointer(), pointer(), keySlice, valueSlice);
         if( rc == MDB_NOTFOUND ) {
             return false;

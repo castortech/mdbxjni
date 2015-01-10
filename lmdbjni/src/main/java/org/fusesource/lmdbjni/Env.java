@@ -163,6 +163,10 @@ public class Env extends NativeObject implements Closeable {
         checkErrorCode(mdb_env_set_maxreaders(pointer(), size));
     }
 
+    public long getMaxKeySize() {
+        return mdb_env_get_maxkeysize(pointer());
+    }
+    
     public int getFlags() {
         long[] flags = new long[1];
         checkErrorCode(mdb_env_get_flags(pointer(), flags));

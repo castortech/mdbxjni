@@ -54,4 +54,14 @@ class Value extends JNI.MDB_val {
 		JNI.buffer_copy(mv_data, 0, rc, 0, rc.length);
 		return rc;
 	}
+	
+    public long getOffendingSize(long maxSize) {
+		if (mv_data == 0) {
+			return 0;
+		}
+		if (mv_size > maxSize) {
+			return mv_size;
+		}
+    	return -1;
+    }
 }

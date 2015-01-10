@@ -48,6 +48,15 @@ class Util {
             throw new LMDBException(msg, rc);
         }
     }
+    
+    public static void checkSize(final Env env, final Value val) {
+    	long size = val.getOffendingSize(env.getMaxKeySize());
+    	
+    	if (size >= 0) {
+    		String msg = "Key size (" + size + ") is too short or too long.";
+            throw new LMDBException(msg, JNI.MDB_BAD_VALSIZE);
+    	}
+    }
 
     public static void checkArgNotNull(Object value, String name) {
         if(value==null) {

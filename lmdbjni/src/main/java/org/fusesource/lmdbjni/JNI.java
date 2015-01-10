@@ -454,6 +454,13 @@ public class JNI {
      * <a href="http://symas.com/mdb/doc/group__mdb.html#">details</a>
      */
     @JniMethod
+    public static final native int mdb_env_get_maxkeysize(
+            @JniArg(cast = "MDB_env *") long env);
+
+    /**
+     * <a href="http://symas.com/mdb/doc/group__mdb.html#">details</a>
+     */
+    @JniMethod
     public static final native int mdb_env_set_maxdbs(
             @JniArg(cast = "MDB_env *") long env,
             @JniArg(cast = "unsigned int") long dbs);
