@@ -18,6 +18,8 @@
 
 package org.fusesource.lmdbjni;
 
+import java.util.Arrays;
+
 /**
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
@@ -47,21 +49,35 @@ class Value extends JNI.MDB_val {
 			return null;
 		}
 		if (mv_size > Integer.MAX_VALUE) {
-			throw new ArrayIndexOutOfBoundsException(
-					"Native slice is larger than the maximum Java array");
+			throw new ArrayIndexOutOfBoundsException("Native slice is larger than the maximum Java array");
 		}
 		byte[] rc = new byte[(int) mv_size];
 		JNI.buffer_copy(mv_data, 0, rc, 0, rc.length);
 		return rc;
 	}
-	
-    public long getOffendingSize(long maxSize) {
+
+	public long getOffendingSize(long maxSize) {
 		if (mv_data == 0) {
 			return 0;
 		}
 		if (mv_size > maxSize) {
 			return mv_size;
 		}
-    	return -1;
-    }
+		return -1;
+	}
+
+	@Override
+	public boolean equals(final Object object) {
+		if (this == object)
+			return true;
+		if (object == null || getClass() != object.getClass())
+			return false;
+		final Value other = (Value)object;
+		return Arrays.equals(toByteArray(), other.toByteArray());
+	}
+
+	@Override
+	public int hashCode() {
+		return Arrays.hashCode(toByteArray());
+	}
 }

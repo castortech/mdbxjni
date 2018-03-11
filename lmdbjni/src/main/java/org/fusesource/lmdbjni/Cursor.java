@@ -22,8 +22,8 @@ import static org.fusesource.lmdbjni.JNI.*;
 import static org.fusesource.lmdbjni.Util.checkArgNotNull;
 import static org.fusesource.lmdbjni.Util.checkErrorCode;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * A cursor handle.
@@ -244,7 +244,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
     
     private byte[] put(Value keySlice, Value valueSlice, int flags) {
     	boolean hasSec = db.getSecondaries() != null;
-    	List<Value> valueSlices = new ArrayList<>();
+    	Set<Value> valueSlices = new HashSet<>();
 
     	if (hasSec && (flags & MDB_NOOVERWRITE) == 0 && (flags & MDB_NODUPDATA) == 0) {
 			try (Cursor cursor = db.openCursor(tx)) {

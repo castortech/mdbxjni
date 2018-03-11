@@ -229,7 +229,9 @@ public class SecondaryDbTest {
 			assertEquals(new HashSet<String>(Arrays.asList(new String[] { "red", "green" })), keys);
 			assertEquals(new HashSet<String>(Arrays.asList(new String[] { "London", "New York", "Tampa" })), values);
 		}
-		
+
+		assertNull(db.put(bytes("Yonkers"), bytes("white")));
+
 		//standard delete
 		assertTrue(db.delete(bytes("New York")));
 		assertNull(db.get(bytes("New York")));

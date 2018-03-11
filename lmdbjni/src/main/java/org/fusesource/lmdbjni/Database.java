@@ -20,18 +20,15 @@ package org.fusesource.lmdbjni;
 
 import java.io.Closeable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.LinkedList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import static org.fusesource.lmdbjni.Constants.FIRST;
-import static org.fusesource.lmdbjni.Constants.NEXT;
 import static org.fusesource.lmdbjni.Constants.string;
 import static org.fusesource.lmdbjni.JNI.*;
 import static org.fusesource.lmdbjni.Util.checkArgNotNull;
 import static org.fusesource.lmdbjni.Util.checkErrorCode;
 import static org.fusesource.lmdbjni.Util.checkSize;
-import static org.junit.Assert.assertEquals;
 
 /**
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
@@ -85,7 +82,7 @@ public class Database extends NativeObject implements Closeable {
 		checkArgNotNull(tx, "tx");
 		MDB_stat rc = new MDB_stat();
 		mdb_stat(tx.pointer(), pointer(), rc);
-    return new Stat(rc);
+		return new Stat(rc);
 	}
 
 	/**
@@ -190,9 +187,9 @@ public class Database extends NativeObject implements Closeable {
 	/**
 	 * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
 	 */
-  /**
-   * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
-   */
+	/**
+	 * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
+	 */
 	public byte[] put(byte[] key, byte[] value) {
 		return put(key, value, 0);
 	}
@@ -300,22 +297,22 @@ public class Database extends NativeObject implements Closeable {
 		if ((flags & MDB_DUPSORT) != 0) {
 			checkSize(env, valueSlice);
 		}
-		
-    	boolean hasSec = getSecondaries() != null;
-    	List<Value> valueSlices = new ArrayList<>();
 
-    	if (hasSec && (flags & MDB_NOOVERWRITE) == 0 && (flags & MDB_NODUPDATA) == 0) {
+		boolean hasSec = getSecondaries() != null;
+		Set<Value> valueSlices = new HashSet<>();
+
+		if (hasSec && (flags & MDB_NOOVERWRITE) == 0 && (flags & MDB_NODUPDATA) == 0) {
 			try (Cursor cursor = openCursor(tx)) {
 				byte[] key = keySlice.toByteArray();
 				Entry entry = cursor.get(CursorOp.SET, key);
-	            
-	           	if (entry != null) {
-	           		NativeBuffer valueBuffer = NativeBuffer.create(entry.getValue());
+
+				if (entry != null) {
+					NativeBuffer valueBuffer = NativeBuffer.create(entry.getValue());
 					valueSlices.add(Value.create(valueBuffer));
-	            }				
+				}
 			}
-    	}
-    	
+		}
+
 		int rc = mdb_put(tx.pointer(), pointer(), keySlice, valueSlice, flags);
 		if (((flags & MDB_NOOVERWRITE) != 0 || (flags & MDB_NODUPDATA) != 0) && rc == MDB_KEYEXIST) {
 			// Return the existing value if it was a dup insert attempt.
@@ -325,7 +322,7 @@ public class Database extends NativeObject implements Closeable {
 			if (rc != 0) {
 				throw new LMDBException("put failed", rc);
 			}
-			
+
 			if (!valueSlices.isEmpty()) {
 				deleteSecondaries(tx, keySlice, valueSlices);
 			}
@@ -335,7 +332,7 @@ public class Database extends NativeObject implements Closeable {
 			return null;
 		}
 	}
-	
+
 	protected void putSecondaries(Transaction tx, Value keySlice, Value valueSlice) {
 		if (secondaries != null) {
 			for (SecondaryDatabase secDb : secondaries) {
@@ -424,25 +421,29 @@ public class Database extends NativeObject implements Closeable {
 
 	private boolean delete(Transaction tx, Value keySlice, Value valueSlice) {
 		checkSize(env, keySlice);
-		
-    	boolean hasSec = getSecondaries() != null;
-    	List<Value> valueSlices = new ArrayList<>();
-    	
-    	if (valueSlice == null && hasSec) {
+
+		boolean hasSec = getSecondaries() != null;
+		Set<Value> valueSlices = new HashSet<>();
+
+		if (valueSlice == null && hasSec) {
 			try (Cursor cursor = openCursor(tx)) {
 				byte[] key = keySlice.toByteArray();
 				Entry entry = cursor.get(CursorOp.SET, key);
-	            
-	           	while (entry != null) {
-	           		NativeBuffer valueBuffer = NativeBuffer.create(entry.getValue());
+
+				while (entry != null) {
+					NativeBuffer valueBuffer = NativeBuffer.create(entry.getValue());
+					// System.out.println(string(entry.getValue()));
 					valueSlices.add(Value.create(valueBuffer));
-	            	entry = cursor.get(CursorOp.NEXT_DUP, key, entry.getValue());
-	            }				
+					if (getConfig(tx).isDupSort()) {
+						entry = cursor.get(CursorOp.NEXT_DUP, key, entry.getValue());
+					} else {
+						entry = null;
+					}
+				}
 			}
-    	}
-    	else {
-    		valueSlices.add(valueSlice);
-    	}
+		} else {
+			valueSlices.add(valueSlice);
+		}
 
 		int rc = mdb_del(tx.pointer(), pointer(), keySlice, valueSlice);
 		if (rc == MDB_NOTFOUND) {
@@ -453,8 +454,8 @@ public class Database extends NativeObject implements Closeable {
 
 		return true;
 	}
-	
-	protected void deleteSecondaries(Transaction tx, Value keySlice, List<Value> valueSlices) {
+
+	protected void deleteSecondaries(Transaction tx, Value keySlice, Set<Value> valueSlices) {
 		if (secondaries != null) {
 			for (SecondaryDatabase secDb : secondaries) {
 				SecondaryDbConfig secConfig = (SecondaryDbConfig) secDb.getConfig();
