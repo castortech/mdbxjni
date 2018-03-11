@@ -19,6 +19,8 @@
 package org.fusesource.lmdbjni;
 
 /**
+ * General exception thrown when error codes are reported by LMDB.
+ *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class LMDBException extends RuntimeException {

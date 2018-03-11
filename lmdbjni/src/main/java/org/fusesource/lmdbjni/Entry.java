@@ -21,28 +21,28 @@ package org.fusesource.lmdbjni;
 import java.util.Map;
 
 /**
+ * Key and value.
+ *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Entry implements Map.Entry<byte[], byte[]> {
+  private final byte[] key;
+  private final byte[] value;
 
-    private final byte[] key;
-    private final byte[] value;
+  public Entry(byte[] key, byte[] value) {
+    this.key = key;
+    this.value = value;
+  }
 
-    public Entry(byte[] key, byte[] value) {
-        this.key = key;
-        this.value = value;
-    }
+  public byte[] getKey() {
+    return key;
+  }
 
-    public byte[] getKey() {
-        return key;
-    }
+  public byte[] getValue() {
+    return value;
+  }
 
-    public byte[] getValue() {
-        return value;
-    }
-
-    public byte[] setValue(byte[] value) {
-        throw new UnsupportedOperationException();
-    }
-
+  public byte[] setValue(byte[] value) {
+    throw new UnsupportedOperationException();
+  }
 }

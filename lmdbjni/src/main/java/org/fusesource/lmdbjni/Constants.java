@@ -35,7 +35,7 @@ public class Constants {
     public static final int MAPASYNC    = MDB_MAPASYNC    ;
     public static final int NOTLS       = MDB_NOTLS       ;
     public static final int NOLOCK      = MDB_NOLOCK      ;
-    public static final int NORDAAHEAD  = MDB_NORDAHEAD   ;
+    public static final int NORDAHEAD = MDB_NORDAHEAD;
     public static final int NOMEMINIT   = MDB_NOMEMINIT   ;
 
     //====================================================//
@@ -75,11 +75,10 @@ public class Constants {
     public static final CursorOp PREV           = CursorOp.PREV           ;
     public static final CursorOp PREV_DUP       = CursorOp.PREV_DUP       ;
     public static final CursorOp PREV_NODUP     = CursorOp.PREV_NODUP     ;
-    public static final CursorOp SET	        = CursorOp.SET			  ;
-    public static final CursorOp SET_KEY    	= CursorOp.SET_KEY        ;
-    public static final CursorOp SET_RANGE      = CursorOp.SET_RANGE      ;
-    
-    
+    public static final CursorOp SET	        = CursorOp.SET	   		  ;
+    public static final CursorOp KEY    	    = CursorOp.SET_KEY        ;
+    public static final CursorOp RANGE          = CursorOp.SET_RANGE      ;
+
     public static final int IMMUTABLE_KEY = 0x2;  //used for secondary db
 
     public static byte[] bytes(String value) {

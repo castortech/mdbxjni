@@ -36,8 +36,28 @@ public class SecondaryDatabase extends Database {
     		cursor.close();
     	}
     }
+    
+    public byte[] internalPut(Transaction tx, byte[] key, byte[] value) {
+        return super.put(tx, key, value, 0);
+    }
 
     public byte[] getSearchBoth(Transaction tx, byte[] key, byte[] pKey) {
 		return null;
+    }
+
+    public byte[] put(byte[] key, byte[] value) {
+        throw new UnsupportedOperationException();
+    }
+
+    public byte[] put(byte[] key, byte[] value, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
+    public byte[] put(Transaction tx, byte[] key, byte[] value) {
+        throw new UnsupportedOperationException();
+    }
+
+    public byte[] put(Transaction tx, byte[] key, byte[] value, int flags) {
+        throw new UnsupportedOperationException();
     }
 }

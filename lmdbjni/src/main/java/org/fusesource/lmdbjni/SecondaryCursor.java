@@ -10,8 +10,16 @@ public class SecondaryCursor extends Cursor {
 		super(env, self, tx, db);
 	}
 
+    public Database getDatabase() {
+        return getSecondaryDatabase();
+    }
+      
     public SecondaryDatabase getSecondaryDatabase() {
         return (SecondaryDatabase)super.getDatabase();
+    }
+    
+    public Database getPrimaryDatabase() {
+        return getSecondaryDatabase().getPrimaryDatabase();
     }
     
     public OperationStatus get(CursorOp op, DatabaseEntry key, DatabaseEntry pKey, DatabaseEntry value) {
@@ -41,5 +49,8 @@ public class SecondaryCursor extends Cursor {
         }
     }
 
+    public byte[] put(byte[] key, byte[] value, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
 }

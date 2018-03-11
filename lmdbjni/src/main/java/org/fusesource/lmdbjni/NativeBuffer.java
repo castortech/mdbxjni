@@ -31,7 +31,6 @@ import java.util.concurrent.atomic.AtomicInteger;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 class NativeBuffer extends NativeObject {
-
     private static class Allocation extends NativeObject {
         private final AtomicInteger retained = new AtomicInteger(0);
 
@@ -56,7 +55,7 @@ class NativeBuffer extends NativeObject {
         }
     }
 
-    private static class Pool {
+  static class Pool {
         private final NativeBuffer.Pool prev;
         Allocation allocation;
         long pos;

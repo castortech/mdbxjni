@@ -18,6 +18,7 @@
 
 package org.fusesource.lmdbjni;
 
+import java.nio.charset.Charset;
 import static org.fusesource.lmdbjni.JNI.mdb_strerror;
 import static org.fusesource.lmdbjni.JNI.strlen;
 
@@ -27,6 +28,7 @@ import static org.fusesource.lmdbjni.JNI.strlen;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 class Util {
+	public static final boolean isAndroid = isAndroid();
 
     public  static int errno() {
         return errno();
@@ -39,7 +41,8 @@ class Util {
     public static String string(long ptr) {
         if( ptr == 0 )
             return null;
-        return new String(NativeBuffer.create(ptr, strlen(ptr)).toByteArray());
+    return new String(NativeBuffer.create(ptr, strlen(ptr)).toByteArray(),
+      Charset.defaultCharset());
     }
 
     public static void checkErrorCode(int rc) {
@@ -64,4 +67,12 @@ class Util {
         }
     }
 
+  static boolean isAndroid() {
+    try {
+      Class.forName("android.os.Process");
+      return true;
+    } catch (Throwable ignored) {
+      return false;
+    }
+  }
 }

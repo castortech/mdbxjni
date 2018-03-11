@@ -18,8 +18,6 @@
 
 package org.fusesource.lmdbjni;
 
-import org.fusesource.lmdbjni.LMDBException;
-
 /**
  * A helper base class which is used to track a pointer to a native
  * structure or class.
