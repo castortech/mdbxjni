@@ -1,5 +1,5 @@
-# [lmdbjni](https://github.com/fusesource/lmdbjni)
+# [mdbxjni](https://github.com/castortech/mdbxjni)
 
-## [lmdbjni 1.0](http://repo.fusesource.com/nexus/content/groups/public/org/fusesource/lmdbjni/lmdbjni-all/1.0), unreleased 
+## [mdbxjni 1.0] unreleased 
 
 * Initial Release

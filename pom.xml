@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2013, RedHat, Inc.
+  Copyright (C) 2018, Castor Technologies Inc.
 
-      http://www.redhat.com/
+      http://www.castortech.com/
 
   Licensed under the Apache License, Version 2.0 (the "License");
   you may not use this file except in compliance with the License.
@@ -17,32 +17,32 @@
   limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>org.fusesource</groupId>
-    <artifactId>fusesource-pom</artifactId>
-    <version>1.9</version>
-  </parent>
 
-  <groupId>org.fusesource.lmdbjni</groupId>
-  <artifactId>lmdbjni-project</artifactId>
+  <groupId>com.castortech.mdbxjni</groupId>
+  <artifactId>mdbxjni-project</artifactId>
   <version>99-master-SNAPSHOT</version>
   <packaging>pom</packaging>
   
   <name>${project.artifactId}</name>
-  <description>lmdbjni is a jni library for accessing lmdb.</description>
+  <description>mdbxjni is a jni library for accessing mdbx.</description>
   
   <properties>
-    <forge-project-id>lmdbjni</forge-project-id>
-    <forge-project-id-uc>LMDBJNI</forge-project-id-uc>
+    <forge-project-id>mdbxjni</forge-project-id>
+    <forge-project-id-uc>MDBXJNI</forge-project-id-uc>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hawtjni-version>1.9</hawtjni-version>
-    <leveldb-api-version>0.5</leveldb-api-version>
+    <hawtjni-version>1.16</hawtjni-version>
+    <java.version>1.8</java.version>
+    <junit-version>4.10</junit-version>
+    <mvn-compiler-version>3.7.0</mvn-compiler-version>
+    <mvn-bundle-version>3.5.0</mvn-bundle-version>
+    <mvn-clean-version>3.1.0</mvn-clean-version>
+    <mvn-jar-version>3.1.0</mvn-jar-version>
+    <surefire-version>2.21.0</surefire-version>
   </properties>
   
   <modules>
-    <module>lmdbjni</module>
+    <module>mdbxjni</module>
   </modules>
   
   <url>http://${forge-project-id}.fusesource.org</url>
@@ -50,22 +50,9 @@
 
   <issueManagement>
     <system>github</system>
-    <url>https://github.com/fusesource/lmdbjni/issues</url>
+    <url>https://github.com/castortech/mdbxjni/issues</url>
   </issueManagement>
   
-  <mailingLists>
-    <mailingList>
-      <name>${forge-project-id} dev</name>
-      <post>${forge-project-id}-dev@fusesource.org</post>
-      <subscribe>${forge-project-id}-dev-subscribe@fusesource.org</subscribe>
-    </mailingList>
-    <mailingList>
-      <name>${forge-project-id} commits</name>
-      <post>${forge-project-id}-commits@fusesource.org</post>
-      <subscribe>${forge-project-id}-commits-subscribe@fusesource.org</subscribe>
-    </mailingList>
-  </mailingLists>
-
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -75,25 +62,15 @@
   </licenses>
   
   <scm>
-    <connection>scm:git:git://github.com/fusesource/lmdbjni.git</connection>
-    <developerConnection>scm:git:git@github.com:fusesource/lmdbjni.git</developerConnection>
-    <url>https://github.com/fusesource/lmdbjni</url>
+    <connection>scm:git:git://github.com/castortech/mdbxjni.git</connection>
+    <developerConnection>scm:git:git@github.com:castortech/mdbxjni.git</developerConnection>
+    <url>https://github.com/castortech/mdbxjni</url>
   </scm>
 
-  <distributionManagement>
-    <site>
-      <id>website.fusesource.org</id>
-      <name>website</name>
-      <url>dav:http://fusesource.com/forge/dav/${forge-project-id}/maven/${project.version}</url>
-    </site>
-  </distributionManagement> 
-  
   <developers>
     <developer>
-      <id>chirino</id>
-      <name>Hiram Chirino</name>
-      <email>hiram@hiramchirino.com</email>
-      <url>http://hiramchirino.com</url>
+      <id>alpic</id>
+      <name>Alain Picard</name>
       <timezone>GMT-5</timezone>
     </developer>
   </developers>
@@ -102,35 +79,33 @@
     <dependency>
       <groupId>junit</groupId>
       <artifactId>junit</artifactId>
-      <version>4.7</version>
+      <version>${junit-version}</version>
       <scope>test</scope>
     </dependency>
   </dependencies>
-  
+
   <build>
     <plugins>
-    
-      <!-- the older clean plugin has trouble deleting directories with symlinks in them -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-clean-plugin</artifactId>
-        <version>2.3</version>
+        <version>${mvn-clean-version}</version>
       </plugin>
-      
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
+        <version>${mvn-compiler-version}</version>
         <configuration>
-          <source>1.5</source>
-          <target>1.5</target>
+          <source>${java.version}</source>
+          <target>${java.version}</target>
         </configuration>
       </plugin>
       
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.4.3</version>
+        <version>${surefire-version}</version>
         <configuration>
           <redirectTestOutputToFile>true</redirectTestOutputToFile>
           <forkMode>once</forkMode>
@@ -146,26 +121,14 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
-        <version>3.0</version>
+        <version>3.7</version>
         <configuration>
           <reportPlugins>
             <plugin>
               <groupId>org.apache.maven.plugins</groupId>
               <artifactId>maven-javadoc-plugin</artifactId>
-              <version>2.7</version>
+              <version>3.0.0</version>
               <configuration>
-        
-                <!-- These style sheets need to be updated for javadoc 1.4
-                <stylesheetfile>stylesheet.css</stylesheetfile>
-                <resourcesArtifacts>
-                  <resourcesArtifact>
-                    <groupId>org.fusesource.mvnplugins</groupId>
-                    <artifactId>fuse-javadoc-skin</artifactId>
-                    <version>1.9</version>
-                  </resourcesArtifact>
-                </resourcesArtifacts> 
-                -->
-
                 <docfilessubdirs>true</docfilessubdirs>
                 <useStandardDocletOptions>true</useStandardDocletOptions>
                 <charset>UTF-8</charset>
@@ -179,7 +142,7 @@
                 <doctitle>${project.name} API Reference (${project.version})</doctitle>
                 <windowtitle>${project.name} API Reference (${project.version})</windowtitle>
                 <links>
-                  <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+                  <link>https://docs.oracle.com/javase/8/docs/api</link>
                 </links>
                 <encoding>UTF-8</encoding>
                 <locale>en_US</locale>
@@ -191,32 +154,20 @@
         </configuration>
       </plugin>
 
-
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.7</version>
+        <version>3.0.0</version>
 
         <dependencies>
           <dependency>
             <groupId>org.fusesource.mvnplugins</groupId>
             <artifactId>fuse-javadoc-skin</artifactId>
-            <version>1.9</version>
+            <version>1.14</version>
           </dependency>
         </dependencies>
         
         <configuration>
-        
-          <!-- These style sheets need to be updated for javadoc 1.4
-          <resourcesArtifacts>
-            <resourcesArtifact>
-              <groupId>org.fusesource.mvnplugins</groupId>
-              <artifactId>fuse-javadoc-skin</artifactId>
-              <version>1.9</version>
-            </resourcesArtifact>
-          </resourcesArtifacts> 
-          -->
-
           <docfilessubdirs>true</docfilessubdirs>
           <useStandardDocletOptions>true</useStandardDocletOptions>
           <charset>UTF-8</charset>
@@ -229,7 +180,7 @@
           <doctitle>${project.name} API Reference (${project.version})</doctitle>
           <windowtitle>${project.name} API Reference (${project.version})</windowtitle>
           <links>
-            <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+            <link>https://docs.oracle.com/javase/8/docs/api</link>
           </links>
           <encoding>UTF-8</encoding>
           <locale>en_US</locale>
@@ -237,7 +188,6 @@
           <excludePackageNames>*.internal</excludePackageNames>
         </configuration>
       </plugin>
-      
     </plugins>
   </build>
 
@@ -246,27 +196,29 @@
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>jxr-maven-plugin</artifactId>
-        <version>2.0-beta-1</version>
+        <version>2.5</version>
         <configuration>
           <aggregate>true</aggregate>
         </configuration>
       </plugin>
+	  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>2.6</version>
+        <version>3.0.0</version>
         <configuration>
           <excludePackageNames>*.internal</excludePackageNames>
           <linksource>true</linksource>
           <links>
-            <link>http://java.sun.com/j2se/1.5.0/docs/api</link>
+            <link>https://docs.oracle.com/javase/8/docs/api</link>
           </links>
         </configuration>
       </plugin>
+	  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.1.1</version>
+        <version>2.9</version>
         <reportSets>
           <reportSet>
             <reports>
@@ -282,21 +234,22 @@
           </reportSet>
         </reportSets>
       </plugin>
+	  
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>surefire-report-maven-plugin</artifactId>
-        <version>2.0-beta-1</version>
+        <version>${surefire-version}</version>
       </plugin>
+	  
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
-        <version>2.5</version>
+        <version>3.5.1</version>
       </plugin>
     </plugins>
   </reporting>
 
   <profiles>
-    
     <profile>
       <id>download</id>
       <repositories>
@@ -325,29 +278,29 @@
     <profile>
       <id>full</id>
       <modules>
-        <module>lmdbjni-osx64</module>
-        <module>lmdbjni-linux64</module>
-        <module>lmdbjni-win64</module>
-        <module>lmdbjni-all</module>
+        <module>mdbxjni-osx64</module>
+        <module>mdbxjni-linux64</module>
+        <module>mdbxjni-win64</module>
+        <module>mdbxjni-all</module>
       </modules>
     </profile>    
 
     <profile>
       <id>all</id>
       <modules>
-        <module>lmdbjni-all</module>
+        <module>mdbxjni-all</module>
       </modules>
     </profile>    
     <profile>
       <id>osx64</id>
       <modules>
-        <module>lmdbjni-osx64</module>
+        <module>mdbxjni-osx64</module>
       </modules>
     </profile>
     <profile>
       <id>linux64</id>
       <modules>
-        <module>lmdbjni-linux64</module>
+        <module>mdbxjni-linux64</module>
       </modules>
     </profile>
     <profile>
@@ -356,13 +309,13 @@
         <skipAutogen>true</skipAutogen>
       </properties>
       <modules>
-        <module>lmdbjni-win64</module>
+        <module>mdbxjni-win64</module>
       </modules>
     </profile>
 
     <!--
         Do a license check by running       : mvn -P license license:check
-        UPdate the license check by running : mvn -P license license:format
+        Update the license check by running : mvn -P license license:format
     -->
     <profile>
       <id>license</id>
@@ -371,7 +324,7 @@
           <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
             <artifactId>maven-license-plugin</artifactId>
-            <version>1.6.0</version>
+            <version>3.0.0</version>
             <configuration>
               <quiet>false</quiet>
               <header>src/main/resources/license-header.txt</header>
@@ -397,7 +350,6 @@
                 <exclude>**/*.gif</exclude>
                 <exclude>**/*.ico</exclude>
                 <exclude>**/*.keystore</exclude>
-
               </excludes>
               <useDefaultExcludes>false</useDefaultExcludes>
               <mapping>
@@ -417,6 +369,5 @@
         </plugins>
       </build>
     </profile>
-
   </profiles>
 </project>

@@ -1,6 +1,0 @@
-Manifest-Version: 1.0
-Bundle-ManifestVersion: 2
-Bundle-Name: lmdbjni
-Bundle-SymbolicName: lmdbjni
-Bundle-Version: 1.0.0.qualifier
-Import-Package: junit.framework
