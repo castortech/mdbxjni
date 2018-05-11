@@ -24,7 +24,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
-import java.io.IOException;
+import com.google.common.primitives.UnsignedBytes;
+
 import java.nio.ByteBuffer;
 import java.util.HashMap;
 import java.util.Map;
@@ -52,7 +53,7 @@ public class InsertTest {
 	public TemporaryFolder tmp = new TemporaryFolder();
 	
 	@Before
-	public void before() throws IOException {
+	public void before() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
 		System.out.println("Using path:" + path);
 		
@@ -75,7 +76,10 @@ public class InsertTest {
 		env.setMapSize(6000L * 1024 * 1024);  //4gb
 		Env.pushMemoryPool(1024*512);
 		env.open(path, envConfig);
-		db = env.openDatabase("primary");
+//		db = env.openDatabase("primary");
+//    db = env.openDatabase("primary", new KeyComparator(), null);
+  db = env.openDatabase("primary", UnsignedBytes.lexicographicalComparator(), null);
+		
 
 //		SecondaryDbConfig secConfig = new SecondaryDbConfig();
 //		secConfig.setCreate(true);

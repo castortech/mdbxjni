@@ -79,7 +79,7 @@
     <IntDir Condition="'$(Configuration)|$(Platform)'=='debug|x64'">$(ProjectDir)/target/$(Platform)-$(Configuration)/obj\</IntDir>
     <LinkIncremental Condition="'$(Configuration)|$(Platform)'=='debug|x64'">true</LinkIncremental>
   </PropertyGroup>
-  <Import Project="vs2010.custom.props" />
+  <Import Project="mdbxjni.custom.props" />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
     <ClCompile>
       <AdditionalIncludeDirectories>$(JAVA_HOME)\include;$(JAVA_HOME)\include\win32;$(ProjectDir)\src\windows;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
@@ -182,6 +182,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include=".\src\buffer.c" />
+    <ClCompile Include=".\src\hawtjni-callback.c" />
     <ClCompile Include=".\src\hawtjni.c" />
     <ClCompile Include=".\src\mdbxjni.c" />
     <ClCompile Include=".\src\mdbxjni_stats.c" />

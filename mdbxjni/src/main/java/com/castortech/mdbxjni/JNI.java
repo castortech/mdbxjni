@@ -283,13 +283,23 @@ public class JNI {
 	// Return Codes
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int EINVAL;
+	static public int MDBX_EINVAL;
 	@JniField(flags = { CONSTANT })
-	static public int EACCES;
+	static public int MDBX_EACCESS;
 	@JniField(flags = { CONSTANT })
-	static public int ENOENT;
+	static public int MDBX_ENODATA;
 	@JniField(flags = { CONSTANT })
-	static public int EAGAIN;
+	static public int MDBX_ENOMEM;
+	@JniField(flags = { CONSTANT })
+	static public int MDBX_EROFS;
+	@JniField(flags = { CONSTANT })
+	static public int MDBX_ENOSYS;
+	@JniField(flags = { CONSTANT })
+	static public int MDBX_EIO;
+	@JniField(flags = { CONSTANT })
+	static public int MDBX_EPERM;
+	@JniField(flags = { CONSTANT })
+	static public int MDBX_EINTR;
 	@JniField(flags = { CONSTANT })
 	static public int MDBX_SUCCESS;
 	@JniField(flags = { CONSTANT })
@@ -487,6 +497,11 @@ public class JNI {
 		@JniField(cast = "size_t")
 		public long iov_len;
 	}
+	
+  @JniMethod
+  public static final native void map_val(
+  		@JniArg(cast = "MDBX_val *", flags={NO_OUT}) long in,
+  		@JniArg(cast = "MDBX_val *", flags={NO_IN}) MDBX_val out);
 
 	@JniMethod(cast = "char *")
 	public static final native long mdbx_strerror(int err);
@@ -656,8 +671,8 @@ public class JNI {
   		@JniArg(cast = "const char *") String name,
   		@JniArg(cast = "unsigned") long flags,
   		@JniArg(cast = "uint32_t *") long[] dbi,
-  		@JniArg(cast = "MDBX_cmp_func *") long keycmp,
-  		@JniArg(cast = "MDBX_cmp_func *") long datacmp);
+  		@JniArg(cast = "int(*)(const MDBX_val *, const MDBX_val *)", flags = ArgFlag.POINTER_ARG) long keycmp,
+  		@JniArg(cast = "int(*)(const MDBX_val *, const MDBX_val *)", flags = ArgFlag.POINTER_ARG) long datacmp);
 
   @JniMethod
   public static final native int mdbx_dbi_open(

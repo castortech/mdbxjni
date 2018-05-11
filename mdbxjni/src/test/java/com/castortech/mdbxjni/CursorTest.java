@@ -49,8 +49,8 @@ public class CursorTest {
   @Test
   public void testCursorRenew() {
     Transaction read = env.createReadTransaction();
+
     try (Cursor readCursor = db.openCursor(read)) {
-      
       try (Transaction write = env.createWriteTransaction()) {
         try (Cursor cursor = db.openCursor(write)) {
           cursor.put(Bytes.fromLong(1), Bytes.fromLong(1), 0);

@@ -10,7 +10,8 @@ public class DatabaseConfig implements Cloneable {
 	private boolean integerDup = false;
 	private boolean reverseDup = false;
 	private boolean create = false;
-	private Comparator<byte[]> comparator;
+	private Comparator<byte[]> keyComparator;
+	private Comparator<byte[]> dataComparator;
 	
 	public DatabaseConfig() {
 	}
@@ -101,24 +102,31 @@ public class DatabaseConfig implements Cloneable {
 		this.create = create;
 	}
 	
-	public Comparator<byte[]> getComparator() {
-		return null;
+	public Comparator<byte[]> getKeyComparator() {
+		return keyComparator;
 	}
 	
-	public void setComparator(Comparator<byte[]> comparator) {
-		this.comparator = comparator;
-		throw new IllegalStateException("Setting of custom comparator is presently not supported");
+	public void setKeyComparator(Comparator<byte[]> keyComparator) {
+		this.keyComparator = keyComparator;
 	}
 	
-    /**
-     * Returns a copy of this configuration object.
-     */
-    public DatabaseConfig cloneConfig() {
-        try {
-            return (DatabaseConfig) super.clone();
-        } 
-        catch (CloneNotSupportedException willNeverOccur) {
-            return null;
-        }
-    }
+	public Comparator<byte[]> getDataComparator() {
+		return dataComparator;
+	}
+	
+	public void setDataComparator(Comparator<byte[]> dataComparator) {
+		this.dataComparator = dataComparator;
+	}
+	
+	/**
+	 * Returns a copy of this configuration object.
+	 */
+	public DatabaseConfig cloneConfig() {
+		try {
+			return (DatabaseConfig)super.clone();
+		}
+		catch (CloneNotSupportedException willNeverOccur) {
+			return null;
+		}
+	}
 }

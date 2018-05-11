@@ -182,7 +182,8 @@ public class EnvTest {
     try (Transaction tx = env.createReadTransaction()) {
       db.put(tx, bytes("New York"), bytes("silver"));
       fail("Expected LMDBException");
-    } catch (MDBXException e) {
+    } 
+    catch (MDBXException e) {
       assertTrue(e.getErrorCode() > 0);
     }
     env.sync(true);

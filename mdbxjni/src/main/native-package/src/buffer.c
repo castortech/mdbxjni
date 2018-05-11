@@ -21,3 +21,8 @@
 void buffer_copy(const void *source, size_t source_pos, void *dest, size_t dest_pos, size_t length) {
   memmove(((char *)dest)+dest_pos, ((const char *)source)+source_pos, length);
 }
+
+void map_val(MDBX_val *in, MDBX_val *out) {
+	out->iov_base = in->iov_base;
+	out->iov_len = in->iov_len;
+}

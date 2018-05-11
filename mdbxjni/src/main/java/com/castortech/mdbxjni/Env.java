@@ -19,10 +19,11 @@
 package com.castortech.mdbxjni;
 
 import java.io.Closeable;
+import java.util.Comparator;
 
+import org.fusesource.hawtjni.runtime.Callback;
 import com.castortech.mdbxjni.JNI.MDBX_envinfo;
 import com.castortech.mdbxjni.JNI.MDBX_stat;
-
 import static com.castortech.mdbxjni.JNI.*;
 import static com.castortech.mdbxjni.Util.*;
 
@@ -30,13 +31,17 @@ import static com.castortech.mdbxjni.Util.*;
  * An environment handle.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
+ * @author <a href="http://castortech.com">Alain Picard</a>
  */
 public class Env extends NativeObject implements Closeable {
 	public static String version() {
-		return "" + JNI.MDBX_VERSION_MAJOR + JNI.MDBX_VERSION_MINOR;
+		return "" + JNI.MDBX_VERSION_MAJOR + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
 	}
 
-	private boolean open = false;
+	private Callback keyCmpCallback = null;
+	private Callback dataCmpCallback = null;
+	private Comparator<byte[]> keyComparator;
+	private Comparator<byte[]> dataComparator;
 
 	/**
 	 * Create an environment handle and open it at the same time with default
@@ -283,6 +288,15 @@ public class Env extends NativeObject implements Closeable {
 		if (self != 0) {
 			mdbx_env_close(self);
 			self = 0;
+		}
+		
+		if (keyCmpCallback != null) {
+			keyCmpCallback.dispose();
+			keyCmpCallback = null;
+		}
+		if (dataCmpCallback != null) {
+			dataCmpCallback.dispose();
+			dataCmpCallback = null;
 		}
 	}
 
@@ -609,6 +623,11 @@ public class Env extends NativeObject implements Closeable {
 
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		int flags = setFlags(config);
+		
+		if (config.getKeyComparator() != null || config.getDataComparator() != null) {
+			return openDatabase(tx, name, flags, config.getKeyComparator(), config.getDataComparator());
+		}
+		
 		return openDatabase(tx, name, flags);
 	}
 
@@ -619,12 +638,19 @@ public class Env extends NativeObject implements Closeable {
 		return openDatabase(null, Constants.CREATE);
 	}
 
+	public Database openDatabase(Comparator<byte[]> keyComp, Comparator<byte[]> dataComp) {
+		return openDatabase(null, Constants.CREATE, keyComp, dataComp);
+	}
+
 	/**
 	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
 	 */
 	public Database openDatabase(String name) {
-		// checkArgNotNull(name, "name");
 		return openDatabase(name, Constants.CREATE);
+	}
+
+	public Database openDatabase(String name, Comparator<byte[]> keyComp, Comparator<byte[]> dataComp) {
+		return openDatabase(name, Constants.CREATE, keyComp, dataComp);
 	}
 
 	/**
@@ -640,6 +666,18 @@ public class Env extends NativeObject implements Closeable {
 			tx.commit();
 		}
 	}
+	
+	public Database openDatabase(String name, int flags, Comparator<byte[]> keyComp,  
+			Comparator<byte[]> dataComp) {
+		// checkArgNotNull(name, "name");
+		Transaction tx = createTransaction();
+		try {
+			return openDatabase(tx, name, flags, keyComp, dataComp);
+		} 
+		finally {
+			tx.commit();
+		}
+	}
 
 	public Database openDatabase(String name, DatabaseConfig config) {
 		Transaction tx = createTransaction();
@@ -649,6 +687,61 @@ public class Env extends NativeObject implements Closeable {
 		finally {
 			tx.commit();
 		}
+	}
+
+	public Database openDatabase(Transaction tx, String name, int flags, Comparator<byte[]> keyComp, 
+			Comparator<byte[]> dataComp) {
+		if (tx == null) {
+			return openDatabase(name, flags, keyComp, dataComp);
+		}
+
+		long keyCmpAddr = 0L;
+		long dataCmpAddr = 0L;
+		
+		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
+		// checkArgNotNull(name, "name");
+		long dbi[] = new long[1];
+		
+		if (keyComp != null) {
+			keyCmpCallback = new Callback(this, "compareKey", 2); //$NON-NLS-1$
+			keyCmpAddr = keyCmpCallback.getAddress();
+			keyComparator =  keyComp;
+		}
+		
+		if (dataComp != null) {
+			dataCmpCallback = new Callback(dataComp.getClass(), "compareData", 2); //$NON-NLS-1$
+			dataCmpAddr = dataCmpCallback.getAddress();
+			dataComparator =  dataComp;
+		}
+		
+		checkErrorCode(mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
+		return new Database(this, dbi[0], name);
+	}
+	
+	public long compareKey(long o1, long o2) {
+		Value v1 = new Value();
+		map_val(o1, v1);
+
+		Value v2 = new Value();
+		map_val(o2, v2);
+
+		byte[] key1 = v1.toByteArray();
+		byte[] key2 = v2.toByteArray();
+		
+		return keyComparator.compare(key1, key2);
+	}
+	
+	public long compareData(long o1, long o2) {
+		Value v1 = new Value();
+		map_val(o1, v1);
+
+		Value v2 = new Value();
+		map_val(o2, v2);
+
+		byte[] key1 = v1.toByteArray();
+		byte[] key2 = v2.toByteArray();
+		
+		return dataComparator.compare(key1, key2);
 	}
 
 	/**
@@ -685,7 +778,7 @@ public class Env extends NativeObject implements Closeable {
 			return secDb;
 		} 
 		else {
-			throw new MDBXException("Error associate databases");
+			throw new MDBXException("Error associating databases");
 		}
 	}
 
@@ -718,7 +811,7 @@ public class Env extends NativeObject implements Closeable {
 			return secDb;
 		} 
 		else {
-			throw new MDBXException("Error associate databases");
+			throw new MDBXException("Error associating databases");
 		}
 	}
 
@@ -732,7 +825,8 @@ public class Env extends NativeObject implements Closeable {
 			if (!succeeded)
 				try {
 					primary.close();
-				} catch (Throwable t) {
+				} 
+				catch (Throwable t) {
 					// Ignore it -- there is already an exception in flight.
 				}
 		}

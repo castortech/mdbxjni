@@ -48,8 +48,19 @@
       <version>${junit-version}</version>
       <scope>test</scope>
     </dependency>
+		<dependency>
+			<groupId>org.fluttercode.datafactory</groupId>
+			<artifactId>datafactory</artifactId>
+			<version>0.8</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.guava</groupId>
+		    <artifactId>guava</artifactId>
+		    <version>25.0-jre</version>
+		</dependency>
   </dependencies>
-
+	
   <build>
     <resources>
       <resource>
@@ -83,8 +94,7 @@
       <plugin>
         <groupId>org.fusesource.hawtjni</groupId>
         <artifactId>hawtjni-maven-plugin</artifactId>
-<!--         <version>${hawtjni-version}</version> -->
-        <version>1.17-SNAPSHOT</version>
+        <version>${hawtjni-version}</version>
         <executions>
           <execution>
             <goals>
@@ -97,7 +107,7 @@
           <skipAutogen>${skipAutogen}</skipAutogen>
           <name>mdbxjni</name>
           <windowsProjectName>mdbxjni</windowsProjectName>
-          <callbacks>false</callbacks>
+          <callbacks>true</callbacks>
           <windowsBuildTool>msbuild</windowsBuildTool>
           <windowsCustomProps>true</windowsCustomProps>
           <windowsToolsVersion>15.0</windowsToolsVersion>
@@ -182,4 +192,13 @@
       </plugin>
     </plugins>
   </build>
+  <dependencyManagement>
+  	<dependencies>
+  		<dependency>
+  			<groupId>org.fluttercode.datafactory</groupId>
+  			<artifactId>datafactory</artifactId>
+  			<version>0.8</version>
+  		</dependency>
+  	</dependencies>
+  </dependencyManagement>
 </project>

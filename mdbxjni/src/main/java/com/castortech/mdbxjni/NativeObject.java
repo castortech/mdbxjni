@@ -25,29 +25,27 @@ package com.castortech.mdbxjni;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 class NativeObject {
+	protected long self;
 
-    protected long self;
+	protected NativeObject(long self) {
+		this.self = self;
+		if (self == 0) {
+			throw new OutOfMemoryError("Failure allocating native heap memory");
+		}
+	}
 
-    protected NativeObject(long self) {
-        this.self = self;
-        if( self ==0 ) {
-            throw new OutOfMemoryError("Failure allocating native heap memory");
-        }
-    }
+	long pointer() {
+		checkAllocated();
+		return self;
+	}
 
-    long pointer() {
-        checkAllocated();
-        return self;
-    }
+	public boolean isAllocated() {
+		return self != 0;
+	}
 
-    public boolean isAllocated() {
-        return self !=0;
-    }
-
-    protected void checkAllocated() {
-        if( !isAllocated() ) {
-            throw new MDBXException("Native object has been freed.");
-        }
-    }
-
+	protected void checkAllocated() {
+		if (!isAllocated()) {
+			throw new MDBXException("Native object has been freed.");
+		}
+	}
 }

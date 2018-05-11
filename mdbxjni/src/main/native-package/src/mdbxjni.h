@@ -23,11 +23,13 @@
   /* configure based build.. we will use what it discovered about the platform */
   #include "config.h"
 #endif
+
 #if defined(_WIN32) || defined(_WIN64)
     /* Windows based build */
     #define _WIN32_WINNT 0x0501
     #include <windows.h>
 #endif
+
 #if !defined(HAVE_CONFIG_H) && (defined(_WIN32) || defined(_WIN64))
     #define HAVE_STDLIB_H 1
     #define HAVE_STRINGS_H 1
@@ -59,6 +61,8 @@ extern "C" {
 #endif
 
 void buffer_copy(const void *source, size_t source_pos, void *dest, size_t dest_pos, size_t length);
+
+void map_val(MDBX_val *in, MDBX_val *out);
 
 #ifdef __cplusplus
 } /* extern "C" */
