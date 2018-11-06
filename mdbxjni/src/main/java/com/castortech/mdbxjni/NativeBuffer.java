@@ -127,12 +127,14 @@ class NativeBuffer extends NativeObject {
 
 	public static void popMemoryPool() {
 		Pool next = CURRENT_POOL.get();
-		next.delete();
-		if (next.prev == null) {
-			CURRENT_POOL.remove();
-		}
-		else {
-			CURRENT_POOL.set(next.prev);
+		if (next != null) {  //could happen if push wasn't called or failed
+			next.delete();
+			if (next.prev == null) {
+				CURRENT_POOL.remove();
+			}
+			else {
+				CURRENT_POOL.set(next.prev);
+			}
 		}
 	}
 

@@ -34,10 +34,12 @@ import static org.fusesource.hawtjni.runtime.ArgFlag.*;
  */
 @JniClass
 public class JNI {
-	public static final Library LIBRARY = new Library("mdbxjni", JNI.class); //$NON-NLS-1$
+	public static final Library DB_LIB = new Library("mdbx", JNI.class); //$NON-NLS-1$
+	public static final Library JNI_LIB = new Library("mdbxjni", JNI.class); //$NON-NLS-1$
 
 	static {
-		JNI.LIBRARY.load();
+		JNI.DB_LIB.load();
+		JNI.JNI_LIB.load();
 		init();
 	}
 

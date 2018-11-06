@@ -20,10 +20,7 @@ package com.castortech.mdbxjni;
 
 import java.io.UnsupportedEncodingException;
 
-import org.fusesource.hawtjni.runtime.JniField;
-
 import static com.castortech.mdbxjni.JNI.*;
-import static org.fusesource.hawtjni.runtime.FieldFlag.CONSTANT;
 
 /**
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
