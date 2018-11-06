@@ -4,7 +4,7 @@ import org.junit.Test;
 
 public class NativeBufferTest {
   static {
-    Setup.setLmdbLibraryPath();
+    Setup.setLibraryPaths();
   }
 
   @Test

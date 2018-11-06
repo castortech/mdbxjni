@@ -7,15 +7,11 @@ import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
 import java.io.IOException;
-import java.util.concurrent.atomic.AtomicLong;
-
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.*;
 
 public class TransactionTest {
   static {
-    Setup.setLmdbLibraryPath();
+    Setup.setLibraryPaths();
   }
 
   @Rule

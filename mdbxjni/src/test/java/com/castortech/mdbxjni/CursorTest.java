@@ -13,7 +13,7 @@ import static org.junit.Assert.assertArrayEquals;
 
 public class CursorTest {
   static {
-    Setup.setLmdbLibraryPath();
+    Setup.setLibraryPaths();
   }
 
   @Rule

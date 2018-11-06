@@ -37,7 +37,7 @@ import static com.castortech.mdbxjni.Constants.*;
  */
 public class EnvTest {
   static {
-    Setup.setLmdbLibraryPath();
+    Setup.setLibraryPaths();
   }
 
   @Rule

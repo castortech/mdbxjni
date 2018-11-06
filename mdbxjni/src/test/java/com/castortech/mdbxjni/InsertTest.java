@@ -42,8 +42,11 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings("nls")
 public class InsertTest {
+	private static int I_CNT = 10;
+	private static int J_CNT = 10;
+	
 	static {
-		Setup.setLmdbLibraryPath();
+		Setup.setLibraryPaths();
 	}
 
 	Env env;
@@ -109,11 +112,11 @@ public class InsertTest {
 //	@Test
 	public void uuidRandom_100Bytes() {
 		System.out.println("Starting uuidRandom_100Bytes");
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 		      UUID uuid = UUID.randomUUID();
 ///					System.out.println("\t putting " + uuid);
 					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), new byte[100]);
@@ -131,11 +134,11 @@ public class InsertTest {
 		System.out.println("Starting longSequential_100Bytes");
 		AtomicLong along = new AtomicLong();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					db.put(tx, longToBytes(l), new byte[100]);
         }
@@ -150,11 +153,11 @@ public class InsertTest {
 //	@Test
 	public void longRandom_100Bytes() {
 		System.out.println("Starting longRandom_100Bytes");
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = new Random().nextLong();
 					db.put(tx, longToBytes(l), new byte[100]);
         }
@@ -171,11 +174,11 @@ public class InsertTest {
 		System.out.println("Starting longSequential_4kBytes");
 		AtomicLong along = new AtomicLong();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					db.put(tx, longToBytes(l), new byte[4096]);
         }
@@ -192,11 +195,11 @@ public class InsertTest {
 		System.out.println("Starting longSequential_3kBytes");
 		AtomicLong along = new AtomicLong();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					db.put(tx, longToBytes(l), new byte[3072]);
         }
@@ -211,11 +214,11 @@ public class InsertTest {
 //	@Test
 	public void longRandom_4kBytes() {
 		System.out.println("Starting longRandom_4kBytes");
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = new Random().nextLong();
 					db.put(tx, longToBytes(l), new byte[4096]);
         }
@@ -230,11 +233,11 @@ public class InsertTest {
 //	@Test
 	public void longRandom_3kBytes() {
 		System.out.println("Starting longRandom_3kBytes");
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = new Random().nextLong();
 					db.put(tx, longToBytes(l), new byte[3072]);
         }
@@ -253,11 +256,11 @@ public class InsertTest {
 		Random random = new Random();
 		long start = System.nanoTime();
 		
-		for (int i=0; i<500; i++) {
+		for (int i=0; i < I_CNT/2; i++) {
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
 				Map<Long, byte[]> entries = new HashMap<>();
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					byte[] b = new byte[3072];
 					random.nextBytes(b);
@@ -276,10 +279,10 @@ public class InsertTest {
 		
 		along = new AtomicLong();
 		start = System.nanoTime();
-		for (int i=0; i<500; i++) {
+		for (int i=0; i < I_CNT/2; i++) {
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					byte[] b = new byte[3072];
 					random.nextBytes(b);
@@ -299,10 +302,10 @@ public class InsertTest {
 		AtomicLong along = new AtomicLong();
 		Random random = new Random();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 			try (Transaction tx = env.createWriteTransaction()) {
 				Map<Long, byte[]> entries = new HashMap<>();
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					byte[] b = new byte[3072];
 					random.nextBytes(b);
@@ -325,10 +328,10 @@ public class InsertTest {
 		AtomicLong along = new AtomicLong();
 		Random random = new Random();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 			try (Transaction tx = env.createWriteTransaction()) {
 				Map<Long, byte[]> entries = new HashMap<>();
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					byte[] b = new byte[3072];
 					random.nextBytes(b);
@@ -351,10 +354,10 @@ public class InsertTest {
 		AtomicLong along = new AtomicLong();
 		Random random = new Random();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 			try (Transaction tx = env.createWriteTransaction()) {
 				Map<Long, byte[]> entries = new HashMap<>();
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					byte[] b = new byte[3072];
 					random.nextBytes(b);
@@ -378,10 +381,10 @@ public class InsertTest {
 		System.out.println("Starting longRandom_3kBytes_withGet");
 		Random random = new Random();
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 			try (Transaction tx = env.createWriteTransaction()) {
 				Map<Long, byte[]> entries = new HashMap<>();
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = new Random().nextLong();
 					byte[] b = new byte[3072];
 					random.nextBytes(b);
@@ -406,12 +409,12 @@ public class InsertTest {
 		AtomicLong along = new AtomicLong();
 		long totSize = 0;
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 			long start = System.nanoTime();
 			int sz = 0;
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
 					sz = 2 + (i*100) + (j*1);
 					db.put(tx, longToBytes(l), new byte[sz]);
@@ -434,12 +437,12 @@ public class InsertTest {
 		long l = 200L;
 		byte[] longToBytes = longToBytes(l);
 		
-		for (int i=0; i<1000; i++) {
+		for (int i=0; i < I_CNT; i++) {
 			long start = System.nanoTime();
 			int sz = 0;
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < 100; j++) {
+				for (int j= 0; j < J_CNT; j++) {
 					sz = 32 + (i*800) + (j*8);
 					db.put(tx, longToBytes, new byte[sz]);
         }
@@ -583,5 +586,5 @@ public class InsertTest {
     ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
     buffer.putLong(x);
     return buffer.array();
-}	
+	}	
 }

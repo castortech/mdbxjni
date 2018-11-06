@@ -41,7 +41,7 @@ import static com.castortech.mdbxjni.Constants.*;
  */
 public class SecondaryCursorTest {
 	static {
-		Setup.setLmdbLibraryPath();
+		Setup.setLibraryPaths();
 	}
 
 	Env env;

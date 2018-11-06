@@ -38,7 +38,7 @@ import static com.castortech.mdbxjni.Constants.*;
  */
 public class EnvTest extends TestCase {
   static {
-    Setup.setLmdbLibraryPath();
+    Setup.setLibraryPaths();
   }
 
 	static public void assertEquals(byte[] arg1, byte[] arg2) {

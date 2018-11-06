@@ -22,7 +22,7 @@ public class DatabaseTest {
   private IvProvider ivProvider;
 
 	static {
-    Setup.setLmdbLibraryPath();
+    Setup.setLibraryPaths();
   }
 
   @Rule

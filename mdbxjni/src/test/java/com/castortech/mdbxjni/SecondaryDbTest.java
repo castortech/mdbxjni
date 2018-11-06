@@ -40,7 +40,7 @@ import static com.castortech.mdbxjni.Constants.*;
  */
 public class SecondaryDbTest {
 	static {
-		Setup.setLmdbLibraryPath();
+		Setup.setLibraryPaths();
 	}
 
 	@Rule
