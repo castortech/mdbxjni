@@ -26,10 +26,10 @@ You just need to add the following dependency and repository to your Maven `pom.
 
     <dependencies>
       <dependency>
-         <groupId>org.fusesource.lmdbjni</groupId>
-	 <artifactId>lmdbjni-linux64</artifactId>
-	 <version>99-master-SNAPSHOT</version>
-	</dependency>
+        <groupId>org.fusesource.lmdbjni</groupId>
+        <artifactId>lmdbjni-linux64</artifactId>
+        <version>99-master-SNAPSHOT</version>
+      </dependency>
     </dependencies>
     ...
     <repositories>
