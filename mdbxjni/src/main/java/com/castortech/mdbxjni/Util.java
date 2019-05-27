@@ -42,13 +42,15 @@ class Util {
 	public static String string(long ptr) {
 		if (ptr == 0)
 			return null;
-		return new String(NativeBuffer.create(ptr, strlen(ptr))
-				.toByteArray(), Charset.defaultCharset());
+		return new String(NativeBuffer.create(ptr, strlen(ptr)).toByteArray(), Charset.defaultCharset());
 	}
 
-	public static void checkErrorCode(int rc) {
+	public static void checkErrorCode(Env env, int rc) {
 		if (rc != 0) {
 			String msg = string(mdbx_strerror(rc));
+			if (env != null) {
+				System.err.println("MDBX Exception. Env:" + env.toString());
+			}
 			throw new MDBXException(msg, rc);
 		}
 	}

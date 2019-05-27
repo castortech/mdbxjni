@@ -59,7 +59,7 @@ public class Transaction extends NativeObject implements Closeable {
 	 * must be called before a reset transaction may be used again.
 	 */
 	public void renew() {
-		checkErrorCode(mdbx_txn_renew(pointer()));
+		checkErrorCode(env, mdbx_txn_renew(pointer()));
 	}
 
 	/**
@@ -77,7 +77,7 @@ public class Transaction extends NativeObject implements Closeable {
 	public void commit() {
 		if (self != 0) {
 			// System.err.println("JNI committing transaction " + self);
-			checkErrorCode(mdbx_txn_commit(self));
+			checkErrorCode(env, mdbx_txn_commit(self));
 			self = 0;
 		}
 	}

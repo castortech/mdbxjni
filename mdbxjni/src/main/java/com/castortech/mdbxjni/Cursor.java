@@ -72,7 +72,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 *          transaction handle
 	 */
 	public void renew(Transaction tx) {
-		checkErrorCode(mdbx_cursor_renew(tx.pointer(), pointer()));
+		checkErrorCode(env, mdbx_cursor_renew(tx.pointer(), pointer()));
 	}
 
 	/**
@@ -96,7 +96,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		if (rc == MDBX_NOTFOUND) {
 			return null;
 		}
-		checkErrorCode(rc);
+		checkErrorCode(env, rc);
 		return new Entry(key.toByteArray(), value.toByteArray());
 	}
 
@@ -110,7 +110,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 			if (rc == MDBX_NOTFOUND) {
 				return null;
 			}
-			checkErrorCode(rc);
+			checkErrorCode(env, rc);
 			return new Entry(keyValue.toByteArray(), value.toByteArray());
 		}
 		finally {
@@ -131,7 +131,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 			if (rc == MDBX_NOTFOUND) {
 				return null;
 			}
-			checkErrorCode(rc);
+			checkErrorCode(env, rc);
 			return new Entry(keyValue.toByteArray(), valValue.toByteArray());
 		}
 		finally {
@@ -154,7 +154,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 			if (rc == MDBX_NOTFOUND) {
 				return OperationStatus.NOTFOUND;
 			}
-			checkErrorCode(rc);
+			checkErrorCode(env, rc);
 			key.setData(keyValue.toByteArray());
 			value.setData(valValue.toByteArray());
 			return OperationStatus.SUCCESS;
@@ -262,7 +262,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		}
 		else {
 			// If the put failed, throw an exception..
-			checkErrorCode(rc);
+			checkErrorCode(env, rc);
 
 			if (!valueSlices.isEmpty()) {
 				db.deleteSecondaries(tx, keySlice, valueSlices);
@@ -289,7 +289,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		}
 
 		int rc = mdbx_cursor_del(pointer(), 0);
-		checkErrorCode(rc);
+		checkErrorCode(env, rc);
 
 		if (hasSec) {
 			for (SecondaryDatabase secDb : db.getSecondaries()) {
@@ -311,7 +311,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 * May only be called if the database was opened with {@link org.fusesource.lmdbjni.Constants#DUPSORT}.
 	 */
 	public void deleteIncludingDups() {
-		checkErrorCode(mdbx_cursor_del(pointer(), MDBX_NODUPDATA));
+		checkErrorCode(env, mdbx_cursor_del(pointer(), MDBX_NODUPDATA));
 	}
 
 	/**
@@ -326,7 +326,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 */
 	public long count() {
 		long rc[] = new long[1];
-		checkErrorCode(mdbx_cursor_count(pointer(), rc));
+		checkErrorCode(env, mdbx_cursor_count(pointer(), rc));
 		return rc[0];
 	}
 

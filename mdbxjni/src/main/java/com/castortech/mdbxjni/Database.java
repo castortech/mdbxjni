@@ -185,7 +185,7 @@ public class Database extends NativeObject implements Closeable {
 		if (rc == MDBX_NOTFOUND) {
 			return null;
 		}
-		checkErrorCode(rc);
+		checkErrorCode(env, rc);
 		return value.toByteArray();
 	}
 
@@ -464,7 +464,7 @@ public class Database extends NativeObject implements Closeable {
 		if (rc == MDBX_NOTFOUND) {
 			return false;
 		}
-		checkErrorCode(rc);
+		checkErrorCode(env, rc);
 		deleteSecondaries(tx, keySlice, valueSlices);
 
 		return true;
@@ -509,7 +509,7 @@ public class Database extends NativeObject implements Closeable {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 
 		long cursor[] = new long[1];
-		checkErrorCode(mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+		checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
 		return new Cursor(env, cursor[0], tx, this);
 	}
 
@@ -517,7 +517,7 @@ public class Database extends NativeObject implements Closeable {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 
 		long cursor[] = new long[1];
-		checkErrorCode(mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+		checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
 		return new SecondaryCursor(env, cursor[0], tx, this);
 	}
 
@@ -533,7 +533,7 @@ public class Database extends NativeObject implements Closeable {
 
 	public int getFlags(Transaction tx) {
 		long[] flags = new long[1];
-		checkErrorCode(mdbx_dbi_flags(tx.pointer(), pointer(), flags));
+		checkErrorCode(env, mdbx_dbi_flags(tx.pointer(), pointer(), flags));
 		return (int) flags[0];
 	}
 

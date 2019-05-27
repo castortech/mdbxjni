@@ -165,201 +165,203 @@ public class JNI {
 	// Environment Flags
 	//====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOSUBDIR;
+	public static int MDBX_NOSUBDIR;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOSYNC;
+	public static int MDBX_NOSYNC;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_RDONLY;
+	public static int MDBX_RDONLY;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOMETASYNC;
+	public static int MDBX_NOMETASYNC;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_WRITEMAP;
+	public static int MDBX_WRITEMAP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_MAPASYNC;
+	public static int MDBX_MAPASYNC;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOTLS;
+	public static int MDBX_NOTLS;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NORDAHEAD;
+	public static int MDBX_EXCLUSIVE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOMEMINIT;
+	public static int MDBX_NORDAHEAD;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_COALESCE;
+	public static int MDBX_NOMEMINIT;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_LIFORECLAIM;
+	public static int MDBX_COALESCE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_UTTERLY_NOSYNC;
+	public static int MDBX_LIFORECLAIM;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PAGEPERTURB;
+	public static int MDBX_UTTERLY_NOSYNC;
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_PAGEPERTURB;
 
 	// ====================================================//
 	// Database Flags
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_REVERSEKEY;
+	public static int MDBX_REVERSEKEY;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_DUPSORT;
+	public static int MDBX_DUPSORT;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_INTEGERKEY;
+	public static int MDBX_INTEGERKEY;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_DUPFIXED;
+	public static int MDBX_DUPFIXED;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_INTEGERDUP;
+	public static int MDBX_INTEGERDUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_REVERSEDUP;
+	public static int MDBX_REVERSEDUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_CREATE;
+	public static int MDBX_CREATE;
 
 	// ====================================================//
 	// Transaction Flags
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_TRYTXN;
+	public static int MDBX_TRYTXN;
     
 	// ====================================================//
 	// Copy Flags
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_CP_COMPACT;
+	public static int MDBX_CP_COMPACT;
 
 	// ====================================================//
 	// Write Flags
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOOVERWRITE;
+	public static int MDBX_NOOVERWRITE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NODUPDATA;
+	public static int MDBX_NODUPDATA;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_CURRENT;
+	public static int MDBX_CURRENT;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_RESERVE;
+	public static int MDBX_RESERVE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_APPEND;
+	public static int MDBX_APPEND;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_APPENDDUP;
+	public static int MDBX_APPENDDUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_MULTIPLE;
+	public static int MDBX_MULTIPLE;
 
 	// ====================================================//
 	// enum MDBX_cursor_op:
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_FIRST;
+	public static int MDBX_FIRST;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_FIRST_DUP;
+	public static int MDBX_FIRST_DUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_GET_BOTH;
+	public static int MDBX_GET_BOTH;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_GET_BOTH_RANGE;
+	public static int MDBX_GET_BOTH_RANGE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_GET_CURRENT;
+	public static int MDBX_GET_CURRENT;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_GET_MULTIPLE;
+	public static int MDBX_GET_MULTIPLE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_LAST;
+	public static int MDBX_LAST;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_LAST_DUP;
+	public static int MDBX_LAST_DUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NEXT;
+	public static int MDBX_NEXT;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NEXT_DUP;
+	public static int MDBX_NEXT_DUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NEXT_MULTIPLE;
+	public static int MDBX_NEXT_MULTIPLE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NEXT_NODUP;
+	public static int MDBX_NEXT_NODUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PREV;
+	public static int MDBX_PREV;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PREV_DUP;
+	public static int MDBX_PREV_DUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PREV_NODUP;
+	public static int MDBX_PREV_NODUP;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_SET;
+	public static int MDBX_SET;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_SET_KEY;
+	public static int MDBX_SET_KEY;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_SET_RANGE;
+	public static int MDBX_SET_RANGE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PREV_MULTIPLE;
+	public static int MDBX_PREV_MULTIPLE;
 
 	// ====================================================//
 	// Return Codes
 	// ====================================================//
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EINVAL;
+	public static int MDBX_EINVAL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EACCESS;
+	public static int MDBX_EACCESS;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_ENODATA;
+	public static int MDBX_ENODATA;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_ENOMEM;
+	public static int MDBX_ENOMEM;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EROFS;
+	public static int MDBX_EROFS;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_ENOSYS;
+	public static int MDBX_ENOSYS;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EIO;
+	public static int MDBX_EIO;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EPERM;
+	public static int MDBX_EPERM;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EINTR;
+	public static int MDBX_EINTR;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_SUCCESS;
+	public static int MDBX_SUCCESS;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_KEYEXIST;
+	public static int MDBX_KEYEXIST;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_NOTFOUND;
+	public static int MDBX_NOTFOUND;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PAGE_NOTFOUND;
+	public static int MDBX_PAGE_NOTFOUND;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_CORRUPTED;
+	public static int MDBX_CORRUPTED;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PANIC;
+	public static int MDBX_PANIC;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_VERSION_MISMATCH;
+	public static int MDBX_VERSION_MISMATCH;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_INVALID;
+	public static int MDBX_INVALID;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_MAP_FULL;
+	public static int MDBX_MAP_FULL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_DBS_FULL;
+	public static int MDBX_DBS_FULL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_READERS_FULL;
+	public static int MDBX_READERS_FULL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_TXN_FULL;
+	public static int MDBX_TXN_FULL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_CURSOR_FULL;
+	public static int MDBX_CURSOR_FULL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PAGE_FULL;
+	public static int MDBX_PAGE_FULL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_MAP_RESIZED;
+	public static int MDBX_MAP_RESIZED;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_INCOMPATIBLE;
+	public static int MDBX_INCOMPATIBLE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_BAD_RSLOT;
+	public static int MDBX_BAD_RSLOT;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_BAD_TXN;
+	public static int MDBX_BAD_TXN;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_BAD_VALSIZE;
+	public static int MDBX_BAD_VALSIZE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_BAD_DBI;
+	public static int MDBX_BAD_DBI;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_PROBLEM;
+	public static int MDBX_PROBLEM;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_BUSY;
+	public static int MDBX_BUSY;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_LAST_ERRCODE;
+	public static int MDBX_LAST_ERRCODE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EMULTIVAL;
+	public static int MDBX_EMULTIVAL;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EBADSIGN;
+	public static int MDBX_EBADSIGN;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_WANNA_RECOVERY;
+	public static int MDBX_WANNA_RECOVERY;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_EKEYMISMATCH;
+	public static int MDBX_EKEYMISMATCH;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_TOO_LARGE;
+	public static int MDBX_TOO_LARGE;
 	@JniField(flags = { CONSTANT })
-	static public int MDBX_THREAD_MISMATCH;
+	public static int MDBX_THREAD_MISMATCH;
     
 //	@JniClass(flags = {STRUCT})
 //	public static class MiGeo {
@@ -388,9 +390,8 @@ public class JNI {
 //	}
     
 	@JniClass(flags = {STRUCT, TYPEDEF})
-	static public class MDBX_envinfo {
+	public static class MDBX_envinfo {
 //		public MiGeo mi_geo = new MiGeo(); 
-
 		@JniField(accessor="mi_geo.lower", cast = "uint64_t")
 		public long mi_geo_lower;		/* lower limit for datafile size */
 		@JniField(accessor="mi_geo.upper", cast = "uint64_t")
@@ -520,14 +521,6 @@ public class JNI {
 			@JniArg(cast = "mode_t") int mode);
 
 	@JniMethod
-	public static final native int mdbx_env_open_ex(
-			@JniArg(cast = "MDBX_env *") long env,
-			@JniArg(cast = "const char *") String path,
-			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "mode_t") int mode,
-			@JniArg(cast = "int *") int[] exclusive);
-
-	@JniMethod
 	public static final native int mdbx_env_copy(
 			@JniArg(cast = "MDBX_env *") long env,
 			@JniArg(cast = "const char *") String path,
@@ -614,10 +607,6 @@ public class JNI {
   @JniMethod
   public static final native int mdbx_env_get_maxkeysize(
   		@JniArg(cast = "MDBX_env *") long env);
-
-  @JniMethod
-  public static final native int mdbx_get_maxkeysize(
-  		@JniArg(cast = "size_t") long pagesize);
 
   @JniMethod
   public static final native int mdbx_env_set_userctx(

@@ -64,9 +64,9 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	private static long create() {
-		long env_ptr[] = new long[1];
-		checkErrorCode(mdbx_env_create(env_ptr));
-		return env_ptr[0];
+		long[] envPtr = new long[1];
+		checkErrorCode(null, mdbx_env_create(envPtr));
+		return envPtr[0];
 	}
 
 	/**
@@ -205,7 +205,7 @@ public class Env extends NativeObject implements Closeable {
 		if (rc != 0) {
 			close();
 		}
-		checkErrorCode(rc);
+		checkErrorCode(this, rc);
 	}
 
 	public void open(String path, EnvConfig config) {
@@ -280,7 +280,7 @@ public class Env extends NativeObject implements Closeable {
 		if (rc != 0) {
 			close();
 		}
-		checkErrorCode(rc);
+		checkErrorCode(this, rc);
 	}
 
 	@Override
@@ -319,7 +319,7 @@ public class Env extends NativeObject implements Closeable {
 
 	public void copy(String path, int flags) {
 		checkArgNotNull(path, "path"); //$NON-NLS-1$
-		checkErrorCode(mdbx_env_copy(pointer(), path, flags));
+		checkErrorCode(this, mdbx_env_copy(pointer(), path, flags));
 	}
 
 	/**
@@ -340,7 +340,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            asynchronous.
 	 */
 	public void sync(boolean force) {
-		checkErrorCode(mdbx_env_sync(pointer(), force ? 1 : 0));
+		checkErrorCode(this, mdbx_env_sync(pointer(), force ? 1 : 0));
 	}
 
 	/**
@@ -373,7 +373,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            The size in bytes
 	 */
 	public void setMapSize(long size) {
-		checkErrorCode(mdbx_env_set_mapsize(pointer(), size));
+		checkErrorCode(this, mdbx_env_set_mapsize(pointer(), size));
 	}
 
 	/**
@@ -391,12 +391,12 @@ public class Env extends NativeObject implements Closeable {
 	 *            The maximum number of databases
 	 */
 	public void setMaxDbs(long size) {
-		checkErrorCode(mdbx_env_set_maxdbs(pointer(), size));
+		checkErrorCode(this, mdbx_env_set_maxdbs(pointer(), size));
 	}
 
 	public long getMaxReaders() {
-		long rc[] = new long[1];
-		checkErrorCode(mdbx_env_get_maxreaders(pointer(), rc));
+		long[] rc = new long[1];
+		checkErrorCode(this, mdbx_env_get_maxreaders(pointer(), rc));
 		return rc[0];
 	}
 
@@ -418,7 +418,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            The maximum number of reader lock table slots
 	 */
 	public void setMaxReaders(long size) {
-		checkErrorCode(mdbx_env_set_maxreaders(pointer(), size));
+		checkErrorCode(this, mdbx_env_set_maxreaders(pointer(), size));
 	}
 
 	public long getMaxKeySize() {
@@ -427,16 +427,16 @@ public class Env extends NativeObject implements Closeable {
 
 	public int getFlags() {
 		long[] flags = new long[1];
-		checkErrorCode(mdbx_env_get_flags(pointer(), flags));
+		checkErrorCode(this, mdbx_env_get_flags(pointer(), flags));
 		return (int) flags[0];
 	}
 
 	public void addFlags(int flags) {
-		checkErrorCode(mdbx_env_set_flags(pointer(), flags, 1));
+		checkErrorCode(this, mdbx_env_set_flags(pointer(), flags, 1));
 	}
 
 	public void removeFlags(int flags) {
-		checkErrorCode(mdbx_env_set_flags(pointer(), flags, 0));
+		checkErrorCode(this, mdbx_env_set_flags(pointer(), flags, 0));
 	}
 
 	/**
@@ -460,9 +460,8 @@ public class Env extends NativeObject implements Closeable {
 	public float percentageFull() {
 		Stat stat2 = stat();
 		EnvInfo info2 = info();
-		long nbr_pages = info2.getMapSize() / stat2.ms_psize;
-		float percent_used = (info2.getLastPgNo() / (float) nbr_pages) * 100;
-		return percent_used;
+		long nbrPages = info2.getMapSize() / stat2.ms_psize;
+		return (info2.getLastPgNo() / (float)nbrPages) * 100;
 	}
 
 	public Transaction createTransaction() {
@@ -531,11 +530,11 @@ public class Env extends NativeObject implements Closeable {
 	 * @note Cursors may not span transactions.
 	 */
 	public Transaction createTransaction(Transaction parent, boolean readOnly) {
-		long txpointer[] = new long[1];
+		long[] txpointer = new long[1];
 		// System.err.println("JNI creating transaction, parent: " + (parent == null ?
 		// null :parent.self) + ",id:" + self);
 
-		checkErrorCode(mdbx_txn_begin(pointer(), 
+		checkErrorCode(this, mdbx_txn_begin(pointer(), 
 				parent == null ? 0 : parent.pointer(), readOnly ? MDBX_RDONLY : 0, txpointer));
 		return new Transaction(this, txpointer[0]);
 	}
@@ -609,8 +608,8 @@ public class Env extends NativeObject implements Closeable {
 
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		// checkArgNotNull(name, "name");
-		long dbi[] = new long[1];
-		checkErrorCode(mdbx_dbi_open(tx.pointer(), name, flags, dbi));
+		long[] dbi = new long[1];
+		checkErrorCode(this, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
 		return new Database(this, dbi[0], name);
 	}
 
@@ -700,7 +699,7 @@ public class Env extends NativeObject implements Closeable {
 		
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		// checkArgNotNull(name, "name");
-		long dbi[] = new long[1];
+		long[] dbi = new long[1];
 		
 		if (keyComp != null) {
 			keyCmpCallback = new Callback(this, "compareKey", 2); //$NON-NLS-1$
@@ -714,7 +713,7 @@ public class Env extends NativeObject implements Closeable {
 			dataComparator =  dataComp;
 		}
 		
-		checkErrorCode(mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
+		checkErrorCode(this, mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
 		return new Database(this, dbi[0], name);
 	}
 	
@@ -769,8 +768,8 @@ public class Env extends NativeObject implements Closeable {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		checkArgNotNull(primary, "primary"); //$NON-NLS-1$
 		// checkArgNotNull(name, "name");
-		long dbi[] = new long[1];
-		checkErrorCode(mdbx_dbi_open(tx.pointer(), name, flags, dbi));
+		long[] dbi = new long[1];
+		checkErrorCode(this, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
 		SecondaryDbConfig config = new SecondaryDbConfig();
 		SecondaryDatabase secDb = new SecondaryDatabase(this, primary, dbi[0], name, config);
 
@@ -803,8 +802,8 @@ public class Env extends NativeObject implements Closeable {
 		checkArgNotNull(config, "config"); //$NON-NLS-1$
 
 		int flags = setFlags(config);
-		long dbi[] = new long[1];
-		checkErrorCode(mdbx_dbi_open(tx.pointer(), name, flags, dbi));
+		long[] dbi = new long[1];
+		checkErrorCode(this, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
 		SecondaryDatabase secDb = new SecondaryDatabase(this, primary, dbi[0], name, config);
 
 		if (associateDbs(tx, primary, secDb)) {

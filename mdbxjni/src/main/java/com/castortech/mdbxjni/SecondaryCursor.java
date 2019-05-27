@@ -35,7 +35,7 @@ public class SecondaryCursor extends Cursor {
 			if (rc == MDBX_NOTFOUND) {
 				return OperationStatus.NOTFOUND;
 			}
-			checkErrorCode(rc);
+			checkErrorCode(null, rc);
 
 			key.setData(keyValue.toByteArray());
 			pKey.setData(pkeyValue.toByteArray());
