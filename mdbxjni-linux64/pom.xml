@@ -71,11 +71,36 @@
             <classifier>native-src</classifier>
             <type>zip</type>
           </nativeSrcDependency>
-          <configureArgs>
-            <arg>--with-mdbx=${env.MDBX_HOME}</arg>
-          </configureArgs>
+          <packageDirectory>${basedir}/../mdbxjni/target/generated-sources/hawtjni/native-package</packageDirectory>
         </configuration>
       </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-dll</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/linux64</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>${basedir}/../../libmdbx/</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>libmdbx.so</include>
+									</includes>	
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
     </plugins>
   </build>
 </project>
