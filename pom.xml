@@ -31,7 +31,7 @@
     <forge-project-id>mdbxjni</forge-project-id>
     <forge-project-id-uc>MDBXJNI</forge-project-id-uc>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hawtjni-version>1.17-SNAPSHOT</hawtjni-version>
+    <hawtjni-version>1.17</hawtjni-version>
     <java.version>1.8</java.version>
     <junit-version>4.10</junit-version>
     <mvn-compiler-version>3.7.0</mvn-compiler-version>
@@ -284,14 +284,14 @@
         <module>mdbxjni-win64</module>
         <module>mdbxjni-all</module>
       </modules>
-    </profile>    
+    </profile>
 
     <profile>
       <id>all</id>
       <modules>
         <module>mdbxjni-all</module>
       </modules>
-    </profile>    
+    </profile>
     <profile>
       <id>osx64</id>
       <modules>
