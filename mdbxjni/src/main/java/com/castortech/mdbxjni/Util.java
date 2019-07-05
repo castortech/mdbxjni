@@ -49,7 +49,7 @@ class Util {
 		if (rc != 0) {
 			String msg = string(mdbx_strerror(rc));
 			if (env != null) {
-				System.err.println("MDBX Exception. Env:" + env.toString());
+				System.err.println("MDBX Exception. Env:" + env.info().toString());
 			}
 			throw new MDBXException(msg, rc);
 		}
