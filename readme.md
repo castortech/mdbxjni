@@ -13,7 +13,7 @@ The prebuilt binary jars only work on 64 bit OS X or Linux machines.
 
 ### License
 
-This project is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) but the binary jar it produces also includes the the `mdbx` library of the OpenLDAP project which is licensed under the [The OpenLDAP Public License](http://www.openldap.org/software/release/license.html).
+This project is licensed under the [Apache License, Version 2.0](http://www.apache.org/licenses/LICENSE-2.0.html) but the binary jar it produces also includes the `mdbx` library which is licensed under the [The OpenLDAP Public License](http://www.openldap.org/software/release/license.html).
 
 ### Downloading the Jar
 
