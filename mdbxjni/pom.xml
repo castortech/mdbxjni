@@ -102,7 +102,7 @@
               <goal>package-source</goal>
             </goals>
           </execution>
-        </executions>        
+        </executions>
         <configuration>
           <skipAutogen>${skipAutogen}</skipAutogen>
           <name>mdbxjni</name>
