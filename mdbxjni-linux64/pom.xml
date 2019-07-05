@@ -71,7 +71,9 @@
             <classifier>native-src</classifier>
             <type>zip</type>
           </nativeSrcDependency>
-          <packageDirectory>${basedir}/../mdbxjni/target/generated-sources/hawtjni/native-package</packageDirectory>
+          <configureArgs>
+            <arg>--with-mdbx=${env.MDBX_HOME}</arg>
+          </configureArgs>
         </configuration>
       </plugin>
 			<plugin>
