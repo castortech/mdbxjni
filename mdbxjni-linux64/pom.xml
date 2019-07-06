@@ -37,6 +37,17 @@
       <artifactId>mdbxjni</artifactId>
       <version>99-master-SNAPSHOT</version>
     </dependency>
+		<dependency>
+			<groupId>org.fluttercode.datafactory</groupId>
+			<artifactId>datafactory</artifactId>
+			<version>0.8</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+		    <groupId>com.google.guava</groupId>
+		    <artifactId>guava</artifactId>
+		    <version>25.0-jre</version>
+		</dependency>
   </dependencies>
 
   <build>
