@@ -25,7 +25,7 @@ AC_DEFUN([CUSTOM_M4_SETUP],
       CFLAGS="$CFLAGS -I${withval}"
       CXXFLAGS="$CXXFLAGS -I${withval}"
       AC_SUBST(CXXFLAGS)
-      LDFLAGS="$LDFLAGS -llibmdbx -L${withval}"
+      LDFLAGS="$LDFLAGS -lmdbx -L${withval}"
       AC_SUBST(LDFLAGS)
     ]
   )
