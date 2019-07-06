@@ -178,8 +178,8 @@ public class JNI {
 	public static int MDBX_MAPASYNC;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_NOTLS;
-	@JniField(flags = { CONSTANT })
-	public static int MDBX_EXCLUSIVE;
+//	@JniField(flags = { CONSTANT })
+//	public static int MDBX_EXCLUSIVE;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_NORDAHEAD;
 	@JniField(flags = { CONSTANT })
