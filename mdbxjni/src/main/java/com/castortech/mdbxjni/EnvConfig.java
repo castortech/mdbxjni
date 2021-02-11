@@ -1,6 +1,6 @@
 package com.castortech.mdbxjni;
 
-public class EnvConfig {
+public class EnvConfig implements Cloneable {
 	private boolean noSubDir = false;
 	private boolean noSync = false;
 	private boolean readOnly = false;
