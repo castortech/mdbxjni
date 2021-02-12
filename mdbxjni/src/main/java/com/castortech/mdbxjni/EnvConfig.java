@@ -14,7 +14,7 @@ public class EnvConfig implements Cloneable {
 	private boolean lifoReclaim = false;
 	private boolean utterlyNoSync = false;
 	private boolean pagePerturb = false;
-	private int mode = 644;
+	private int mode = 0644;  //this is octal
 	private long maxReaders = -1;
 	private long maxDbs = -1;
 	private long mapSize = -1;
