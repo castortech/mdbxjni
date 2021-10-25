@@ -23,15 +23,15 @@
   <artifactId>mdbxjni-project</artifactId>
   <version>99-master-SNAPSHOT</version>
   <packaging>pom</packaging>
-  
+
   <name>${project.artifactId}</name>
   <description>mdbxjni is a jni library for accessing mdbx.</description>
-  
+
   <properties>
     <forge-project-id>mdbxjni</forge-project-id>
     <forge-project-id-uc>MDBXJNI</forge-project-id-uc>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hawtjni-version>1.17</hawtjni-version>
+    <hawtjni-version>1.17-SNAPSHOT</hawtjni-version>
     <java.version>1.8</java.version>
     <junit-version>4.13.1</junit-version>
     <mvn-compiler-version>3.7.0</mvn-compiler-version>
@@ -40,11 +40,11 @@
     <mvn-jar-version>3.1.0</mvn-jar-version>
     <surefire-version>2.21.0</surefire-version>
   </properties>
-  
+
   <modules>
     <module>mdbxjni</module>
   </modules>
-  
+
   <url>http://${forge-project-id}.fusesource.org</url>
   <inceptionYear>2009</inceptionYear>
 
@@ -52,7 +52,7 @@
     <system>github</system>
     <url>https://github.com/castortech/mdbxjni/issues</url>
   </issueManagement>
-  
+
   <licenses>
     <license>
       <name>The Apache Software License, Version 2.0</name>
@@ -60,7 +60,7 @@
       <distribution>repo</distribution>
     </license>
   </licenses>
-  
+
   <scm>
     <connection>scm:git:git://github.com/castortech/mdbxjni.git</connection>
     <developerConnection>scm:git:git@github.com:castortech/mdbxjni.git</developerConnection>
@@ -74,7 +74,7 @@
       <timezone>GMT-5</timezone>
     </developer>
   </developers>
-  
+
   <dependencies>
     <dependency>
       <groupId>junit</groupId>
@@ -117,8 +117,8 @@
             <include>**/*Test.java</include>
           </includes>
         </configuration>
-      </plugin>      
-      
+      </plugin>
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-site-plugin</artifactId>
@@ -139,7 +139,7 @@
                 <author>true</author>
                 <keywords>true</keywords>
                 <old>true</old>
-          
+
                 <doctitle>${project.name} API Reference (${project.version})</doctitle>
                 <windowtitle>${project.name} API Reference (${project.version})</windowtitle>
                 <links>
@@ -167,7 +167,7 @@
             <version>1.14</version>
           </dependency>
         </dependencies>
-        
+
         <configuration>
           <docfilessubdirs>true</docfilessubdirs>
           <useStandardDocletOptions>true</useStandardDocletOptions>
@@ -177,7 +177,7 @@
           <version>true</version>
           <author>true</author>
           <keywords>true</keywords>
-          
+
           <doctitle>${project.name} API Reference (${project.version})</doctitle>
           <windowtitle>${project.name} API Reference (${project.version})</windowtitle>
           <links>
@@ -202,7 +202,7 @@
           <aggregate>true</aggregate>
         </configuration>
       </plugin>
-	  
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -215,7 +215,7 @@
           </links>
         </configuration>
       </plugin>
-	  
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-project-info-reports-plugin</artifactId>
@@ -235,13 +235,13 @@
           </reportSet>
         </reportSets>
       </plugin>
-	  
+
       <plugin>
         <groupId>org.codehaus.mojo</groupId>
         <artifactId>surefire-report-maven-plugin</artifactId>
         <version>${surefire-version}</version>
       </plugin>
-	  
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-plugin-plugin</artifactId>
@@ -275,7 +275,7 @@
         </pluginRepository>
       </pluginRepositories>
     </profile>
-    
+
     <profile>
       <id>full</id>
       <modules>

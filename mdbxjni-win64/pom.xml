@@ -106,8 +106,8 @@
 									<directory>${basedir}/../../libmdbx/x64/Release</directory>
 									<filtering>false</filtering>
 									<includes>
-                		<include>mdbx.dll</include>
-            			</includes>	
+										<include>mdbx.dll</include>
+									</includes>	
 								</resource>
 							</resources>
 						</configuration>
