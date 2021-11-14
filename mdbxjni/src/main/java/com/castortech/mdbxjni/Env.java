@@ -219,7 +219,7 @@ public class Env extends NativeObject implements Closeable {
 		if (config.isNoSync()) {
 			flags |= Constants.NOSYNC;
 		}
-		
+
 		if (config.isReadOnly()) {
 			flags |= Constants.RDONLY;
 		}
@@ -231,15 +231,15 @@ public class Env extends NativeObject implements Closeable {
 		if (config.isWriteMap()) {
 			flags |= Constants.WRITEMAP;
 		}
-		
+
 		if (config.isMapAsync()) {
 			flags |= Constants.MAPASYNC;
 		}
-		
+
 		if (config.isNoTLS()) {
 			flags |= Constants.NOTLS;
 		}
-		
+
 		if (config.isNoReadAhead()) {
 			flags |= Constants.NORDAHEAD;
 		}
@@ -289,7 +289,7 @@ public class Env extends NativeObject implements Closeable {
 			mdbx_env_close(self);
 			self = 0;
 		}
-		
+
 		if (keyCmpCallback != null) {
 			keyCmpCallback.dispose();
 			keyCmpCallback = null;
@@ -339,8 +339,20 @@ public class Env extends NativeObject implements Closeable {
 	 *            {@link org.fusesource.lmdbjni.Constants#MAPASYNC} they will be
 	 *            asynchronous.
 	 */
+	public void sync() {
+		checkErrorCode(this, mdbx_env_sync(pointer()));
+	}
+
+	/**
+	 * Kept for backward compatibility with older versions
+	 * @param force
+	 */
 	public void sync(boolean force) {
-		checkErrorCode(this, mdbx_env_sync(pointer(), force ? 1 : 0));
+		checkErrorCode(this, mdbx_env_sync_ex(pointer(), force ? 1 : 0, 0));
+	}
+
+	public void sync(boolean force, boolean nonblock) {
+		checkErrorCode(this, mdbx_env_sync_ex(pointer(), force ? 1 : 0, nonblock ? 1 : 0));
 	}
 
 	/**
@@ -417,7 +429,7 @@ public class Env extends NativeObject implements Closeable {
 	 * @param size
 	 *            The maximum number of reader lock table slots
 	 */
-	public void setMaxReaders(long size) {
+	public void setMaxReaders(int size) {
 		checkErrorCode(this, mdbx_env_set_maxreaders(pointer(), size));
 	}
 
@@ -534,7 +546,7 @@ public class Env extends NativeObject implements Closeable {
 		// System.err.println("JNI creating transaction, parent: " + (parent == null ?
 		// null :parent.self) + ",id:" + self);
 
-		checkErrorCode(this, mdbx_txn_begin(pointer(), 
+		checkErrorCode(this, mdbx_txn_begin(pointer(),
 				parent == null ? 0 : parent.pointer(), readOnly ? MDBX_RDONLY : 0, txpointer));
 		return new Transaction(this, txpointer[0]);
 	}
@@ -622,11 +634,11 @@ public class Env extends NativeObject implements Closeable {
 
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		int flags = setFlags(config);
-		
+
 		if (config.getKeyComparator() != null || config.getDataComparator() != null) {
 			return openDatabase(tx, name, flags, config.getKeyComparator(), config.getDataComparator());
 		}
-		
+
 		return openDatabase(tx, name, flags);
 	}
 
@@ -660,19 +672,19 @@ public class Env extends NativeObject implements Closeable {
 		Transaction tx = createTransaction();
 		try {
 			return openDatabase(tx, name, flags);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
 	}
-	
-	public Database openDatabase(String name, int flags, Comparator<byte[]> keyComp,  
+
+	public Database openDatabase(String name, int flags, Comparator<byte[]> keyComp,
 			Comparator<byte[]> dataComp) {
 		// checkArgNotNull(name, "name");
 		Transaction tx = createTransaction();
 		try {
 			return openDatabase(tx, name, flags, keyComp, dataComp);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -682,13 +694,13 @@ public class Env extends NativeObject implements Closeable {
 		Transaction tx = createTransaction();
 		try {
 			return openDatabase(tx, name, config);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
 	}
 
-	public Database openDatabase(Transaction tx, String name, int flags, Comparator<byte[]> keyComp, 
+	public Database openDatabase(Transaction tx, String name, int flags, Comparator<byte[]> keyComp,
 			Comparator<byte[]> dataComp) {
 		if (tx == null) {
 			return openDatabase(name, flags, keyComp, dataComp);
@@ -696,27 +708,27 @@ public class Env extends NativeObject implements Closeable {
 
 		long keyCmpAddr = 0L;
 		long dataCmpAddr = 0L;
-		
+
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		// checkArgNotNull(name, "name");
 		long[] dbi = new long[1];
-		
+
 		if (keyComp != null) {
 			keyCmpCallback = new Callback(this, "compareKey", 2); //$NON-NLS-1$
 			keyCmpAddr = keyCmpCallback.getAddress();
 			keyComparator =  keyComp;
 		}
-		
+
 		if (dataComp != null) {
 			dataCmpCallback = new Callback(dataComp.getClass(), "compareData", 2); //$NON-NLS-1$
 			dataCmpAddr = dataCmpCallback.getAddress();
 			dataComparator =  dataComp;
 		}
-		
+
 		checkErrorCode(this, mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
 		return new Database(this, dbi[0], name);
 	}
-	
+
 	public long compareKey(long o1, long o2) {
 		Value v1 = new Value();
 		map_val(o1, v1);
@@ -726,10 +738,10 @@ public class Env extends NativeObject implements Closeable {
 
 		byte[] key1 = v1.toByteArray();
 		byte[] key2 = v2.toByteArray();
-		
+
 		return keyComparator.compare(key1, key2);
 	}
-	
+
 	public long compareData(long o1, long o2) {
 		Value v1 = new Value();
 		map_val(o1, v1);
@@ -739,7 +751,7 @@ public class Env extends NativeObject implements Closeable {
 
 		byte[] key1 = v1.toByteArray();
 		byte[] key2 = v2.toByteArray();
-		
+
 		return dataComparator.compare(key1, key2);
 	}
 
@@ -754,7 +766,7 @@ public class Env extends NativeObject implements Closeable {
 		Transaction tx = createTransaction();
 		try {
 			return openSecondaryDatabase(tx, primary, name, flags);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -775,7 +787,7 @@ public class Env extends NativeObject implements Closeable {
 
 		if (associateDbs(tx, primary, secDb)) {
 			return secDb;
-		} 
+		}
 		else {
 			throw new MDBXException("Error associating databases");
 		}
@@ -785,7 +797,7 @@ public class Env extends NativeObject implements Closeable {
 		Transaction tx = createTransaction();
 		try {
 			return openSecondaryDatabase(tx, primary, name, config);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -808,7 +820,7 @@ public class Env extends NativeObject implements Closeable {
 
 		if (associateDbs(tx, primary, secDb)) {
 			return secDb;
-		} 
+		}
 		else {
 			throw new MDBXException("Error associating databases");
 		}
@@ -819,12 +831,12 @@ public class Env extends NativeObject implements Closeable {
 		try {
 			primary.associate(tx, secondary);
 			succeeded = true;
-		} 
+		}
 		finally {
 			if (!succeeded)
 				try {
 					primary.close();
-				} 
+				}
 				catch (Throwable t) {
 					// Ignore it -- there is already an exception in flight.
 				}

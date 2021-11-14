@@ -51,7 +51,6 @@ public class MDBXException extends RuntimeException {
 		TXN_FULL(JNI.MDBX_TXN_FULL, "Transaction has too many dirty pages"),
 		CURSOR_FULL(JNI.MDBX_CURSOR_FULL, "Cursor stack too deep - internal error"),
 		PAGE_FULL(JNI.MDBX_PAGE_FULL, "Page has not enough space - internal error"),
-		MAP_RESIZED(JNI.MDBX_MAP_RESIZED, "Database contents grew beyond environment mapsize"),
 		INCOMPATIBLE(JNI.MDBX_INCOMPATIBLE, "Operation and DB incompatible, or DB type changed."),
 		BAD_RSLOT(JNI.MDBX_BAD_RSLOT, "Invalid reuse of reader locktable slot"),
 		BAD_TXN(JNI.MDBX_BAD_TXN, "Transaction must abort, has a child, or is invalid"),
@@ -65,19 +64,29 @@ public class MDBXException extends RuntimeException {
 		KE_YMISMATCH(JNI.MDBX_EKEYMISMATCH, "The given key value is mismatched to the current cursor position, when mdbx_cursor_put() called with MDBX_CURRENT option."),
 		TOO_LARGE(JNI.MDBX_TOO_LARGE, "Database is too large for current system, e.g. could NOT be mapped into RAM."),
 		THREAD_MISMATCH(JNI.MDBX_THREAD_MISMATCH, "A thread has attempted to use a not owned object, e.g. a transaction that started by another thread."),
+		RESULT_FALSE(JNI.MDBX_RESULT_FALSE, "Alias for Successful result"),
+		RESULT_TRUE(JNI.MDBX_RESULT_TRUE, "Successful result with special meaning or a flag"),
+		FIRST_LMDB_ERRCODE(JNI.MDBX_FIRST_LMDB_ERRCODE, "The first LMDB-compatible defined error code"),
+		UNABLE_EXTEND_MAPSIZE(JNI.MDBX_UNABLE_EXTEND_MAPSIZE, "Database engine was unable to extend mapping, e.g. since address space is unavailable or busy"),
+		LAST_LMDB_ERRCODE(JNI.MDBX_LAST_LMDB_ERRCODE, "The last LMDB-compatible defined error code"),
+		FIRST_ADDED_ERRCODE(JNI.MDBX_FIRST_ADDED_ERRCODE, "The first of MDBX-added error codes"),
+		TXN_OVERLAPPING(JNI.MDBX_TXN_OVERLAPPING, "Overlapping read and write transactions for the current thread"),
+		LAST_ADDED_ERRCODE(JNI.MDBX_LAST_ADDED_ERRCODE, "The last added error code"),
+		ENOFILE(JNI.MDBX_ENOFILE, "?? no description"),
+		EREMOTE(JNI.MDBX_EREMOTE, "?? no description"),
 		;
 
 		private final int code;
 		private final String reason;
 
 		Status(final int statusCode, final String reasonPhrase) {
-			this.code = statusCode;
-			this.reason = reasonPhrase;
+			code = statusCode;
+			reason = reasonPhrase;
 		}
 
 		/**
 		 * Get the associated status code
-		 * 
+		 *
 		 * @return the status code
 		 */
 		public int getStatusCode() {
@@ -86,7 +95,7 @@ public class MDBXException extends RuntimeException {
 
 		/**
 		 * Get the reason phrase
-		 * 
+		 *
 		 * @return the reason phrase
 		 */
 		public String getReasonPhrase() {
@@ -95,7 +104,7 @@ public class MDBXException extends RuntimeException {
 
 		/**
 		 * Get the reason phrase
-		 * 
+		 *
 		 * @return the reason phrase
 		 */
 		@Override
@@ -105,7 +114,7 @@ public class MDBXException extends RuntimeException {
 
 		/**
 		 * Convert a numerical status code into the corresponding Status
-		 * 
+		 *
 		 * @param statusCode
 		 *          the numerical status code
 		 * @return the matching Status or null is no matching Status is defined
@@ -130,7 +139,7 @@ public class MDBXException extends RuntimeException {
 	}
 
 	public MDBXException(String message, int errorCode) {
-		super(message + ",rc:" + (Status.fromStatusCode(errorCode) != null ? 
+		super(message + ",rc:" + (Status.fromStatusCode(errorCode) != null ?
 				Status.fromStatusCode(errorCode).name() : errorCode));
 		this.errorCode = errorCode;
 	}

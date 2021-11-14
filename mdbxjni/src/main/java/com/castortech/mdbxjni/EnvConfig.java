@@ -15,7 +15,7 @@ public class EnvConfig implements Cloneable {
 	private boolean utterlyNoSync = false;
 	private boolean pagePerturb = false;
 	private int mode = 0644;  //this is octal
-	private long maxReaders = -1;
+	private int maxReaders = -1;
 	private long maxDbs = -1;
 	private long mapSize = -1;
 
@@ -27,11 +27,11 @@ public class EnvConfig implements Cloneable {
 		this.mode = mode;
 	}
 
-	public long getMaxReaders() {
+	public int getMaxReaders() {
 		return maxReaders;
 	}
 
-	public void setMaxReaders(long maxReaders) {
+	public void setMaxReaders(int maxReaders) {
 		this.maxReaders = maxReaders;
 	}
 
