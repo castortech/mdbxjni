@@ -30,7 +30,7 @@ class NativeObject {
 	protected NativeObject(long self) {
 		this.self = self;
 		if (self == 0) {
-			throw new OutOfMemoryError("Failure allocating native heap memory");
+			throw new OutOfMemoryError("Failure allocating native heap memory"); //$NON-NLS-1$
 		}
 	}
 
@@ -45,7 +45,7 @@ class NativeObject {
 
 	protected void checkAllocated() {
 		if (!isAllocated()) {
-			throw new MDBXException("Native object has been freed.");
+			throw new MDBXException("Native object has been freed."); //$NON-NLS-1$
 		}
 	}
 }

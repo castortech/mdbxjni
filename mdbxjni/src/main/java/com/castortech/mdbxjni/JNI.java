@@ -117,7 +117,7 @@ public class JNI {
 //		}
 //	}
 
-	@JniClass(flags = {STRUCT, TYPEDEF})
+	@JniClass(flags = STRUCT)
 	public static class MDBX_version_info {
 		@JniField(cast = "uint8_t")
 		public short major;
@@ -165,7 +165,7 @@ public class JNI {
 	// Build Info
 	//====================================================//
 
-	@JniClass(flags = {STRUCT, TYPEDEF})
+	@JniClass(flags = STRUCT)
 	public static class MDBX_build_info {
 		@JniField(cast = "char *")
 		public char[] datetime;
@@ -294,21 +294,19 @@ public class JNI {
 	// Environment Flags
 	//====================================================//
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_NOSUBDIR;
+	public static int MDBX_ENV_DEFAULTS;
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_NOSYNC;
+	public static int MDBX_NOSUBDIR;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_RDONLY;
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_NOMETASYNC;
+	public static int MDBX_EXCLUSIVE;
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_ACCEDE;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_WRITEMAP;
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_MAPASYNC;
-	@JniField(flags = { CONSTANT })
 	public static int MDBX_NOTLS;
-	@JniField(flags = { CONSTANT })
-	public static int MDBX_EXCLUSIVE;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_NORDAHEAD;
 	@JniField(flags = { CONSTANT })
@@ -318,17 +316,17 @@ public class JNI {
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_LIFORECLAIM;
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_UTTERLY_NOSYNC;
-	@JniField(flags = { CONSTANT })
 	public static int MDBX_PAGEPERTURB;
-	@JniField(flags = { CONSTANT })
-	public static int MDBX_ENV_DEFAULTS;
-	@JniField(flags = { CONSTANT })
-	public static int MDBX_ACCEDE;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_SYNC_DURABLE;
 	@JniField(flags = { CONSTANT })
+	public static int MDBX_NOMETASYNC;
+	@JniField(flags = { CONSTANT })
 	public static int MDBX_SAFE_NOSYNC;
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_MAPASYNC;
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_UTTERLY_NOSYNC;
 
 	//====================================================//
 	// MDBX_constants
@@ -853,7 +851,7 @@ public class JNI {
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
 			@JniArg(cast = "const char *") String pathname,
 			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "mode_t") int mode);
+			@JniArg(cast = "mdbx_mode_t") int mode);
 
 	@JniMethod
 	public static final native int mdbx_env_copy(
@@ -1134,21 +1132,20 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "size_t *") long[] values_count);
 
-	@JniMethod
-	public static final native int mdbx_get_attr(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "uint_fast64_t *") long[] pattr);
+//	@JniMethod
+//	public static final native int mdbx_get_attr(
+//			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
+//			@JniArg(cast = "uint32_t") long dbi,
+//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
+//			@JniArg(cast = "MDBX_val *") MDBX_val data,
+//			@JniArg(cast = "uint_fast64_t *") long[] pattr);
 
 	@JniMethod
 	public static final native int mdbx_get_equal_or_great(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "uint32_t") long dbi,
 			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "size_t *") long[] values_count);
+			@JniArg(cast = "MDBX_val *") MDBX_val data);
 
 	@JniMethod
 	public static final native int mdbx_put(
@@ -1158,14 +1155,14 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "unsigned") int flags);
 
-	@JniMethod
-	public static final native int mdbx_put_attr(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "uint_fast64_t *") long[] attr,
-			@JniArg(cast = "unsigned") int flags);
+//	@JniMethod
+//	public static final native int mdbx_put_attr(
+//			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
+//			@JniArg(cast = "uint32_t") long dbi,
+//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
+//			@JniArg(cast = "MDBX_val *") MDBX_val data,
+//			@JniArg(cast = "uint_fast64_t *") long[] attr,
+//			@JniArg(cast = "unsigned") int flags);
 
 	@JniMethod
 	public static final native int mdbx_replace(
@@ -1236,12 +1233,13 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int op);
 
-	@JniMethod
-	public static final native int mdbx_cursor_get_attr(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "MDBX_val *") MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "uint_fast64_t *") long[] pattr);
+//	@JniMethod
+//	public static final native int mdbx_cursor_get_attr(
+//			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
+//			@JniArg(cast = "MDBX_val *") MDBX_val key,
+//			@JniArg(cast = "MDBX_val *") MDBX_val data,
+//			@JniArg(cast = "uint_fast64_t *") long[] pattr,
+//			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int op);
 
 	@JniMethod
 	public static final native int mdbx_cursor_put(
@@ -1250,13 +1248,13 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "unsigned") int flags);
 
-	@JniMethod
-	public static final native int mdbx_cursor_put_attr(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val data,
-			@JniArg(cast = "uint_fast64_t") long attr,
-			@JniArg(cast = "unsigned") int flags);
+//	@JniMethod
+//	public static final native int mdbx_cursor_put_attr(
+//			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
+//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
+//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val data,
+//			@JniArg(cast = "uint_fast64_t") long attr,
+//			@JniArg(cast = "unsigned") int flags);
 
 	@JniMethod(cast = "MDBX_txn *")
 	public static final native long mdbx_cursor_txn(
@@ -1288,8 +1286,8 @@ public class JNI {
 	public static final native int mdbx_cursor_on_last(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
-	@JniMethod
-	public static final native int mdbx_cursor_create(
+	@JniMethod(cast = "MDBX_cursor *")
+	public static final native long mdbx_cursor_create(
 			@JniArg(cast = "void *") long ctx);
 
 	@JniMethod(cast = "void *")
@@ -1298,7 +1296,7 @@ public class JNI {
 
 	@JniMethod
 	public static final native int mdbx_cursor_set_userctx(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
+			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long env,
 			@JniArg(cast = "void *") long ctx);
 
 	//====================================================//
@@ -1318,11 +1316,11 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *", flags = {NO_OUT}) MDBX_val a,
 			@JniArg(cast = "MDBX_val *", flags = {NO_OUT}) MDBX_val b);
 
-	@JniMethod(cast = "int(*)(const MDBX_val *, const MDBX_val *)")
+	@JniMethod(cast = "int *")
 	public static final native long mdbx_get_keycmp(
 			@JniArg(cast = "unsigned") int flags);
 
-	@JniMethod(cast = "int(*)(const MDBX_val *, const MDBX_val *)")
+	@JniMethod(cast = "int *")
 	public static final native long mdbx_get_datacmp(
 			@JniArg(cast = "unsigned") int flags);
 
@@ -1336,7 +1334,7 @@ public class JNI {
 
 	@JniMethod(cast = "uint64_t")
 	public static final native long mdbx_key_from_ptrdouble(
-			@JniArg(cast = "const double *const") long ieee754_64bit);
+			@JniArg(cast = "const double *const") long[] ieee754_64bit);
 
 	@JniMethod(cast = "uint32_t")
 	public static final native int mdbx_key_from_float(
@@ -1344,7 +1342,7 @@ public class JNI {
 
 	@JniMethod(cast = "uint32_t")
 	public static final native int mdbx_key_from_ptrfloat(
-			@JniArg(cast = "const float *const") float ieee754_32bit);
+			@JniArg(cast = "const float *const") long[] ieee754_32bit);
 
 	@JniMethod(cast = "uint64_t")
 	public static final native long mdbx_key_from_int64(
@@ -1356,23 +1354,23 @@ public class JNI {
 
 	@JniMethod(cast = "int64_t")
 	public static final native long mdbx_jsonInteger_from_key(
-			@JniArg(cast = "const MDBX_val") MDBX_val val);
+			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
 	@JniMethod
 	public static final native double mdbx_double_from_key(
-			@JniArg(cast = "const MDBX_val") MDBX_val val);
+			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
 	@JniMethod
 	public static final native float mdbx_float_from_key(
-			@JniArg(cast = "const MDBX_val") MDBX_val val);
+			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
 	@JniMethod(cast = "int32_t")
 	public static final native int mdbx_int32_from_key(
-			@JniArg(cast = "const MDBX_val") MDBX_val val);
+			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
 	@JniMethod(cast = "int64_t")
 	public static final native long mdbx_int64_from_key(
-			@JniArg(cast = "const MDBX_val") MDBX_val val);
+			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
 	//====================================================//
 	// Limits methods
@@ -1452,9 +1450,9 @@ public class JNI {
 
 	@JniMethod
 	public static final native int mdbx_get_sysraminfo(
-			@JniArg(cast = "intptr_t") long page_size,
-			@JniArg(cast = "intptr_t") long total_pages,
-			@JniArg(cast = "intptr_t") long avail_pages);
+			@JniArg(cast = "intptr_t *") long[] page_size,
+			@JniArg(cast = "intptr_t *") long[] total_pages,
+			@JniArg(cast = "intptr_t *") long[] avail_pages);
 
 //  @JniMethod
 //  public static final native int mdbx_set_compare(

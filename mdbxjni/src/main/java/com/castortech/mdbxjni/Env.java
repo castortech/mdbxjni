@@ -216,9 +216,10 @@ public class Env extends NativeObject implements Closeable {
 			flags |= Constants.NOSUBDIR;
 		}
 
-		if (config.isNoSync()) {
-			flags |= Constants.NOSYNC;
-		}
+		//TODO
+//		if (config.isNoSync()) {
+//			flags |= Constants.NOSYNC;
+//		}
 
 		if (config.isReadOnly()) {
 			flags |= Constants.RDONLY;
