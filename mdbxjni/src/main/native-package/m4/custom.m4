@@ -20,7 +20,7 @@ AC_DEFUN([CUSTOM_M4_SETUP],
   AC_CHECK_HEADER([pthread.h],[AC_DEFINE([HAVE_PTHREAD_H], [1], [Define to 1 if you have the <pthread.h> header file.])])
 
   AC_ARG_WITH([mdbx],
-    [AS_HELP_STRING([--with-mdbx@<:@=PATH@:>@], [Directory where mdbx was built. Example: --with-mdbx=/opt/lmdb])],
+    [AS_HELP_STRING([--with-mdbx@<:@=PATH@:>@], [Directory where mdbx was built. Example: --with-mdbx=/opt/mdbx])],
     [
       CFLAGS="$CFLAGS -I${withval}"
       CXXFLAGS="$CXXFLAGS -I${withval}"

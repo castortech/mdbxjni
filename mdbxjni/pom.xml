@@ -28,7 +28,7 @@
   <artifactId>mdbxjni</artifactId>
   <version>99-master-SNAPSHOT</version>
   <packaging>jar</packaging>
-  
+
   <name>${project.artifactId}</name>
   <description>mdbxjni is a jni library for accessing mdbx.</description>
 
@@ -60,7 +60,7 @@
 		    <version>25.0-jre</version>
 		</dependency>
   </dependencies>
-	
+
   <build>
     <resources>
       <resource>
@@ -71,7 +71,7 @@
         </includes>
       </resource>
     </resources>
-    
+
     <plugins>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -110,9 +110,9 @@
           <callbacks>true</callbacks>
           <windowsBuildTool>msbuild</windowsBuildTool>
           <windowsCustomProps>true</windowsCustomProps>
-          <windowsToolsVersion>15.0</windowsToolsVersion>
-          <windowsTargetPlatformVersion>10.0.16299.0</windowsTargetPlatformVersion>
-          <windowsPlatformToolset>v141</windowsPlatformToolset>
+          <windowsToolsVersion>17.0</windowsToolsVersion>
+          <windowsTargetPlatformVersion>10.0.19041.0</windowsTargetPlatformVersion>
+          <windowsPlatformToolset>v143</windowsPlatformToolset>
           <copyright><![CDATA[
 /*******************************************************************************
 * Copyright (C) 2011, FuseSource Corp.  All rights reserved.
@@ -126,7 +126,7 @@
           ]]></copyright>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-surefire-plugin</artifactId>
@@ -145,7 +145,7 @@
             </includes>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
@@ -155,7 +155,7 @@
           <target>${java.version}</target>
         </configuration>
       </plugin>
-      
+
       <plugin>
         <groupId>org.apache.felix</groupId>
         <artifactId>maven-bundle-plugin</artifactId>
@@ -175,7 +175,7 @@
           </execution>
         </executions>
       </plugin>
-      
+
       <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
