@@ -37,9 +37,9 @@ import static com.castortech.mdbxjni.Constants.*;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class EnvTest extends TestCase {
-  static {
-    Setup.setLibraryPaths();
-  }
+	static {
+		Setup.setLibraryPaths();
+	}
 
 	static public void assertEquals(byte[] arg1, byte[] arg2) {
 		assertTrue(Arrays.equals(arg1, arg2));
@@ -76,7 +76,7 @@ public class EnvTest extends TestCase {
 		// Lets verify cursoring works..
 		LinkedList<String> keys = new LinkedList<String>();
 		LinkedList<String> values = new LinkedList<String>();
-		
+
 		for (Entry entry = cursor.get(FIRST); entry != null; entry = cursor.get(NEXT)) {
 			keys.add(string(entry.getKey()));
 			values.add(string(entry.getValue()));
@@ -96,7 +96,7 @@ public class EnvTest extends TestCase {
 		try {
 			db.put(tx, bytes("New York"), bytes("silver"));
 			fail("Expected LMDBException");
-		} 
+		}
 		catch (MDBXException e) {
 			assertEquals(MDBXException.Status.EACCES.getStatusCode(), e.getErrorCode());
 		}

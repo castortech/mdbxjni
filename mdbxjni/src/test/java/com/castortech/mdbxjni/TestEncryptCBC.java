@@ -23,21 +23,21 @@ import com.castortech.mdbxjni.TimeUtils.HrsOption;
  */
 public class TestEncryptCBC {
 	public static final String TRANSFORMATION = "AES/CBC/NoPadding"; //$NON-NLS-1$
-  public static final int AES_KEY_SIZE = 128; // in bits
-  public static final int IV_LENGTH = 16; // in bytes
+	public static final int AES_KEY_SIZE = 128; // in bits
+	public static final int IV_LENGTH = 16; // in bytes
 
-  private static Cipher cipher;
-	
+	private static Cipher cipher;
+
 	@SuppressWarnings("nls")
 	public static void main(String[] args) throws Exception {
 		DataFactory df = new DataFactory();
-		
-    SecureRandom random = SecureRandom.getInstanceStrong();
-    KeyGenerator keyGen = KeyGenerator.getInstance("AES");
-    keyGen.init(AES_KEY_SIZE, random);
-    SecretKey secretKey = keyGen.generateKey();
-    
-    cipher = Cipher.getInstance(TRANSFORMATION);
+
+		SecureRandom random = SecureRandom.getInstanceStrong();
+		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
+		keyGen.init(AES_KEY_SIZE, random);
+		SecretKey secretKey = keyGen.generateKey();
+
+		cipher = Cipher.getInstance(TRANSFORMATION);
 
 		byte[] iv = new byte[IV_LENGTH]; //NEVER REUSE THIS IV WITH SAME KEY
 		random.nextBytes(iv);
@@ -60,7 +60,7 @@ public class TestEncryptCBC {
 			long elapsed = TimeUtils.elapsedSinceNanos(start);
 			totEncrypt += elapsed;
 			System.out.println("Encrypted " + lgth + "/" + cipherMessage.length + " in " + TimeUtils.nanoTimeAsString(elapsed, HrsOption.NEVER));
-			
+
 			start = System.nanoTime();
 			plainBytes = te.decrypt(cipherMessage, secretKey, paramSpec);
 			String decrypted = new String(plainBytes, "UTF-8");
@@ -69,18 +69,18 @@ public class TestEncryptCBC {
 			System.out.println("\tDecrypted: " + plainText + " in " + TimeUtils.nanoTimeAsString(elapsed, HrsOption.NEVER));
 			assertTrue(plainText.equals(decrypted));
 		}
-		
+
 		System.out.println();
 		System.out.println("Total Run time:" + TimeUtils.elapsedSinceNano(startRun) + 
 				",Encrypt:" + TimeUtils.nanoTimeAsString(totEncrypt, HrsOption.NEVER) + 
 				",Decrypt:" + TimeUtils.nanoTimeAsString(totDecrypt, HrsOption.NEVER));
 	}
-	
+
 	private byte[] encrypt(byte[] plainBytes, SecretKey secretKey, AlgorithmParameterSpec paramSpec) throws Exception {
 		cipher.init(Cipher.ENCRYPT_MODE, secretKey, paramSpec);
 		return cipher.doFinal(plainBytes);
 	}
-	
+
 	private byte[] decrypt(byte[] cipherText, SecretKey secretKey, AlgorithmParameterSpec paramSpec) throws Exception {
 		cipher.init(Cipher.DECRYPT_MODE, secretKey, paramSpec);
 		return cipher.doFinal(cipherText);
