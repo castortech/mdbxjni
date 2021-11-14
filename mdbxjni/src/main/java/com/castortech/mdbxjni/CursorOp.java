@@ -65,16 +65,16 @@ public enum CursorOp {
 	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
 	 */
 	LAST_DUP(MDBX_LAST_DUP),
-	
+
 	/** Position at next data item */
 	NEXT(MDBX_NEXT),
-	
+
 	/**
 	 * Position at next data item of current key. Only for
 	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
 	 */
 	NEXT_DUP(MDBX_NEXT_DUP),
-	
+
 	/**
 	 * Return key and up to a page of duplicate data items from next cursor
 	 * position. Move cursor to prepare for
@@ -82,35 +82,40 @@ public enum CursorOp {
 	 * {@link org.fusesource.lmdbjni.Constants#DUPFIXED}
 	 */
 	NEXT_MULTIPLE(MDBX_NEXT_MULTIPLE),
-	
+
 	/** Position at first data item of next key */
 	NEXT_NODUP(MDBX_NEXT_NODUP),
-	
+
 	/** Position at previous data item */
 	PREV(MDBX_PREV),
-	
+
 	/**
 	 * Position at previous data item of current key. Only for
 	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
 	 */
 	PREV_DUP(MDBX_PREV_DUP),
-	
+
 	/** Position at last data item of previous key */
 	PREV_NODUP(MDBX_PREV_NODUP),
-	
+
 	/** Position at specified key */
 	SET(MDBX_SET),
-    
+
 	/** Position at specified key, return key + data */
 	SET_KEY(MDBX_SET_KEY),
 
 	/** Position at first key greater than or equal to specified key. */
 	SET_RANGE(MDBX_SET_RANGE),
-	
+
 	/** MDBX_DUPFIXED-only: Position at previous page and
-   * return key and up to a page of duplicate data items. 
-   */	
+   * return key and up to a page of duplicate data items.
+   */
 	PREV_MULTIPLE(MDBX_PREV_MULTIPLE),
+
+	/** Position at first key-value pair greater than or equal to specified,
+   * return both key and data, and the return code depends on a exact match.
+   */
+	SET_LOWERBOUND(MDBX_SET_LOWERBOUND),
 	;
 
 	private final int value;

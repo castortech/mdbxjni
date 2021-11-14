@@ -325,7 +325,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 * @return count of duplicates for current key
 	 */
 	public long count() {
-		long rc[] = new long[1];
+		long[] rc = new long[1];
 		checkErrorCode(env, mdbx_cursor_count(pointer(), rc));
 		return rc[0];
 	}

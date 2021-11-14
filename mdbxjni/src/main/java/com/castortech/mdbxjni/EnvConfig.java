@@ -2,18 +2,22 @@ package com.castortech.mdbxjni;
 
 public class EnvConfig implements Cloneable {
 	private boolean noSubDir = false;
-	private boolean noSync = false;
 	private boolean readOnly = false;
-	private boolean noMetaSync = false;
+	private boolean exclusive = false;
+	private boolean accede = false;
 	private boolean writeMap = false;
-	private boolean mapAsync = false;
 	private boolean noTLS = false;
 	private boolean noReadAhead = false;
 	private boolean noMemInit = false;
 	private boolean coalesce = false;
 	private boolean lifoReclaim = false;
-	private boolean utterlyNoSync = false;
 	private boolean pagePerturb = false;
+	private boolean syncDurable = false;
+	private boolean noMetaSync = false;
+	private boolean safeNoSync = false;
+	private boolean mapAsync = false;
+	private boolean utterlyNoSync = false;
+
 	private int mode = 0644;  //this is octal
 	private int maxReaders = -1;
 	private long maxDbs = -1;
@@ -83,12 +87,22 @@ public class EnvConfig implements Cloneable {
 		this.noMetaSync = noMetaSync;
 	}
 
+	/**
+	 * @deprecated
+	 * This method has been renamed to {@link EnvConfig#isSafeNoSync().
+	 */
+	@Deprecated
 	public boolean isNoSync() {
-		return noSync;
+		return isSafeNoSync();
 	}
 
+	/**
+	 * @deprecated
+	 * This method has been renamed to {@link EnvConfig#setSafeNoSync(boolean).
+	 */
+	@Deprecated
 	public void setNoSync(boolean noSync) {
-		this.noSync = noSync;
+		setSafeNoSync(noSync);
 	}
 
 	public boolean isMapAsync() {
@@ -153,6 +167,38 @@ public class EnvConfig implements Cloneable {
 
 	public void setPagePerturb(boolean pagePerturb) {
 		this.pagePerturb = pagePerturb;
+	}
+
+	public boolean isExclusive() {
+		return exclusive;
+	}
+
+	public void setExclusive(boolean exclusive) {
+		this.exclusive = exclusive;
+	}
+
+	public boolean isAccede() {
+		return accede;
+	}
+
+	public void setAccede(boolean accede) {
+		this.accede = accede;
+	}
+
+	public boolean isSyncDurable() {
+		return syncDurable;
+	}
+
+	public void setSyncDurable(boolean syncDurable) {
+		this.syncDurable = syncDurable;
+	}
+
+	public boolean isSafeNoSync() {
+		return safeNoSync;
+	}
+
+	public void setSafeNoSync(boolean safeNoSync) {
+		this.safeNoSync = safeNoSync;
 	}
 
 	/**

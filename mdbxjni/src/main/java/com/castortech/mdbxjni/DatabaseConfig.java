@@ -10,114 +10,127 @@ public class DatabaseConfig implements Cloneable {
 	private boolean integerDup = false;
 	private boolean reverseDup = false;
 	private boolean create = false;
+	private boolean accede = false;
 	private Comparator<byte[]> keyComparator;
 	private Comparator<byte[]> dataComparator;
-	
+
 	public DatabaseConfig() {
 	}
-	
+
 	public DatabaseConfig(int flags) {
 		if ((flags & Constants.REVERSEKEY) == Constants.REVERSEKEY) {
 			setReverseKey(true);
 		}
-        
+
 		if ((flags & Constants.REVERSEDUP) == Constants.REVERSEDUP) {
 			setReverseDup(true);
 		}
-        
+
 		if ((flags & Constants.DUPSORT) == Constants.DUPSORT) {
 			setDupSort(true);
 		}
-        
+
 		if ((flags & Constants.DUPFIXED) == Constants.DUPFIXED) {
 			setDupFixed(true);
 		}
-        
+
 		if ((flags & Constants.INTEGERKEY) == Constants.INTEGERKEY) {
 			setIntegerKey(true);
 		}
-        
+
 		if ((flags & Constants.INTEGERDUP) == Constants.INTEGERDUP) {
 			setIntegerDup(true);
 		}
-        
+
 		if ((flags & Constants.CREATE) == Constants.CREATE) {
 			setCreate(true);
 		}
+
+		if ((flags & Constants.ACCEDE) == Constants.ACCEDE) {
+			setAccede(true);
+		}
 	}
-	
+
 	public boolean isReverseKey() {
 		return reverseKey;
 	}
-	
+
 	public void setReverseKey(boolean reverseKey) {
 		this.reverseKey = reverseKey;
 	}
-	
+
 	public boolean isDupSort() {
 		return dupSort;
 	}
-	
+
 	public void setDupSort(boolean dupSort) {
 		this.dupSort = dupSort;
 	}
-	
+
 	public boolean isDupFixed() {
 		return dupFixed;
 	}
-	
+
 	public void setDupFixed(boolean dupFixed) {
 		this.dupFixed = dupFixed;
 	}
-	
+
 	public boolean isIntegerKey() {
 		return integerKey;
 	}
-	
+
 	public void setIntegerKey(boolean integerKey) {
 		this.integerKey = integerKey;
 	}
-	
+
 	public boolean isIntegerDup() {
 		return integerDup;
 	}
-	
+
 	public void setIntegerDup(boolean integerDup) {
 		this.integerDup = integerDup;
 	}
-	
+
 	public boolean isReverseDup() {
 		return reverseDup;
 	}
-	
+
 	public void setReverseDup(boolean reverseDup) {
 		this.reverseDup = reverseDup;
 	}
-	
+
 	public boolean isCreate() {
 		return create;
 	}
-	
+
 	public void setCreate(boolean create) {
 		this.create = create;
 	}
-	
+
+	public boolean isAccede() {
+		return accede;
+	}
+
+	public void setAccede(boolean accede) {
+		this.accede = accede;
+	}
+
 	public Comparator<byte[]> getKeyComparator() {
 		return keyComparator;
 	}
-	
+
 	public void setKeyComparator(Comparator<byte[]> keyComparator) {
 		this.keyComparator = keyComparator;
 	}
-	
+
 	public Comparator<byte[]> getDataComparator() {
 		return dataComparator;
 	}
-	
+
 	public void setDataComparator(Comparator<byte[]> dataComparator) {
 		this.dataComparator = dataComparator;
 	}
-	
+
 	/**
 	 * Returns a copy of this configuration object.
 	 */

@@ -164,7 +164,6 @@ public class JNI {
 	//====================================================//
 	// Build Info
 	//====================================================//
-
 	@JniClass(flags = STRUCT)
 	public static class MDBX_build_info {
 		@JniField(cast = "char *")
@@ -232,22 +231,22 @@ public class JNI {
 	//====================================================//
 	// Commit Latency
 	//====================================================//
-	@JniClass(flags = {STRUCT, TYPEDEF})
+	@JniClass(flags = STRUCT)
 	public static class MDBX_commit_latency {
 		@JniField(cast = "uint32_t")
-		public long preparation; // Duration of preparation (commit child transactions, update sub-databases records and cursors destroying).
+		public int preparation; // Duration of preparation (commit child transactions, update sub-databases records and cursors destroying).
 		@JniField(cast = "uint32_t")
-		public long gc; //Duration of GC/freeDB handling & updation.
+		public int gc; //Duration of GC/freeDB handling & updation.
 		@JniField(cast = "uint32_t")
-		public long audit; //Duration of internal audit if enabled.
+		public int audit; //Duration of internal audit if enabled.
 		@JniField(cast = "uint32_t")
-		public long write; //Duration of writing dirty/modified data pages.
+		public int write; //Duration of writing dirty/modified data pages.
 		@JniField(cast = "uint32_t")
-		public long sync; //Duration of syncing written data to the dist/storage.
+		public int sync; //Duration of syncing written data to the dist/storage.
 		@JniField(cast = "uint32_t")
-		public long ending; //Duration of transaction ending (releasing resources).
+		public int ending; //Duration of transaction ending (releasing resources).
 		@JniField(cast = "uint32_t")
-		public long whole; //The total duration of a commit
+		public int whole; //The total duration of a commit
 
 		@SuppressWarnings("nls")
 		@Override
@@ -267,7 +266,7 @@ public class JNI {
 	//====================================================//
 	// Canary
 	//====================================================//
-	@JniClass(flags = {STRUCT, TYPEDEF})
+	@JniClass(flags = STRUCT)
 	public static class MDBX_canary {
 		@JniField(cast = "uint64_t")
 		public long x;
@@ -798,6 +797,15 @@ public class JNI {
 	@JniField(accessor="sizeof(struct MDBX_stat)", flags={CONSTANT})
 	public static int SIZEOF_STAT;
 
+	//====================================================//
+	// Global Extern constant
+	//====================================================//
+//	@JniField(accessor = "const struct MDBX_build_info", flags = { CONSTANT })
+//	public static MDBX_build_info mdbx_build;
+//	@JniField(cast = "const struct MDBX_version_info", flags = { CONSTANT })
+//	public static MDBX_version_info mdbx_version;
+
+
 	// ====================================================//
 	// Value classes
 	// ====================================================//
@@ -1028,7 +1036,7 @@ public class JNI {
 	@JniMethod
 	public static final native int mdbx_txn_commit_ex(
 			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_commit_latency *") long latency);
+			@JniArg(cast = "MDBX_commit_latency *") MDBX_commit_latency latency);
 
 	@JniMethod
 	public static final native void mdbx_txn_abort(

@@ -69,17 +69,26 @@ public class Transaction extends NativeObject implements Closeable {
 	 *
 	 * The transaction handle is freed. It and its cursors must not be used again after this call, except with
 	 * #mdb_cursor_renew().
-	 * 
+	 *
 	 * @note Earlier documentation incorrectly said all cursors would be freed. Only write-transactions free
 	 *       cursors.
 	 *
 	 */
 	public void commit() {
 		if (self != 0) {
-			// System.err.println("JNI committing transaction " + self);
 			checkErrorCode(env, mdbx_txn_commit(self));
 			self = 0;
 		}
+	}
+
+	public CommitLatency commitWithLatency() {
+		if (self != 0) {
+			MDBX_commit_latency rc = new MDBX_commit_latency();
+			checkErrorCode(env, mdbx_txn_commit_ex(self, rc));
+			self = 0;
+			return new CommitLatency(rc);
+		}
+		return null;
 	}
 
 	/**
@@ -109,7 +118,7 @@ public class Transaction extends NativeObject implements Closeable {
 	 *
 	 * The transaction handle is freed. It and its cursors must not be used again after this call, except with
 	 * #mdb_cursor_renew().
-	 * 
+	 *
 	 * @note Earlier documentation incorrectly said all cursors would be freed. Only write-transactions free
 	 *       cursors.
 	 */
@@ -120,8 +129,8 @@ public class Transaction extends NativeObject implements Closeable {
 		}
 	}
 
-  @Override
-  public void close() {
-    abort();
-  }
+	@Override
+	public void close() {
+		abort();
+	}
 }

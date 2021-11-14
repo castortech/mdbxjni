@@ -216,25 +216,20 @@ public class Env extends NativeObject implements Closeable {
 			flags |= Constants.NOSUBDIR;
 		}
 
-		//TODO
-//		if (config.isNoSync()) {
-//			flags |= Constants.NOSYNC;
-//		}
-
 		if (config.isReadOnly()) {
 			flags |= Constants.RDONLY;
 		}
 
-		if (config.isNoMetaSync()) {
-			flags |= Constants.NOMETASYNC;
+		if (config.isExclusive()) {
+			flags |= Constants.EXCLUSIVE;
+		}
+
+		if (config.isAccede()) {
+			flags |= Constants.ACCEDE;
 		}
 
 		if (config.isWriteMap()) {
 			flags |= Constants.WRITEMAP;
-		}
-
-		if (config.isMapAsync()) {
-			flags |= Constants.MAPASYNC;
 		}
 
 		if (config.isNoTLS()) {
@@ -257,12 +252,28 @@ public class Env extends NativeObject implements Closeable {
 			flags |= Constants.LIFORECLAIM;
 		}
 
-		if (config.isUtterlyNoSync()) {
-			flags |= Constants.UTTERLY_NOSYNC;
-		}
-
 		if (config.isPagePerturb()) {
 			flags |= Constants.PAGEPERTURB;
+		}
+
+		if (config.isSyncDurable()) {
+			flags |= Constants.SYNCDURABLE;
+		}
+
+		if (config.isNoMetaSync()) {
+			flags |= Constants.NOMETASYNC;
+		}
+
+		if (config.isSafeNoSync()) {
+			flags |= Constants.SAFENOSYNC;
+		}
+
+		if (config.isMapAsync()) {
+			flags |= Constants.MAPASYNC;
+		}
+
+		if (config.isUtterlyNoSync()) {
+			flags |= Constants.UTTERLY_NOSYNC;
 		}
 
 		if (config.getMaxDbs() != -1) {
@@ -295,6 +306,7 @@ public class Env extends NativeObject implements Closeable {
 			keyCmpCallback.dispose();
 			keyCmpCallback = null;
 		}
+
 		if (dataCmpCallback != null) {
 			dataCmpCallback.dispose();
 			dataCmpCallback = null;
@@ -860,28 +872,32 @@ public class Env extends NativeObject implements Closeable {
 			flags |= Constants.REVERSEKEY;
 		}
 
-		if (config.isReverseDup()) {
-			flags |= Constants.REVERSEDUP;
-		}
-
 		if (config.isDupSort()) {
 			flags |= Constants.DUPSORT;
-		}
-
-		if (config.isDupFixed()) {
-			flags |= Constants.DUPFIXED;
 		}
 
 		if (config.isIntegerKey()) {
 			flags |= Constants.INTEGERKEY;
 		}
 
+		if (config.isDupFixed()) {
+			flags |= Constants.DUPFIXED;
+		}
+
 		if (config.isIntegerDup()) {
 			flags |= Constants.INTEGERDUP;
 		}
 
+		if (config.isReverseDup()) {
+			flags |= Constants.REVERSEDUP;
+		}
+
 		if (config.isCreate()) {
 			flags |= Constants.CREATE;
+		}
+
+		if (config.isAccede()) {
+			flags |= Constants.DBACCEDE;
 		}
 
 		return flags;

@@ -73,7 +73,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			return new Stat(stat(tx));
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -93,7 +93,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			drop(tx, delete);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -103,7 +103,7 @@ public class Database extends NativeObject implements Closeable {
 	 * <p>
 	 * Empty or delete+close a database.
 	 * </p>
-	 * 
+	 *
 	 * @param tx
 	 *            transaction handle
 	 * @param delete
@@ -134,7 +134,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			return get(tx, key);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -169,7 +169,7 @@ public class Database extends NativeObject implements Closeable {
 		NativeBuffer keyBuffer = NativeBuffer.create(key);
 		try {
 			return get(tx, keyBuffer);
-		} 
+		}
 		finally {
 			keyBuffer.delete();
 		}
@@ -207,7 +207,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			return put(tx, key, value, flags);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -287,11 +287,11 @@ public class Database extends NativeObject implements Closeable {
 			NativeBuffer valueBuffer = NativeBuffer.create(value);
 			try {
 				return put(tx, keyBuffer, valueBuffer, flags);
-			} 
+			}
 			finally {
 				valueBuffer.delete();
 			}
-		} 
+		}
 		finally {
 			keyBuffer.delete();
 		}
@@ -326,7 +326,7 @@ public class Database extends NativeObject implements Closeable {
 		if (((flags & MDBX_NOOVERWRITE) != 0 || (flags & MDBX_NODUPDATA) != 0) && rc == MDBX_KEYEXIST) {
 			// Return the existing value if it was a dup insert attempt.
 			return valueSlice.toByteArray();
-		} 
+		}
 		else {
 			// If the put failed, throw an exception..
 			if (rc != 0) {
@@ -369,7 +369,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			return delete(tx, key, value);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -417,13 +417,13 @@ public class Database extends NativeObject implements Closeable {
 			NativeBuffer valueBuffer = NativeBuffer.create(value);
 			try {
 				return delete(tx, keyBuffer, valueBuffer);
-			} 
+			}
 			finally {
 				if (valueBuffer != null) {
 					valueBuffer.delete();
 				}
 			}
-		} 
+		}
 		finally {
 			keyBuffer.delete();
 		}
@@ -455,7 +455,7 @@ public class Database extends NativeObject implements Closeable {
 					}
 				}
 			}
-		} 
+		}
 		else {
 			valueSlices.add(valueSlice);
 		}
@@ -496,7 +496,7 @@ public class Database extends NativeObject implements Closeable {
 	 * cursor in a read-only transaction must be closed explicitly, before or after
 	 * its transaction ends. It can be reused with #mdb_cursor_renew() before
 	 * finally closing it.
-	 * 
+	 *
 	 * @note Earlier documentation said that cursors in every transaction were
 	 *       closed when the transaction committed or aborted.
 	 *
@@ -525,7 +525,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			return getFlags(tx);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -541,7 +541,7 @@ public class Database extends NativeObject implements Closeable {
 		Transaction tx = env.createTransaction();
 		try {
 			return getConfig(tx);
-		} 
+		}
 		finally {
 			tx.commit();
 		}
@@ -554,7 +554,7 @@ public class Database extends NativeObject implements Closeable {
 
 	/* package */void associate(Transaction tx, SecondaryDatabase secondary) {
 		if (secondaries == null) {
-			secondaries = new ArrayList<SecondaryDatabase>();
+			secondaries = new ArrayList<>();
 		}
 
 		secondaries.add(secondary);
