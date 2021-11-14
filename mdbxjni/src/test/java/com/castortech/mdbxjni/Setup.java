@@ -62,10 +62,10 @@ public class Setup {
 		if (isWindows()) {
 			if (!inTarget) {
 //			path = new File(path, "../../libmdbx/x64/Debug"); //$NON-NLS-1$
-				path = new File(path, "../../libmdbx/x64/Release"); //$NON-NLS-1$
+				path = new File(path, "../../libmdbx/bin/Release"); //$NON-NLS-1$
 			}
 			else {
-				path = new File(path, "../../../libmdbx/x64/Release"); //$NON-NLS-1$
+				path = new File(path, "../../../libmdbx/bin/Release"); //$NON-NLS-1$
 			}
 		}
 		//TODO: Adjust for specific platforms

@@ -41,7 +41,7 @@ public class EnvTest extends TestCase {
 		Setup.setLibraryPaths();
 	}
 
-	static public void assertEquals(byte[] arg1, byte[] arg2) {
+	public static void assertEquals(byte[] arg1, byte[] arg2) {
 		assertTrue(Arrays.equals(arg1, arg2));
 	}
 
@@ -81,7 +81,7 @@ public class EnvTest extends TestCase {
 			keys.add(string(entry.getKey()));
 			values.add(string(entry.getValue()));
 		}
-		tx.commit();
+		CommitLatency commitWithLatency = tx.commitWithLatency();
 		assertEquals(Arrays.asList(new String[] { "London", "New York", "Tampa" }), keys);
 		assertEquals(Arrays.asList(new String[] { "red", "blue", "green" }), values);
 

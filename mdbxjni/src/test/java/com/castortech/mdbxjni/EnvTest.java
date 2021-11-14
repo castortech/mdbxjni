@@ -159,7 +159,6 @@ public class EnvTest {
 		assertArrayEquals(db.get(bytes("London")), bytes("red"));
 		assertArrayEquals(db.get(bytes("New York")), bytes("blue"));
 
-
 		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
 			// Lets verify cursoring works..
 			LinkedList<String> keys = new LinkedList<>();
