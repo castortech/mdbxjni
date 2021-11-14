@@ -1,4 +1,4 @@
-Copyright (C) 2018, Castor Technologies Inc.
+Copyright (C) 2021, Castor Technologies Inc.
 
    http://www.castortech.com/
 
