@@ -6,6 +6,6 @@
 *.ipr
 *.iws
 .DS_Store
-/bin
-/.vs
+bin/
+.vs/
 target/
