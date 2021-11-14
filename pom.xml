@@ -1,374 +1,374 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2018, Castor Technologies Inc.
+	Copyright (C) 2018, Castor Technologies Inc.
 
-      http://www.castortech.com/
+			http://www.castortech.com/
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+		 http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
+	<modelVersion>4.0.0</modelVersion>
 
-  <groupId>com.castortech.mdbxjni</groupId>
-  <artifactId>mdbxjni-project</artifactId>
-  <version>99-master-SNAPSHOT</version>
-  <packaging>pom</packaging>
+	<groupId>com.castortech.mdbxjni</groupId>
+	<artifactId>mdbxjni-project</artifactId>
+	<version>99-master-SNAPSHOT</version>
+	<packaging>pom</packaging>
 
-  <name>${project.artifactId}</name>
-  <description>mdbxjni is a jni library for accessing mdbx.</description>
+	<name>${project.artifactId}</name>
+	<description>mdbxjni is a jni library for accessing mdbx.</description>
 
-  <properties>
-    <forge-project-id>mdbxjni</forge-project-id>
-    <forge-project-id-uc>MDBXJNI</forge-project-id-uc>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <hawtjni-version>1.17-SNAPSHOT</hawtjni-version>
-    <java.version>1.8</java.version>
-    <junit-version>4.13.1</junit-version>
-    <mvn-compiler-version>3.7.0</mvn-compiler-version>
-    <mvn-bundle-version>3.5.0</mvn-bundle-version>
-    <mvn-clean-version>3.1.0</mvn-clean-version>
-    <mvn-jar-version>3.1.0</mvn-jar-version>
-    <surefire-version>2.21.0</surefire-version>
-  </properties>
+	<properties>
+		<forge-project-id>mdbxjni</forge-project-id>
+		<forge-project-id-uc>MDBXJNI</forge-project-id-uc>
+		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+		<hawtjni-version>1.19-SNAPSHOT</hawtjni-version>
+		<java.version>1.8</java.version>
+		<guava.version>[30.0-jre,)</guava.version>
+		<junit-version>4.13.1</junit-version>
+		<mvn-compiler-version>3.8.1</mvn-compiler-version>
+		<mvn-bundle-version>5.1.2</mvn-bundle-version>
+		<mvn-clean-version>3.1.0</mvn-clean-version>
+		<mvn-jar-version>3.2.0</mvn-jar-version>
+		<surefire-version>2.22.2</surefire-version>
+	</properties>
 
-  <modules>
-    <module>mdbxjni</module>
-  </modules>
+	<modules>
+		<module>mdbxjni</module>
+	</modules>
 
-  <url>http://${forge-project-id}.fusesource.org</url>
-  <inceptionYear>2009</inceptionYear>
+	<url>http://${forge-project-id}.fusesource.org</url>
+	<inceptionYear>2009</inceptionYear>
 
-  <issueManagement>
-    <system>github</system>
-    <url>https://github.com/castortech/mdbxjni/issues</url>
-  </issueManagement>
+	<issueManagement>
+		<system>github</system>
+		<url>https://github.com/castortech/mdbxjni/issues</url>
+	</issueManagement>
 
-  <licenses>
-    <license>
-      <name>The Apache Software License, Version 2.0</name>
-      <url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
-      <distribution>repo</distribution>
-    </license>
-  </licenses>
+	<licenses>
+		<license>
+			<name>The Apache Software License, Version 2.0</name>
+			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
 
-  <scm>
-    <connection>scm:git:git://github.com/castortech/mdbxjni.git</connection>
-    <developerConnection>scm:git:git@github.com:castortech/mdbxjni.git</developerConnection>
-    <url>https://github.com/castortech/mdbxjni</url>
-  </scm>
+	<scm>
+		<connection>scm:git:git://github.com/castortech/mdbxjni.git</connection>
+		<developerConnection>scm:git:git@github.com:castortech/mdbxjni.git</developerConnection>
+		<url>https://github.com/castortech/mdbxjni</url>
+	</scm>
 
-  <developers>
-    <developer>
-      <id>alpic</id>
-      <name>Alain Picard</name>
-      <timezone>GMT-5</timezone>
-    </developer>
-  </developers>
+	<developers>
+		<developer>
+			<id>alpic</id>
+			<name>Alain Picard</name>
+			<timezone>GMT-5</timezone>
+		</developer>
+	</developers>
 
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit-version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
+	<dependencies>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>${junit-version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
-  <build>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-clean-plugin</artifactId>
-        <version>${mvn-clean-version}</version>
-      </plugin>
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>${mvn-clean-version}</version>
+			</plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${mvn-compiler-version}</version>
-        <configuration>
-          <source>${java.version}</source>
-          <target>${java.version}</target>
-        </configuration>
-      </plugin>
-      
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>${surefire-version}</version>
-        <configuration>
-          <redirectTestOutputToFile>true</redirectTestOutputToFile>
-          <forkMode>once</forkMode>
-          <argLine>-ea</argLine>
-          <trimStackTrace>false</trimStackTrace>
-          <failIfNoTests>false</failIfNoTests>
-          <workingDirectory>${project.build.directory}</workingDirectory>
-          <includes>
-            <include>**/*Test.java</include>
-          </includes>
-        </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>${mvn-compiler-version}</version>
+				<configuration>
+					<source>${java.version}</source>
+					<target>${java.version}</target>
+				</configuration>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<version>${surefire-version}</version>
+				<configuration>
+					<redirectTestOutputToFile>true</redirectTestOutputToFile>
+					<forkMode>once</forkMode>
+					<argLine>-ea</argLine>
+					<trimStackTrace>false</trimStackTrace>
+					<failIfNoTests>false</failIfNoTests>
+					<workingDirectory>${project.build.directory}</workingDirectory>
+					<includes>
+						<include>**/*Test.java</include>
+					</includes>
+				</configuration>
+			</plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>3.7</version>
-        <configuration>
-          <reportPlugins>
-            <plugin>
-              <groupId>org.apache.maven.plugins</groupId>
-              <artifactId>maven-javadoc-plugin</artifactId>
-              <version>3.0.0</version>
-              <configuration>
-                <docfilessubdirs>true</docfilessubdirs>
-                <useStandardDocletOptions>true</useStandardDocletOptions>
-                <charset>UTF-8</charset>
-                <docencoding>UTF-8</docencoding>
-                <breakiterator>true</breakiterator>
-                <version>true</version>
-                <author>true</author>
-                <keywords>true</keywords>
-                <old>true</old>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-site-plugin</artifactId>
+				<version>3.7</version>
+				<configuration>
+				</configuration>
+			</plugin>
 
-                <doctitle>${project.name} API Reference (${project.version})</doctitle>
-                <windowtitle>${project.name} API Reference (${project.version})</windowtitle>
-                <links>
-                  <link>https://docs.oracle.com/javase/8/docs/api</link>
-                </links>
-                <encoding>UTF-8</encoding>
-                <locale>en_US</locale>
-                <linksource>true</linksource>
-                <excludePackageNames>*.internal</excludePackageNames>
-              </configuration>
-            </plugin>
-          </reportPlugins>
-        </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.0.0</version>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
+				<dependencies>
+					<dependency>
+						<groupId>org.fusesource.mvnplugins</groupId>
+						<artifactId>fuse-javadoc-skin</artifactId>
+						<version>1.14</version>
+					</dependency>
+				</dependencies>
 
-        <dependencies>
-          <dependency>
-            <groupId>org.fusesource.mvnplugins</groupId>
-            <artifactId>fuse-javadoc-skin</artifactId>
-            <version>1.14</version>
-          </dependency>
-        </dependencies>
+				<configuration>
+					<docfilessubdirs>true</docfilessubdirs>
+					<useStandardDocletOptions>true</useStandardDocletOptions>
+					<charset>UTF-8</charset>
+					<docencoding>UTF-8</docencoding>
+					<breakiterator>true</breakiterator>
+					<version>true</version>
+					<author>true</author>
+					<keywords>true</keywords>
 
-        <configuration>
-          <docfilessubdirs>true</docfilessubdirs>
-          <useStandardDocletOptions>true</useStandardDocletOptions>
-          <charset>UTF-8</charset>
-          <docencoding>UTF-8</docencoding>
-          <breakiterator>true</breakiterator>
-          <version>true</version>
-          <author>true</author>
-          <keywords>true</keywords>
+					<doctitle>${project.name} API Reference (${project.version})</doctitle>
+					<windowtitle>${project.name} API Reference (${project.version})</windowtitle>
+					<links>
+						<link>https://docs.oracle.com/javase/8/docs/api</link>
+					</links>
+					<encoding>UTF-8</encoding>
+					<locale>en_US</locale>
+					<linksource>true</linksource>
+					<excludePackageNames>*.internal</excludePackageNames>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
 
-          <doctitle>${project.name} API Reference (${project.version})</doctitle>
-          <windowtitle>${project.name} API Reference (${project.version})</windowtitle>
-          <links>
-            <link>https://docs.oracle.com/javase/8/docs/api</link>
-          </links>
-          <encoding>UTF-8</encoding>
-          <locale>en_US</locale>
-          <linksource>true</linksource>
-          <excludePackageNames>*.internal</excludePackageNames>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
 
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>jxr-maven-plugin</artifactId>
-        <version>2.5</version>
-        <configuration>
-          <aggregate>true</aggregate>
-        </configuration>
-      </plugin>
+	<reporting>
+		<plugins>
+		 <plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<docfilessubdirs>true</docfilessubdirs>
+					<useStandardDocletOptions>true</useStandardDocletOptions>
+					<charset>UTF-8</charset>
+					<docencoding>UTF-8</docencoding>
+					<breakiterator>true</breakiterator>
+					<version>true</version>
+					<author>true</author>
+					<keywords>true</keywords>
+					<old>true</old>
+	
+					<doctitle>${project.name} API Reference (${project.version})</doctitle>
+					<windowtitle>${project.name} API Reference (${project.version})</windowtitle>
+					<links>
+						<link>https://docs.oracle.com/javase/8/docs/api</link>
+					</links>
+					<encoding>UTF-8</encoding>
+					<locale>en_US</locale>
+					<linksource>true</linksource>
+					<excludePackageNames>*.internal</excludePackageNames>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>jxr-maven-plugin</artifactId>
+				<version>2.5</version>
+				<configuration>
+					<aggregate>true</aggregate>
+				</configuration>
+			</plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-javadoc-plugin</artifactId>
-        <version>3.0.0</version>
-        <configuration>
-          <excludePackageNames>*.internal</excludePackageNames>
-          <linksource>true</linksource>
-          <links>
-            <link>https://docs.oracle.com/javase/8/docs/api</link>
-          </links>
-        </configuration>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<excludePackageNames>*.internal</excludePackageNames>
+					<linksource>true</linksource>
+					<links>
+						<link>https://docs.oracle.com/javase/8/docs/api</link>
+					</links>
+				</configuration>
+			</plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>2.9</version>
-        <reportSets>
-          <reportSet>
-            <reports>
-              <report>index</report>
-              <report>sumary</report>
-              <report>plugins</report>
-              <report>dependencies</report>
-              <report>mailing-list</report>
-              <report>issue-tracking</report>
-              <report>license</report>
-              <report>scm</report>
-            </reports>
-          </reportSet>
-        </reportSets>
-      </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-project-info-reports-plugin</artifactId>
+				<version>2.9</version>
+				<reportSets>
+					<reportSet>
+						<reports>
+							<report>index</report>
+							<report>sumary</report>
+							<report>plugins</report>
+							<report>dependencies</report>
+							<report>mailing-list</report>
+							<report>issue-tracking</report>
+							<report>license</report>
+							<report>scm</report>
+						</reports>
+					</reportSet>
+				</reportSets>
+			</plugin>
 
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>surefire-report-maven-plugin</artifactId>
-        <version>${surefire-version}</version>
-      </plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>surefire-report-maven-plugin</artifactId>
+				<version>${surefire-version}</version>
+			</plugin>
 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-plugin-plugin</artifactId>
-        <version>3.5.1</version>
-      </plugin>
-    </plugins>
-  </reporting>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-plugin-plugin</artifactId>
+				<version>3.5.1</version>
+			</plugin>
+		</plugins>
+	</reporting>
 
-  <profiles>
-    <profile>
-      <id>download</id>
-      <repositories>
-        <repository>
-          <id>fusesource.nexus.snapshot</id>
-          <name>FuseSource Community Snapshot Repository</name>
-          <url>http://repo.fusesource.com/nexus/content/groups/public-snapshots</url>
-        </repository>
-        <repository>
-          <id>sonatype-nexus</id>
-          <name>Sonatype Nexus</name>
-          <url>https://oss.sonatype.org/content/repositories/public</url>
-          <releases><enabled>true</enabled></releases>
-          <snapshots><enabled>true</enabled></snapshots>
-        </repository>
-      </repositories>
-      <pluginRepositories>
-        <pluginRepository>
-          <id>fusesource.nexus.snapshot</id>
-          <name>FuseSource Community Snapshot Repository</name>
-          <url>http://repo.fusesource.com/nexus/content/groups/public-snapshots</url>
-        </pluginRepository>
-      </pluginRepositories>
-    </profile>
+	<profiles>
+		<profile>
+			<id>download</id>
+			<repositories>
+				<repository>
+					<id>fusesource.nexus.snapshot</id>
+					<name>FuseSource Community Snapshot Repository</name>
+					<url>http://repo.fusesource.com/nexus/content/groups/public-snapshots</url>
+				</repository>
+				<repository>
+					<id>sonatype-nexus</id>
+					<name>Sonatype Nexus</name>
+					<url>https://oss.sonatype.org/content/repositories/public</url>
+					<releases><enabled>true</enabled></releases>
+					<snapshots><enabled>true</enabled></snapshots>
+				</repository>
+			</repositories>
+			<pluginRepositories>
+				<pluginRepository>
+					<id>fusesource.nexus.snapshot</id>
+					<name>FuseSource Community Snapshot Repository</name>
+					<url>http://repo.fusesource.com/nexus/content/groups/public-snapshots</url>
+				</pluginRepository>
+			</pluginRepositories>
+		</profile>
 
-    <profile>
-      <id>full</id>
-      <modules>
-        <module>mdbxjni-osx64</module>
-        <module>mdbxjni-linux64</module>
-        <module>mdbxjni-win64</module>
-        <module>mdbxjni-all</module>
-      </modules>
-    </profile>
+		<profile>
+			<id>full</id>
+			<modules>
+				<module>mdbxjni-osx64</module>
+				<module>mdbxjni-linux64</module>
+				<module>mdbxjni-win64</module>
+				<module>mdbxjni-all</module>
+			</modules>
+		</profile>
 
-    <profile>
-      <id>all</id>
-      <modules>
-        <module>mdbxjni-all</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>osx64</id>
-      <modules>
-        <module>mdbxjni-osx64</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>linux64</id>
-      <modules>
-        <module>mdbxjni-linux64</module>
-      </modules>
-    </profile>
-    <profile>
-      <id>win64</id>
-      <properties>
-        <skipAutogen>true</skipAutogen>
-      </properties>
-      <modules>
-        <module>mdbxjni-win64</module>
-      </modules>
-    </profile>
+		<profile>
+			<id>all</id>
+			<modules>
+				<module>mdbxjni-all</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>osx64</id>
+			<modules>
+				<module>mdbxjni-osx64</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>linux64</id>
+			<modules>
+				<module>mdbxjni-linux64</module>
+			</modules>
+		</profile>
+		<profile>
+			<id>win64</id>
+			<properties>
+				<skipAutogen>true</skipAutogen>
+			</properties>
+			<modules>
+				<module>mdbxjni-win64</module>
+			</modules>
+		</profile>
 
-    <!--
-        Do a license check by running       : mvn -P license license:check
-        Update the license check by running : mvn -P license license:format
-    -->
-    <profile>
-      <id>license</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.mycila.maven-license-plugin</groupId>
-            <artifactId>maven-license-plugin</artifactId>
-            <version>3.0.0</version>
-            <configuration>
-              <quiet>false</quiet>
-              <header>src/main/resources/license-header.txt</header>
-              <aggregate>true</aggregate>
-              <includes>
-                  <include>src/**</include>
-                  <include>**/pom.xml</include>
-              </includes>
-              <excludes>
-                <exclude>**/version.txt</exclude>
-                <exclude>**/license.txt</exclude>
-                <exclude>**/LICENSE.txt</exclude>
-                <exclude>**/LICENSE</exclude>
-                <exclude>**/.svn/**</exclude>
-                <exclude>**/.git/**</exclude>
+		<!--
+				Do a license check by running			 : mvn -P license license:check
+				Update the license check by running : mvn -P license license:format
+		-->
+		<profile>
+			<id>license</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>com.mycila.maven-license-plugin</groupId>
+						<artifactId>maven-license-plugin</artifactId>
+						<version>3.0.0</version>
+						<configuration>
+							<quiet>false</quiet>
+							<header>src/main/resources/license-header.txt</header>
+							<aggregate>true</aggregate>
+							<includes>
+									<include>src/**</include>
+									<include>**/pom.xml</include>
+							</includes>
+							<excludes>
+								<exclude>**/version.txt</exclude>
+								<exclude>**/license.txt</exclude>
+								<exclude>**/LICENSE.txt</exclude>
+								<exclude>**/LICENSE</exclude>
+								<exclude>**/.svn/**</exclude>
+								<exclude>**/.git/**</exclude>
 
-                <!-- ignore files produced during a build -->
-                <exclude>**/target/**</exclude>
+								<!-- ignore files produced during a build -->
+								<exclude>**/target/**</exclude>
 
-                <!-- ignore binary files -->
-                <exclude>**/*.jpg</exclude>
-                <exclude>**/*.png</exclude>
-                <exclude>**/*.gif</exclude>
-                <exclude>**/*.ico</exclude>
-                <exclude>**/*.keystore</exclude>
-              </excludes>
-              <useDefaultExcludes>false</useDefaultExcludes>
-              <mapping>
-                  <jj>JAVADOC_STYLE</jj>
-                  <proto>DOUBLESLASH_STYLE</proto>
-                  <index>SCRIPT_STYLE</index>
-              </mapping>
-            </configuration>
-            <executions>
-              <execution>
-                <goals>
-                  <goal>check</goal>
-                </goals>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-  </profiles>
+								<!-- ignore binary files -->
+								<exclude>**/*.jpg</exclude>
+								<exclude>**/*.png</exclude>
+								<exclude>**/*.gif</exclude>
+								<exclude>**/*.ico</exclude>
+								<exclude>**/*.keystore</exclude>
+							</excludes>
+							<useDefaultExcludes>false</useDefaultExcludes>
+							<mapping>
+									<jj>JAVADOC_STYLE</jj>
+									<proto>DOUBLESLASH_STYLE</proto>
+									<index>SCRIPT_STYLE</index>
+							</mapping>
+						</configuration>
+						<executions>
+							<execution>
+								<goals>
+									<goal>check</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
 </project>
