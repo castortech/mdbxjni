@@ -32,8 +32,8 @@
 		<forge-project-id-uc>MDBXJNI</forge-project-id-uc>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hawtjni-version>1.19-SNAPSHOT</hawtjni-version>
-		<java.version>1.8</java.version>
-		<guava.version>[30.0-jre,)</guava.version>
+		<java-version>1.8</java-version>
+		<guava-version>[30.0-jre,)</guava-version>
 		<junit-version>4.13.1</junit-version>
 		<mvn-compiler-version>3.8.1</mvn-compiler-version>
 		<mvn-bundle-version>5.1.2</mvn-bundle-version>
@@ -98,8 +98,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${mvn-compiler-version}</version>
 				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
+					<source>${java-version}</source>
+					<target>${java-version}</target>
 				</configuration>
 			</plugin>
 			

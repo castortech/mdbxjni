@@ -150,8 +150,8 @@
 				<artifactId>maven-compiler-plugin</artifactId>
 				<version>${mvn-compiler-version}</version>
 				<configuration>
-					<source>${java.version}</source>
-					<target>${java.version}</target>
+					<source>${java-version}</source>
+					<target>${java-version}</target>
 				</configuration>
 			</plugin>
 
