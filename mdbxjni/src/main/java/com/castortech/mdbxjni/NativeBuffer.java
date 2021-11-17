@@ -106,9 +106,9 @@ class NativeBuffer extends NativeObject {
 	private final Allocation allocation;
 	private final long capacity;
 
-	static final private ThreadLocal<Pool> CURRENT_POOL = new ThreadLocal<Pool>();
+	private static final ThreadLocal<Pool> CURRENT_POOL = new ThreadLocal<>();
 
-	static public NativeBuffer create(long capacity) {
+	public static NativeBuffer create(long capacity) {
 		Pool pool = CURRENT_POOL.get();
 		if (pool == null) {
 			Allocation allocation = new Allocation(capacity);
@@ -138,7 +138,7 @@ class NativeBuffer extends NativeObject {
 		}
 	}
 
-	static public NativeBuffer create(byte[] data) {
+	public static NativeBuffer create(byte[] data) {
 		if (data == null) {
 			return null;
 		}
@@ -146,18 +146,18 @@ class NativeBuffer extends NativeObject {
 			return create(data, 0, data.length);
 		}
 	}
-    
-	static public NativeBuffer create(String data) {
+
+	public static NativeBuffer create(String data) {
 		return create(cbytes(data));
 	}
 
-	static public NativeBuffer create(byte[] data, int offset, int length) {
+	public static NativeBuffer create(byte[] data, int offset, int length) {
 		NativeBuffer rc = create(length);
 		rc.write(0, data, offset, length);
 		return rc;
 	}
 
-	static public NativeBuffer create(long pointer, int length) {
+	public static NativeBuffer create(long pointer, int length) {
 		return new NativeBuffer(null, pointer, length);
 	}
 

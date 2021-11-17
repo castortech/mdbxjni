@@ -20,6 +20,10 @@ package com.castortech.mdbxjni;
 
 import java.io.Closeable;
 
+import com.castortech.mdbxjni.JNI.MDBX_envinfo;
+import com.castortech.mdbxjni.JNI.MDBX_stat;
+import com.castortech.mdbxjni.JNI.MDBX_txn_info;
+
 import static com.castortech.mdbxjni.JNI.*;
 import static com.castortech.mdbxjni.Util.checkErrorCode;
 
@@ -98,9 +102,9 @@ public class Transaction extends NativeObject implements Closeable {
 	 *
 	 * Abort the transaction like #mdb_txn_abort(), but keep the transaction handle. #mdb_txn_renew() may reuse
 	 * the handle. This saves allocation overhead if the process will start a new read-only transaction soon,
-	 * and also locking overhead if {@link org.fusesource.lmdbjni.Constants#NOTLS} is in use. The reader table
+	 * and also locking overhead if {@link com.castortech.mdbxjni.Constants#NOTLS} is in use. The reader table
 	 * lock is released, but the table slot stays tied to its thread or #MDB_txn. Use mdb_txn_abort() to discard
-	 * a reset handle, and to free its lock table slot if {@link org.fusesource.lmdbjni.Constants#NOTLS} is in
+	 * a reset handle, and to free its lock table slot if {@link com.castortech.mdbxjni.Constants#NOTLS} is in
 	 * use. Cursors opened within the transaction must not be used again after this call, except with
 	 * #mdb_cursor_renew(). Reader locks generally don't interfere with writers, but they keep old versions of
 	 * database pages allocated. Thus they prevent the old pages from being reused when writers commit new data,
@@ -126,6 +130,59 @@ public class Transaction extends NativeObject implements Closeable {
 		if (self != 0) {
 			mdbx_txn_abort(self);
 			self = 0;
+		}
+	}
+
+	public void broken() {
+		checkErrorCode(env, mdbx_txn_break(pointer()));
+	}
+
+	public TxnInfo info(boolean scanRlt) {
+		MDBX_txn_info rc = new MDBX_txn_info();
+		checkErrorCode(env, mdbx_txn_info(pointer(), rc, scanRlt ? 1 : 0));
+		return new TxnInfo(rc);
+	}
+
+	/**
+	 * Version of the method that runs within a transaction. Replaces previous version from {@link Env}
+	 *
+	 * @return Information about the LMDB environment.
+	 */
+	public EnvInfo envInfo() {
+		MDBX_envinfo rc = new MDBX_envinfo();
+		mdbx_env_info_ex(env.pointer(), pointer(), rc, JNI.SIZEOF_ENVINFO);
+		return new EnvInfo(rc);
+	}
+
+	/**
+	 * Version of the method that runs within a transaction. Replaces previous version from {@link Env}
+	 *
+	 * @return Statistics about the LMDB environment.
+	 */
+	public Stat stat() {
+		MDBX_stat rc = new MDBX_stat();
+		mdbx_env_stat_ex(env.pointer(), pointer(), rc, JNI.SIZEOF_STAT);
+		return new Stat(rc);
+	}
+
+	public int getFlags() {
+		return mdbx_txn_flags(pointer());
+	}
+
+	/**
+	 * @return pointer to user context
+	 */
+	public long getUserContext() {
+		return mdbx_txn_get_userctx(pointer());
+	}
+
+	/**
+	 * Sets the user context to the supplied context native object
+	 * @param ctx
+	 */
+	public void setUserContext(NativeObject ctx) {
+		if (ctx != null) {
+			mdbx_txn_set_userctx(pointer(), ctx.pointer());
 		}
 	}
 

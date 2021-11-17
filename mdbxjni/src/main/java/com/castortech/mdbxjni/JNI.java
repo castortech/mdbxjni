@@ -136,6 +136,8 @@ public class JNI {
 		public char[] git_commit;
 		@JniField(accessor="git.describe", cast = "char *")
 		public char[] git_describe;
+		@JniField(accessor="sourcery", cast = "char *")
+		public char[] sourcery;
 
 //		@JniField(cast = "mdbx_version_info.git *")
 //		public git git = new git();
@@ -330,64 +332,128 @@ public class JNI {
 	//====================================================//
 	// MDBX_constants
 	//====================================================//
+	/** The hard limit for DBI handles*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_MAX_DBI; //The hard limit for DBI handles
+	public static int MDBX_MAX_DBI; //
+
+	/** The maximum size of a data item.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_MAXDATASIZE; //The maximum size of a data item.
+	public static int MDBX_MAXDATASIZE;
+
+	/** The minimal database page size in bytes.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_MIN_PAGESIZE; //The minimal database page size in bytes.
+	public static int MDBX_MIN_PAGESIZE;
+
+	/** The maximal database page size in bytes. */
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_MAX_PAGESIZE; //The maximal database page size in bytes.
+	public static int MDBX_MAX_PAGESIZE;
 
 	//====================================================//
 	// MDBX environment options (MDBX_option_t)
 	//====================================================//
+	/** Controls the maximum number of named databases for the environment.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_max_db; //Controls the maximum number of named databases for the environment.
+	public static int MDBX_opt_max_db;
+
+	/** Defines the maximum number of threads/reader slots for all processes interacting with the database. */
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_max_readers; //Defines the maximum number of threads/reader slots for all processes interacting with the database.
+	public static int MDBX_opt_max_readers;
+
+	/**
+	 * Controls interprocess/shared threshold to force flush the data buffers to disk, if MDBX_SAFE_NOSYNC is
+	 * used.
+	 */
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_sync_bytes; //Controls interprocess/shared threshold to force flush the data buffers to disk, if MDBX_SAFE_NOSYNC is used.
+	public static int MDBX_opt_sync_bytes;
+
+	/**
+	 * Controls interprocess/shared relative period since the last unsteady commit to force flush the data
+	 * buffers to disk, if MDBX_SAFE_NOSYNC is used.
+	 */
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_sync_period; //Controls interprocess/shared relative period since the last unsteady commit to force flush the data buffers to disk, if MDBX_SAFE_NOSYNC is used.
+	public static int MDBX_opt_sync_period;
+
+	/**
+	 * Controls the in-process limit to grow a list of reclaimed/recycled page's numbers for finding a sequence
+	 * of contiguous pages for large data items.
+	 */
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_rp_augment_limit; //Controls the in-process limit to grow a list of reclaimed/recycled page's numbers for finding a sequence of contiguous pages for large data items.
+	public static int MDBX_opt_rp_augment_limit;
+
+	/** Controls the in-process limit to grow a cache of dirty pages for reuse in the current transaction.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_loose_limit; //Controls the in-process limit to grow a cache of dirty pages for reuse in the current transaction.
+	public static int MDBX_opt_loose_limit;
+
+	/** Controls the in-process limit of a pre-allocated memory items for dirty pages.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_dp_reserve_limit; //Controls the in-process limit of a pre-allocated memory items for dirty pages.
+	public static int MDBX_opt_dp_reserve_limit;
+
+	/** Controls the in-process limit of dirty pages for a write transaction.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_txn_dp_limit; //Controls the in-process limit of dirty pages for a write transaction.
+	public static int MDBX_opt_txn_dp_limit;
+
+	/** Controls the in-process initial allocation size for dirty pages list of a write transaction. Default is 1024.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_txn_dp_initial; //Controls the in-process initial allocation size for dirty pages list of a write transaction. Default is 1024.
+	public static int MDBX_opt_txn_dp_initial;
+
+	/** Controls the in-process how maximal part of the dirty pages may be spilled when necessary.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_spill_max_denominator; //Controls the in-process how maximal part of the dirty pages may be spilled when necessary.
+	public static int MDBX_opt_spill_max_denominator;
+
+	/** Controls the in-process how minimal part of the dirty pages should be spilled when necessary.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_spill_min_denominator; //Controls the in-process how minimal part of the dirty pages should be spilled when necessary.
+	public static int MDBX_opt_spill_min_denominator;
+
+	/** Controls the in-process how much of the parent transaction dirty pages will be spilled while start each child transaction.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_spill_parent4child_denominator; //Controls the in-process how much of the parent transaction dirty pages will be spilled while start each child transaction.
+	public static int MDBX_opt_spill_parent4child_denominator;
+
+	/** Controls the in-process threshold of semi-empty pages merge.*/
 	@JniField(flags = { CONSTANT })
-	public static int MDBX_opt_merge_threshold_16dot16_percent; //Controls the in-process threshold of semi-empty pages merge.
+	public static int MDBX_opt_merge_threshold_16dot16_percent;
 
 	// ====================================================//
 	// Database Flags
 	// ====================================================//
+	/** Default (flag == 0). */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DB_DEFAULTS;
+
+	/** Use reverse string comparison for keys. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_REVERSEKEY;
+
+	/** Use sorted duplicates, i.e. allow multi-values for a keys. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DUPSORT;
+
+	/**
+	 * Numeric keys in native byte order either uint32_t or uint64_t. The keys must all be of the same size and
+	 * must be aligned while passing as arguments.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_INTEGERKEY;
+
+	/** With MDBX_DUPSORT; sorted dup items have fixed size. The data values must all be of the same size. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DUPFIXED;
+
+	/**
+	 * With MDBX_DUPSORT and with MDBX_DUPFIXED; dups are fixed size like MDBX_INTEGERKEY -style integers. The
+	 * data values must all be of the same size and must be aligned while passing as arguments.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_INTEGERDUP;
+
+	/** With MDBX_DUPSORT; use reverse string comparison for data values. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_REVERSEDUP;
+
+	/** Create DB if not already existing. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_CREATE;
+
+	/** Opens an existing sub-database created with unknown flags.*/
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DB_ACCEDE;
 
@@ -794,6 +860,9 @@ public class JNI {
 		}
 	}
 
+	@JniField(accessor="sizeof(struct MDBX_envinfo)", flags={CONSTANT})
+	public static int SIZEOF_ENVINFO;
+
 	@JniField(accessor="sizeof(struct MDBX_stat)", flags={CONSTANT})
 	public static int SIZEOF_STAT;
 
@@ -802,8 +871,10 @@ public class JNI {
 	//====================================================//
 //	@JniField(accessor = "const struct MDBX_build_info", flags = { CONSTANT })
 //	public static MDBX_build_info mdbx_build;
-//	@JniField(cast = "const struct MDBX_version_info", flags = { CONSTANT })
-//	public static MDBX_version_info mdbx_version;
+
+//@JniField(accessor="mdbx_version", flags = { CONSTANT })
+//		@JniField(cast = "const struct MDBX_version_info", flags = { CONSTANT })
+//		public static MDBX_version_info mdbx_version;
 
 
 	// ====================================================//
@@ -1013,6 +1084,15 @@ public class JNI {
 			@JniArg(cast = "MDBX_txn **", flags={NO_IN}) long[] txn,
 			@JniArg(cast = "void *") long ctx);
 
+	/**
+	 * Marks transaction as broken.
+	 *
+	 * Function keeps the transaction handle and corresponding locks, but makes impossible to perform any
+	 * operations within a broken transaction. Broken transaction must then be aborted explicitly later.
+	 *
+	 * @param txn
+	 * @return
+	 */
 	@JniMethod
 	public static final native int mdbx_txn_break(
 			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn);
@@ -1050,6 +1130,19 @@ public class JNI {
 	public static final native int mdbx_txn_renew(
 			@JniArg(cast = "MDBX_txn *") long txn);
 
+	/**
+	 * Return information about the MDBX transaction.
+	 *
+	 * @param txn
+	 *          A transaction handle returned by mdbx_txn_begin()
+	 * @param info
+	 *          The address of an MDBX_txn_info structure where the information will be copied.
+	 * @param scanRlt
+	 *          The boolean flag controls the scan of the read lock table to provide complete information. Such
+	 *          scan is relatively expensive and you can avoid it if corresponding fields are not needed. See
+	 *          description of MDBX_txn_info.
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_txn_info(
 			@JniArg(cast = "MDBX_txn *") long txn,
@@ -1136,7 +1229,7 @@ public class JNI {
 	public static final native int mdbx_get_ex(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
+			@JniArg(cast = "MDBX_val *") MDBX_val key,
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "size_t *") long[] values_count);
 
@@ -1152,7 +1245,7 @@ public class JNI {
 	public static final native int mdbx_get_equal_or_great(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
+			@JniArg(cast = "MDBX_val *") MDBX_val key,
 			@JniArg(cast = "MDBX_val *") MDBX_val data);
 
 	@JniMethod
@@ -1473,9 +1566,5 @@ public class JNI {
 //  		@JniArg(cast = "MDBX_txn *") long txn,
 //  		@JniArg(cast = "uint32_t") long dbi,
 //  		@JniArg(cast = "MDBX_cmp_func *") long cmp);
-
-	@JniField(accessor="sizeof(struct MDBX_envinfo)", flags={CONSTANT})
-	public static int SIZEOF_ENVINFO;
-
 
 }

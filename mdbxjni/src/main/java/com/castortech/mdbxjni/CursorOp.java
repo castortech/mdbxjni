@@ -30,19 +30,19 @@ public enum CursorOp {
 
 	/**
 	 * Position at first data item of current key. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
+	 * {@link com.castortech.mdbxjni.Constants#DUPSORT}
 	 */
 	FIRST_DUP(MDBX_FIRST_DUP),
 
 	/**
 	 * Position at key/data pair. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
+	 * {@link com.castortech.mdbxjni.Constants#DUPSORT}
 	 */
 	GET_BOTH(MDBX_GET_BOTH),
 
 	/**
 	 * position at key, nearest data. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
+	 * {@link com.castortech.mdbxjni.Constants#DUPSORT}
 	 */
 	GET_BOTH_RANGE(MDBX_GET_BOTH_RANGE),
 
@@ -52,8 +52,8 @@ public enum CursorOp {
 	/**
 	 * Return key and up to a page of duplicate data items from current cursor
 	 * position. Move cursor to prepare for
-	 * {@link org.fusesource.lmdbjni.Constants#NEXT_MULTIPLE}. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPFIXED}
+	 * {@link com.castortech.mdbxjni.Constants#NEXT_MULTIPLE}. Only for
+	 * {@link com.castortech.mdbxjni.Constants#DUPFIXED}
 	 */
 	GET_MULTIPLE(MDBX_GET_MULTIPLE),
 
@@ -62,7 +62,7 @@ public enum CursorOp {
 
 	/**
 	 * Position at last data item of current key. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
+	 * {@link com.castortech.mdbxjni.Constants#DUPSORT}
 	 */
 	LAST_DUP(MDBX_LAST_DUP),
 
@@ -71,15 +71,15 @@ public enum CursorOp {
 
 	/**
 	 * Position at next data item of current key. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
+	 * {@link com.castortech.mdbxjni.Constants#DUPSORT}
 	 */
 	NEXT_DUP(MDBX_NEXT_DUP),
 
 	/**
 	 * Return key and up to a page of duplicate data items from next cursor
 	 * position. Move cursor to prepare for
-	 * {@link org.fusesource.lmdbjni.Constants#NEXT_MULTIPLE}. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPFIXED}
+	 * {@link com.castortech.mdbxjni.Constants#NEXT_MULTIPLE}. Only for
+	 * {@link com.castortech.mdbxjni.Constants#DUPFIXED}
 	 */
 	NEXT_MULTIPLE(MDBX_NEXT_MULTIPLE),
 
@@ -91,7 +91,7 @@ public enum CursorOp {
 
 	/**
 	 * Position at previous data item of current key. Only for
-	 * {@link org.fusesource.lmdbjni.Constants#DUPSORT}
+	 * {@link com.castortech.mdbxjni.Constants#DUPSORT}
 	 */
 	PREV_DUP(MDBX_PREV_DUP),
 

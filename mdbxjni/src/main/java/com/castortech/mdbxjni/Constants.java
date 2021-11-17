@@ -97,6 +97,8 @@ public class Constants {
 
 	public static final int IMMUTABLE_KEY = 0x2;  //used for secondary db
 
+//public static final MDBX_build_info mdbx_build;
+
 	public static byte[] bytes(String value) {
 		if (value == null) {
 			return null;

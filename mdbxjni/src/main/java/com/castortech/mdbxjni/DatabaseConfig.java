@@ -3,14 +3,23 @@ package com.castortech.mdbxjni;
 import java.util.Comparator;
 
 public class DatabaseConfig implements Cloneable {
+	/** @see JNI#MDBX_REVERSEKEY */
 	private boolean reverseKey = false;
+	/** @see JNI#MDBX_DUPSORT */
 	private boolean dupSort = false;
+	/** @see JNI#MDBX_DUPFIXED */
 	private boolean dupFixed = false;
+	/** @see JNI#MDBX_INTEGERKEY */
 	private boolean integerKey = false;
+	/** @see JNI#MDBX_INTEGERDUP */
 	private boolean integerDup = false;
+	/** @see JNI#MDBX_REVERSEDUP */
 	private boolean reverseDup = false;
+	/** @see JNI#MDBX_CREATE */
 	private boolean create = false;
+	/** @see JNI#MDBX_ACCEDE */
 	private boolean accede = false;
+
 	private Comparator<byte[]> keyComparator;
 	private Comparator<byte[]> dataComparator;
 
@@ -51,6 +60,7 @@ public class DatabaseConfig implements Cloneable {
 		}
 	}
 
+	/** @see JNI#MDBX_REVERSEKEY */
 	public boolean isReverseKey() {
 		return reverseKey;
 	}
@@ -59,6 +69,7 @@ public class DatabaseConfig implements Cloneable {
 		this.reverseKey = reverseKey;
 	}
 
+	/** @see JNI#MDBX_DUPSORT */
 	public boolean isDupSort() {
 		return dupSort;
 	}
@@ -67,6 +78,7 @@ public class DatabaseConfig implements Cloneable {
 		this.dupSort = dupSort;
 	}
 
+	/** @see JNI#MDBX_DUPFIXED */
 	public boolean isDupFixed() {
 		return dupFixed;
 	}
@@ -75,6 +87,7 @@ public class DatabaseConfig implements Cloneable {
 		this.dupFixed = dupFixed;
 	}
 
+	/** @see JNI#MDBX_INTEGERKEY */
 	public boolean isIntegerKey() {
 		return integerKey;
 	}
@@ -83,6 +96,7 @@ public class DatabaseConfig implements Cloneable {
 		this.integerKey = integerKey;
 	}
 
+	/** @see JNI#MDBX_INTEGERDUP */
 	public boolean isIntegerDup() {
 		return integerDup;
 	}
@@ -91,6 +105,7 @@ public class DatabaseConfig implements Cloneable {
 		this.integerDup = integerDup;
 	}
 
+	/** @see JNI#MDBX_REVERSEDUP */
 	public boolean isReverseDup() {
 		return reverseDup;
 	}
@@ -99,6 +114,7 @@ public class DatabaseConfig implements Cloneable {
 		this.reverseDup = reverseDup;
 	}
 
+	/** @see JNI#MDBX_CREATE */
 	public boolean isCreate() {
 		return create;
 	}
@@ -107,6 +123,7 @@ public class DatabaseConfig implements Cloneable {
 		this.create = create;
 	}
 
+	/** @see JNI#MDBX_ACCEDE */
 	public boolean isAccede() {
 		return accede;
 	}

@@ -182,7 +182,7 @@ public class EnvInfo {
 	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
-		return "EnvInfo [=" +
+		return "EnvInfo [" +
 				"geo=" + geo +
 				", mapSize=" + mapSize +
 				", lastPgNo=" + lastPgNo +

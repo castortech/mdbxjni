@@ -87,7 +87,7 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#drop(Transaction, boolean)
+	 * @see com.castortech.mdbxjni.Database#drop(Transaction, boolean)
 	 */
 	public void drop(boolean delete) {
 		Transaction tx = env.createTransaction();
@@ -127,13 +127,35 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#get(Transaction, byte[])
+	 * @see com.castortech.mdbxjni.Database#get(Transaction, byte[])
 	 */
 	public byte[] get(byte[] key) {
 		checkArgNotNull(key, "key"); //$NON-NLS-1$
 		Transaction tx = env.createTransaction();
 		try {
 			return get(tx, key);
+		}
+		finally {
+			tx.commit();
+		}
+	}
+
+	public EntryCount getEx(byte[] key) {
+		checkArgNotNull(key, "key"); //$NON-NLS-1$
+		Transaction tx = env.createTransaction();
+		try {
+			return getEx(tx, key);
+		}
+		finally {
+			tx.commit();
+		}
+	}
+
+	public Entry getEqOrGE(byte[] key) {
+		checkArgNotNull(key, "key"); //$NON-NLS-1$
+		Transaction tx = env.createTransaction();
+		try {
+			return getEqOrGE(tx, key);
 		}
 		finally {
 			tx.commit();
@@ -148,7 +170,7 @@ public class Database extends NativeObject implements Closeable {
 	 * This function retrieves key/data pairs from the database. The address and
 	 * length of the data associated with the specified \b key are returned in the
 	 * structure to which \b data refers. If the database supports duplicate keys
-	 * ({@link org.fusesource.lmdbjni.Constants#DUPSORT}) then the first data item
+	 * ({@link com.castortech.mdbxjni.Constants#DUPSORT}) then the first data item
 	 * for the key will be returned. Retrieval of other items requires the use of
 	 * #mdb_cursor_get().
 	 *
@@ -175,8 +197,75 @@ public class Database extends NativeObject implements Closeable {
 		}
 	}
 
+	@SuppressWarnings("nls")
+	public EntryCount getEx(Transaction tx, byte[] key) {
+		checkArgNotNull(key, "key");
+		if (tx == null) {
+			return getEx(key);
+		}
+
+		checkArgNotNull(tx, "tx");
+		NativeBuffer keyBuffer = NativeBuffer.create(key);
+		try {
+			return getEx(tx, keyBuffer);
+		}
+		finally {
+			keyBuffer.delete();
+		}
+	}
+
+	/**
+	 * <p>
+	 * Get items from a database.
+	 * </p>
+	 * Get equal or greater item from a database. This is equivalent to using a cursor with MDBX_SET_LOWERBOUND.
+	 * <br />
+	 * Briefly this function does the same as mdbx_get() with a few differences: <br />
+	 *
+	 * <ol>
+	 * <li>Return equal or great (due comparison function) key-value pair, but not only exactly matching with the
+	 * key.</li>
+	 * <li>On success return MDBX_SUCCESS if key found exactly, and MDBX_RESULT_TRUE otherwise. Moreover, for
+	 * databases with MDBX_DUPSORT flag the data argument also will be used to match over multi-value/duplicates,
+	 * and MDBX_SUCCESS will be returned only when BOTH the key and the data match exactly.</li>
+	 * <li>Updates BOTH the key and the data for pointing to the actual key-value pair inside the database.
+	 * <p>
+	 * </li>
+	 * </ol>
+	 *
+	 * @param tx
+	 *            transaction handle
+	 * @param key
+	 *            The key to search for in the database
+	 * @return Entry representing the key value pair
+	 */
+	@SuppressWarnings("nls")
+	public Entry getEqOrGE(Transaction tx, byte[] key) {
+		checkArgNotNull(key, "key");
+		if (tx == null) {
+			return getEqOrGE(key);
+		}
+
+		checkArgNotNull(tx, "tx");
+		NativeBuffer keyBuffer = NativeBuffer.create(key);
+		try {
+			return getEqOrGE(tx, keyBuffer);
+		}
+		finally {
+			keyBuffer.delete();
+		}
+	}
+
 	private byte[] get(Transaction tx, NativeBuffer keyBuffer) {
 		return get(tx, new Value(keyBuffer));
+	}
+
+	private EntryCount getEx(Transaction tx, NativeBuffer keyBuffer) {
+		return getEx(tx, new Value(keyBuffer));
+	}
+
+	private Entry getEqOrGE(Transaction tx, NativeBuffer keyBuffer) {
+		return getEqOrGE(tx, new Value(keyBuffer));
 	}
 
 	/* package */byte[] get(Transaction tx, Value key) {
@@ -189,18 +278,37 @@ public class Database extends NativeObject implements Closeable {
 		return value.toByteArray();
 	}
 
+	/* package */EntryCount getEx(Transaction tx, Value key) {
+		Value value = new Value();
+		long[] valCnt = new long[1];
+
+		int rc = mdbx_get_ex(tx.pointer(), pointer(), key, value, valCnt);
+		if (rc == MDBX_NOTFOUND) {
+			return null;
+		}
+		checkErrorCode(env, rc);
+		return new EntryCount(key.toByteArray(), value.toByteArray(), valCnt[0]);
+	}
+
+	/* package */Entry getEqOrGE(Transaction tx, Value key) {
+		Value value = new Value();
+		int rc = mdbx_get_equal_or_great(tx.pointer(), pointer(), key, value);
+		if (rc == MDBX_NOTFOUND) {
+			return null;
+		}
+		checkErrorCode(env, rc);
+		return new Entry(key.toByteArray(), value.toByteArray());
+	}
+
 	/**
-	 * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
-	 */
-	/**
-	 * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
+	 * @see com.castortech.mdbxjni.Database#put(Transaction, byte[], byte[], int)
 	 */
 	public byte[] put(byte[] key, byte[] value) {
 		return put(key, value, 0);
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
+	 * @see com.castortech.mdbxjni.Database#put(Transaction, byte[], byte[], int)
 	 */
 	public byte[] put(byte[] key, byte[] value, int flags) {
 		checkArgNotNull(key, "key"); //$NON-NLS-1$
@@ -214,7 +322,7 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#put(Transaction, byte[], byte[], int)
+	 * @see com.castortech.mdbxjni.Database#put(Transaction, byte[], byte[], int)
 	 */
 	public byte[] put(Transaction tx, byte[] key, byte[] value) {
 		return put(tx, key, value, 0);
@@ -228,7 +336,7 @@ public class Database extends NativeObject implements Closeable {
 	 * This function stores key/data pairs in the database. The default behavior is
 	 * to enter the new key/data pair, replacing any previously existing key if
 	 * duplicates are disallowed, or adding a duplicate data item if duplicates are
-	 * allowed ({@link org.fusesource.lmdbjni.Constants#DUPSORT}).
+	 * allowed ({@link com.castortech.mdbxjni.Constants#DUPSORT}).
 	 *
 	 * @param tx
 	 *            transaction handle
@@ -241,32 +349,32 @@ public class Database extends NativeObject implements Closeable {
 	 *            0 or by bitwise OR'ing together one or more of the values
 	 *            described here.
 	 *            <ul>
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NODUPDATA} - enter the
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NODUPDATA} - enter the
 	 *            new key/data pair only if it does not already appear in the
 	 *            database. This flag may only be specified if the database was
-	 *            opened with {@link org.fusesource.lmdbjni.Constants#DUPSORT}. The
+	 *            opened with {@link com.castortech.mdbxjni.Constants#DUPSORT}. The
 	 *            function will return #MDB_KEYEXIST if the key/data pair already
 	 *            appears in the database.
-	 *            <li{@link org.fusesource.lmdbjni.Constants#NOOVERWRITE} - enter
+	 *            <li{@link com.castortech.mdbxjni.Constants#NOOVERWRITE} - enter
 	 *            the new key/data pair only if the key does not already appear in
 	 *            the database. The function will return
 	 *            {@link org.fusesource.MDBXException.LMDBException#KEYEXIST} if the key
 	 *            already appears in the database, even if the database supports
-	 *            duplicates ({@link org.fusesource.lmdbjni.Constants#DUPSORT}). The
+	 *            duplicates ({@link com.castortech.mdbxjni.Constants#DUPSORT}). The
 	 *            \b data parameter will be set to point to the existing item.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#RESERVE} - reserve
+	 *            <li>{@link com.castortech.mdbxjni.Constants#RESERVE} - reserve
 	 *            space for data of the given size, but don't copy the given data.
 	 *            Instead, return a pointer to the reserved space, which the caller
 	 *            can fill in later - before the next update operation or the
 	 *            transaction ends. This saves an extra memcpy if the data is being
 	 *            generated later. LMDB does nothing else with this memory, the
 	 *            caller is expected to modify all of the space requested.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#APPEND} - append the
+	 *            <li>{@link com.castortech.mdbxjni.Constants#APPEND} - append the
 	 *            given key/data pair to the end of the database. No key comparisons
 	 *            are performed. This option allows fast bulk loading when keys are
 	 *            already known to be in the correct order. Loading unsorted keys
 	 *            with this flag will cause data corruption.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#APPENDDUP} - as above,
+	 *            <li>{@link com.castortech.mdbxjni.Constants#APPENDDUP} - as above,
 	 *            but for sorted dup data.
 	 *            </ul>
 	 *
@@ -310,6 +418,7 @@ public class Database extends NativeObject implements Closeable {
 		boolean hasSec = getSecondaries() != null;
 		Set<Value> valueSlices = new HashSet<>();
 
+		//do we already have an entry under this key, if so secondary will need to be replaced (delete + put)
 		if (hasSec && (flags & MDBX_NOOVERWRITE) == 0 && (flags & MDBX_NODUPDATA) == 0) {
 			try (Cursor cursor = openCursor(tx)) {
 				byte[] key = keySlice.toByteArray();
@@ -346,7 +455,7 @@ public class Database extends NativeObject implements Closeable {
 	protected void putSecondaries(Transaction tx, Value keySlice, Value valueSlice) {
 		if (secondaries != null) {
 			for (SecondaryDatabase secDb : secondaries) {
-				SecondaryDbConfig secConfig = (SecondaryDbConfig) secDb.getConfig();
+				SecondaryDbConfig secConfig = (SecondaryDbConfig)secDb.getConfig();
 				byte[] pKey = keySlice.toByteArray();
 				byte[] secKey = secConfig.getKeyCreator().createSecondaryKey(secDb, pKey, valueSlice.toByteArray());
 				secDb.internalPut(tx, secKey, pKey);
@@ -355,14 +464,134 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#delete(Transaction, byte[], byte[])
+	 * @see com.castortech.mdbxjni.Database#replace(Transaction, byte[], byte[], int)
+	 */
+	public byte[] replace(byte[] key, byte[] value) {
+		return replace(key, value, 0);
+	}
+
+	/**
+	 * @see com.castortech.mdbxjni.Database#replace(Transaction, byte[], byte[], int)
+	 */
+	public byte[] replace(byte[] key, byte[] value, int flags) {
+		checkArgNotNull(key, "key"); //$NON-NLS-1$
+		Transaction tx = env.createTransaction();
+		try {
+			return replace(tx, key, value, flags);
+		}
+		finally {
+			tx.commit();
+		}
+	}
+
+	/**
+	 * @see com.castortech.mdbxjni.Database#replace(Transaction, byte[], byte[], int)
+	 */
+	public byte[] replace(Transaction tx, byte[] key, byte[] value) {
+		return replace(tx, key, value, 0);
+	}
+
+	@SuppressWarnings("nls")
+	public byte[] replace(Transaction tx, byte[] key, byte[] value, int flags) {
+		checkArgNotNull(key, "key");
+		checkArgNotNull(value, "value");
+
+		if (tx == null) {
+			return replace(key, value, flags);
+		}
+
+		checkArgNotNull(tx, "tx");
+		NativeBuffer keyBuffer = NativeBuffer.create(key);
+		try {
+			NativeBuffer valueBuffer = NativeBuffer.create(value);
+			try {
+				return replace(tx, keyBuffer, valueBuffer, flags);
+			}
+			finally {
+				valueBuffer.delete();
+			}
+		}
+		finally {
+			keyBuffer.delete();
+		}
+	}
+
+	private byte[] replace(Transaction tx, NativeBuffer keyBuffer, NativeBuffer valueBuffer, int flags) {
+		return replace(tx, new Value(keyBuffer), new Value(valueBuffer), flags);
+	}
+
+	private byte[] replace(Transaction tx, Value keySlice, Value valueSlice, int flags) {
+		checkSize(env, keySlice);
+		if ((flags & MDBX_DUPSORT) != 0) {
+			checkSize(env, valueSlice);
+		}
+
+		boolean hasSec = getSecondaries() != null;
+		Set<Value> valueSlices = new HashSet<>();
+
+		//do we already have an entry under this key, if so secondary will need to be replaced (delete + put)
+		if (hasSec && (flags & MDBX_NOOVERWRITE) == 0 && (flags & MDBX_NODUPDATA) == 0) {
+			try (Cursor cursor = openCursor(tx)) {
+				byte[] key = keySlice.toByteArray();
+				Entry entry = cursor.get(CursorOp.SET, key);
+
+				if (entry != null) {
+					NativeBuffer valueBuffer = NativeBuffer.create(entry.getValue());
+					valueSlices.add(Value.create(valueBuffer));
+				}
+			}
+		}
+
+		//allocate buffer with 50% larger than new value which should be enough to avoid retry
+		NativeBuffer oldValBuffer = NativeBuffer.create((long)(valueSlice.iov_len * 1.5));
+		try {
+			Value oldValSlice = new Value(oldValBuffer);
+			boolean didResize = false;
+			int rc = 0;
+
+			while (true) {
+				rc = mdbx_replace(tx.pointer(), pointer(), keySlice, valueSlice, oldValSlice, flags);
+				if (rc == MDBX_RESULT_TRUE) {  //we have a dirty old value that couldn't fit in old value buffer
+					if (didResize) {  //been here already, bail out.
+						throw new MDBXException("put failed, falling into loop", rc); //$NON-NLS-1$
+					}
+					didResize = true;
+					oldValBuffer.delete();  //release existing buffer
+					oldValBuffer = NativeBuffer.create(oldValSlice.iov_len);
+				}
+				else {
+					break;
+				}
+			}
+
+			// If the put failed, throw an exception..
+			if (rc != 0) {
+				throw new MDBXException("put failed", rc); //$NON-NLS-1$
+			}
+
+			if (!valueSlices.isEmpty()) {
+				deleteSecondaries(tx, keySlice, valueSlices);
+			}
+
+			putSecondaries(tx, keySlice, valueSlice);
+
+			return oldValSlice.toByteArray();
+		}
+		finally {
+			oldValBuffer.delete();
+		}
+	}
+
+
+	/**
+	 * @see com.castortech.mdbxjni.Database#delete(Transaction, byte[], byte[])
 	 */
 	public boolean delete(byte[] key) {
 		return delete(key, null);
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#delete(Transaction, byte[], byte[])
+	 * @see com.castortech.mdbxjni.Database#delete(Transaction, byte[], byte[])
 	 */
 	public boolean delete(byte[] key, byte[] value) {
 		checkArgNotNull(key, "key"); //$NON-NLS-1$
@@ -376,7 +605,7 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Database#delete(Transaction, byte[], byte[])
+	 * @see com.castortech.mdbxjni.Database#delete(Transaction, byte[], byte[])
 	 */
 	public boolean delete(Transaction tx, byte[] key) {
 		return delete(tx, key, null);
@@ -387,7 +616,7 @@ public class Database extends NativeObject implements Closeable {
 	 * Removes key/data pairs from the database.
 	 * </p>
 	 * If the database does not support sorted duplicate data items
-	 * ({@link org.fusesource.lmdbjni.Constants#DUPSORT}) the value parameter is
+	 * ({@link com.castortech.mdbxjni.Constants#DUPSORT}) the value parameter is
 	 * ignored. If the database supports sorted duplicates and the data parameter is
 	 * NULL, all of the duplicate data items for the key will be deleted. Otherwise,
 	 * if the data parameter is non-NULL only the matching data item will be
@@ -439,6 +668,8 @@ public class Database extends NativeObject implements Closeable {
 		boolean hasSec = getSecondaries() != null;
 		Set<Value> valueSlices = new HashSet<>();
 
+		//here we just have a key w/o value, so all values must be deleted.
+		//for secondaries where the value is the key, all such values must be retrieved and deleted
 		if (valueSlice == null && hasSec) {
 			try (Cursor cursor = openCursor(tx)) {
 				byte[] key = keySlice.toByteArray();
@@ -446,11 +677,11 @@ public class Database extends NativeObject implements Closeable {
 
 				while (entry != null) {
 					NativeBuffer valueBuffer = NativeBuffer.create(entry.getValue());
-					// System.out.println(string(entry.getValue()));
 					valueSlices.add(Value.create(valueBuffer));
 					if (getConfig(tx).isDupSort()) {
 						entry = cursor.get(CursorOp.NEXT_DUP, key, entry.getValue());
-					} else {
+					}
+					else {
 						entry = null;
 					}
 				}
@@ -534,7 +765,26 @@ public class Database extends NativeObject implements Closeable {
 	public int getFlags(Transaction tx) {
 		long[] flags = new long[1];
 		checkErrorCode(env, mdbx_dbi_flags(tx.pointer(), pointer(), flags));
-		return (int) flags[0];
+		return (int)flags[0];
+	}
+
+	public FlagState getFlagsState(Transaction tx) {
+		long[] flags = new long[1];
+		long[] state = new long[1];
+		checkErrorCode(env, mdbx_dbi_flags_ex(tx.pointer(), pointer(), flags, state));
+		return new FlagState((int)flags[0], (int)state[0]);
+	}
+
+	public int getDupsortDepthMask(Transaction tx) {
+		long[] mask = new long[1];
+		checkErrorCode(env, mdbx_dbi_dupsort_depthmask(tx.pointer(), pointer(), mask));
+		return (int)mask[0];
+	}
+
+	public int getSequence(Transaction tx, long increment) {
+		long[] res = new long[1];
+		checkErrorCode(env, mdbx_dbi_sequence(tx.pointer(), pointer(), res, increment));
+		return (int)res[0];
 	}
 
 	public DatabaseConfig getConfig() {

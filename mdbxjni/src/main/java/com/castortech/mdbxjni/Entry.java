@@ -26,26 +26,26 @@ import java.util.Map;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Entry implements Map.Entry<byte[], byte[]> {
-  private final byte[] key;
-  private final byte[] value;
+	private final byte[] key;
+	private final byte[] value;
 
-  public Entry(byte[] key, byte[] value) {
-    this.key = key;
-    this.value = value;
-  }
+	public Entry(byte[] key, byte[] value) {
+		this.key = key;
+		this.value = value;
+	}
 
-  @Override
+	@Override
 	public byte[] getKey() {
-    return key;
-  }
+		return key;
+	}
 
-  @Override
+	@Override
 	public byte[] getValue() {
-    return value;
-  }
+		return value;
+	}
 
-  @Override
+	@Override
 	public byte[] setValue(byte[] value) {
-    throw new UnsupportedOperationException();
-  }
+		throw new UnsupportedOperationException();
+	}
 }

@@ -50,7 +50,7 @@ public class Env extends NativeObject implements Closeable {
 	 * @param path
 	 *            directory in which the database files reside. This directory must
 	 *            already exist and be writable.
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public Env(String path) {
 		super(create());
@@ -70,14 +70,14 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public void open(String path) {
 		open(path, 0);
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public void open(String path, int flags) {
 		open(path, flags, 0644);
@@ -99,7 +99,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            to 0 or by bitwise OR'ing together one or more of the values
 	 *            described here. Flags set by mdb_env_set_flags() are also used.
 	 *            <ul>
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#FIXEDMAP} use a fixed
+	 *            <li>{@link com.castortech.mdbxjni.Constants#FIXEDMAP} use a fixed
 	 *            address for the mmap region. This flag must be specified when
 	 *            creating the environment, and is stored persistently in the
 	 *            environment. If successful, the memory map will always reside at
@@ -108,23 +108,23 @@ public class Env extends NativeObject implements Closeable {
 	 *            option may not always work, depending on how the operating system
 	 *            has allocated memory to shared libraries and other uses. The
 	 *            feature is highly experimental.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NOSUBDIR} By default,
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOSUBDIR} By default,
 	 *            LMDB creates its environment in a directory whose pathname is
 	 *            given in \b path, and creates its data and lock files under that
 	 *            directory. With this option, \b path is used as-is for the
 	 *            database main data file. The database lock file is the \b path
 	 *            with "-lock" appended.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#RDONLY} Open the
+	 *            <li>{@link com.castortech.mdbxjni.Constants#RDONLY} Open the
 	 *            environment in read-only mode. No write operations will be
 	 *            allowed. LMDB will still modify the lock file - except on
 	 *            read-only filesystems, where LMDB does not use locks.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#WRITEMAP} Use a
+	 *            <li>{@link com.castortech.mdbxjni.Constants#WRITEMAP} Use a
 	 *            writeable memory map unless MDB_RDONLY is set. This is faster and
 	 *            uses fewer mallocs, but loses protection from application bugs
 	 *            like wild pointer writes and other bad updates into the database.
 	 *            Incompatible with nested transactions. Processes with and without
 	 *            MDB_WRITEMAP on the same environment do not cooperate well.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NOMETASYNC} Flush
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOMETASYNC} Flush
 	 *            system buffers to disk only once per transaction, omit the
 	 *            metadata flush. Defer that until the system flushes files to disk,
 	 *            or next non-MDB_RDONLY commit or #mdb_env_sync(). This
@@ -133,7 +133,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            (atomicity, consistency, isolation) but not D (durability)
 	 *            database property. This flag may be changed at any time using
 	 *            #mdb_env_set_flags().
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NOSYNC} Don't flush
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOSYNC} Don't flush
 	 *            system buffers to disk when committing a transaction. This
 	 *            optimization means a system crash can corrupt the database or lose
 	 *            the last transactions if buffers are not yet flushed to disk. The
@@ -148,13 +148,13 @@ public class Env extends NativeObject implements Closeable {
 	 *            #mdb_env_sync() is called. (#MDB_MAPASYNC | #MDB_WRITEMAP) may be
 	 *            preferable. This flag may be changed at any time using
 	 *            #mdb_env_set_flags().
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#MAPASYNC} When using
+	 *            <li>{@link com.castortech.mdbxjni.Constants#MAPASYNC} When using
 	 *            #MDB_WRITEMAP, use asynchronous flushes to disk. As with
 	 *            #MDB_NOSYNC, a system crash can then corrupt the database or lose
 	 *            the last transactions. Calling #mdb_env_sync() ensures on-disk
 	 *            database integrity until next commit. This flag may be changed at
 	 *            any time using #mdb_env_set_flags().
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NOTLS} Don't use
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOTLS} Don't use
 	 *            Thread-Local Storage. Tie reader locktable slots to #MDB_txn
 	 *            objects instead of to threads. I.e. #mdb_txn_reset() keeps the
 	 *            slot reseved for the #MDB_txn object. A thread may use parallel
@@ -163,20 +163,20 @@ public class Env extends NativeObject implements Closeable {
 	 *            user threads over individual OS threads need this option. Such an
 	 *            application must also serialize the write transactions in an OS
 	 *            thread, since LMDB's write locking is unaware of the user threads.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NOLOCK} Don't do any
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOLOCK} Don't do any
 	 *            locking. If concurrent access is anticipated, the caller must
 	 *            manage all concurrency itself. For proper operation the caller
 	 *            must enforce single-writer semantics, and must ensure that no
 	 *            readers are using old transactions while a writer is active. The
 	 *            simplest approach is to use an exclusive lock so that no readers
 	 *            may be active at all when a writer begins.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NORDAHEAD} Turn off
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NORDAHEAD} Turn off
 	 *            readahead. Most operating systems perform readahead on read
 	 *            requests by default. This option turns it off if the OS supports
 	 *            it. Turning it off may help random read performance when the DB is
 	 *            larger than RAM and system RAM is full. The option is not
 	 *            implemented on Windows.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#NOMEMINIT} Don't
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOMEMINIT} Don't
 	 *            initialize malloc'd memory before writing to unused spaces in the
 	 *            data file. By default, memory for pages written to the data file
 	 *            is obtained using malloc. While these pages may be reused in
@@ -342,14 +342,14 @@ public class Env extends NativeObject implements Closeable {
 	 * Data is always written to disk when #mdb_txn_commit() is called, but the
 	 * operating system may keep it buffered. LMDB always flushes the OS buffers
 	 * upon commit as well, unless the environment was opened with
-	 * {@link org.fusesource.lmdbjni.Constants#NOSYNC} or in part
-	 * {@link org.fusesource.lmdbjni.Constants#NOMETASYNC}
+	 * {@link com.castortech.mdbxjni.Constants#NOSYNC} or in part
+	 * {@link com.castortech.mdbxjni.Constants#NOMETASYNC}
 	 *
 	 * @param force
 	 *            force a synchronous flush. Otherwise if the environment has the
-	 *            {@link org.fusesource.lmdbjni.Constants#NOSYNC} flag set the
+	 *            {@link com.castortech.mdbxjni.Constants#NOSYNC} flag set the
 	 *            flushes will be omitted, and with
-	 *            {@link org.fusesource.lmdbjni.Constants#MAPASYNC} they will be
+	 *            {@link com.castortech.mdbxjni.Constants#MAPASYNC} they will be
 	 *            asynchronous.
 	 */
 	public void sync() {
@@ -366,6 +366,10 @@ public class Env extends NativeObject implements Closeable {
 
 	public void sync(boolean force, boolean nonblock) {
 		checkErrorCode(this, mdbx_env_sync_ex(pointer(), force ? 1 : 0, nonblock ? 1 : 0));
+	}
+
+	public void syncPoll() {
+		checkErrorCode(this, mdbx_env_sync_poll(pointer()));
 	}
 
 	/**
@@ -401,6 +405,18 @@ public class Env extends NativeObject implements Closeable {
 		checkErrorCode(this, mdbx_env_set_mapsize(pointer(), size));
 	}
 
+	public void setGeometry(long lower, long now, long upper, long growthStep, long shrinkThreshold,
+			long pageSize) {
+		checkErrorCode(this, mdbx_env_set_geometry(pointer(), lower, now, upper, growthStep, shrinkThreshold,
+				pageSize));
+	}
+
+	public long getMaxDbs() {
+		long[] rc = new long[1];
+		checkErrorCode(this, mdbx_env_get_maxdbs(pointer(), rc));
+		return rc[0];
+	}
+
 	/**
 	 * <p>
 	 * Set the maximum number of named databases for the environment.
@@ -434,7 +450,7 @@ public class Env extends NativeObject implements Closeable {
 	 * readers in the the environment. The default is 126. Starting a read-only
 	 * transaction normally ties a lock table slot to the current thread until the
 	 * environment closes or the thread exits. If
-	 * {@link org.fusesource.lmdbjni.Constants#NOTLS} is in use, #mdb_txn_begin()
+	 * {@link com.castortech.mdbxjni.Constants#NOTLS} is in use, #mdb_txn_begin()
 	 * instead ties the slot to the MDB_txn object until it or the #MDB_env object
 	 * is destroyed. This function may only be called after #mdb_env_create() and
 	 * before #mdb_env_open().
@@ -465,8 +481,28 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @return Information about the LMDB environment.
+	 * @return pointer to user context
 	 */
+	public long getUserContext() {
+		return mdbx_env_get_userctx(pointer());
+	}
+
+	/**
+	 * Sets the user context to the supplied context native object
+	 * @param ctx
+	 */
+	public void setUserContext(NativeObject ctx) {
+		if (ctx != null) {
+			mdbx_env_set_userctx(pointer(), ctx.pointer());
+		}
+	}
+
+	/**
+	 * @return Information about the LMDB environment.
+	 *
+	 * @deprecated Use {@link Transaction#envInfo()} instead.
+	 */
+	@Deprecated
 	public EnvInfo info() {
 		MDBX_envinfo rc = new MDBX_envinfo();
 		mdbx_env_info(pointer(), rc, JNI.SIZEOF_ENVINFO);
@@ -475,7 +511,10 @@ public class Env extends NativeObject implements Closeable {
 
 	/**
 	 * @return Statistics about the LMDB environment.
+	 *
+	 * @deprecated Use {@link Transaction#stat()} instead.
 	 */
+	@Deprecated
 	public Stat stat() {
 		MDBX_stat rc = new MDBX_stat();
 		mdbx_env_stat(pointer(), rc, JNI.SIZEOF_STAT);
@@ -498,21 +537,21 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#createTransaction(Transaction, boolean)
+	 * @see com.castortech.mdbxjni.Env#createTransaction(Transaction, boolean)
 	 */
 	public Transaction createReadTransaction() {
 		return createTransaction(null, true);
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#createTransaction(Transaction, boolean)
+	 * @see com.castortech.mdbxjni.Env#createTransaction(Transaction, boolean)
 	 */
 	public Transaction createWriteTransaction() {
 		return createTransaction(null, false);
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#createTransaction(Transaction, boolean)
+	 * @see com.castortech.mdbxjni.Env#createTransaction(Transaction, boolean)
 	 */
 	public Transaction createTransaction(Transaction parent) {
 		return createTransaction(parent, false);
@@ -550,17 +589,21 @@ public class Env extends NativeObject implements Closeable {
 	 * @return transaction handle
 	 * @note A transaction and its cursors must only be used by a single thread, and
 	 *       a thread may only have a single transaction at a time. If
-	 *       {@link org.fusesource.lmdbjni.Constants#NOTLS} is in use, this does not
+	 *       {@link com.castortech.mdbxjni.Constants#NOTLS} is in use, this does not
 	 *       apply to read-only transactions.
 	 * @note Cursors may not span transactions.
 	 */
 	public Transaction createTransaction(Transaction parent, boolean readOnly) {
 		long[] txpointer = new long[1];
-		// System.err.println("JNI creating transaction, parent: " + (parent == null ?
-		// null :parent.self) + ",id:" + self);
-
 		checkErrorCode(this, mdbx_txn_begin(pointer(),
 				parent == null ? 0 : parent.pointer(), readOnly ? MDBX_RDONLY : 0, txpointer));
+		return new Transaction(this, txpointer[0]);
+	}
+
+	public Transaction createTransaction(Transaction parent, boolean readOnly, NativeObject ctx) {
+		long[] txpointer = new long[1];
+		checkErrorCode(this, mdbx_txn_begin_ex(pointer(),
+				parent == null ? 0 : parent.pointer(), readOnly ? MDBX_RDONLY : 0, txpointer, ctx.pointer()));
 		return new Transaction(this, txpointer[0]);
 	}
 
@@ -595,33 +638,33 @@ public class Env extends NativeObject implements Closeable {
 	 *            or by bitwise OR'ing together one or more of the values described
 	 *            here.
 	 *            <ul>
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#REVERSEKEY} Keys are
+	 *            <li>{@link com.castortech.mdbxjni.Constants#REVERSEKEY} Keys are
 	 *            strings to be compared in reverse order, from the end of the
 	 *            strings to the beginning. By default, Keys are treated as strings
 	 *            and compared from beginning to end.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#DUPSORT} Duplicate
+	 *            <li>{@link com.castortech.mdbxjni.Constants#DUPSORT} Duplicate
 	 *            keys may be used in the database. (Or, from another perspective,
 	 *            keys may have multiple data items, stored in sorted order.) By
 	 *            default keys must be unique and may have only a single data item.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#INTEGERKEY} Keys are
+	 *            <li>{@link com.castortech.mdbxjni.Constants#INTEGERKEY} Keys are
 	 *            binary integers in native byte order. Setting this option requires
 	 *            all keys to be the same size, typically sizeof(int) or
 	 *            sizeof(size_t).
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#DUPFIXED} This flag
+	 *            <li>{@link com.castortech.mdbxjni.Constants#DUPFIXED} This flag
 	 *            may only be used in combination with
-	 *            {@link org.fusesource.lmdbjni.Constants#DUPSORT}. This option
+	 *            {@link com.castortech.mdbxjni.Constants#DUPSORT}. This option
 	 *            tells the library that the data items for this database are all
 	 *            the same size, which allows further optimizations in storage and
 	 *            retrieval. When all data items are the same size, the
 	 *            #MDB_GET_MULTIPLE and #MDB_NEXT_MULTIPLE cursor operations may be
 	 *            used to retrieve multiple items at once.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#INTEGERDUP} This
+	 *            <li>{@link com.castortech.mdbxjni.Constants#INTEGERDUP} This
 	 *            option specifies that duplicate data items are also integers, and
 	 *            should be sorted as such.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#REVERSEDUP} This
+	 *            <li>{@link com.castortech.mdbxjni.Constants#REVERSEDUP} This
 	 *            option specifies that duplicate data items should be compared as
 	 *            strings in reverse order.
-	 *            <li>{@link org.fusesource.lmdbjni.Constants#CREATE} Create the
+	 *            <li>{@link com.castortech.mdbxjni.Constants#CREATE} Create the
 	 *            named database if it doesn't exist. This option is not allowed in
 	 *            a read-only transaction or a read-only environment.
 	 * @return A database handle.
@@ -656,7 +699,7 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public Database openDatabase() {
 		return openDatabase(null, Constants.CREATE);
@@ -667,7 +710,7 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public Database openDatabase(String name) {
 		return openDatabase(name, Constants.CREATE);
@@ -678,7 +721,7 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public Database openDatabase(String name, int flags) {
 		// checkArgNotNull(name, "name");
@@ -769,7 +812,7 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see org.fusesource.lmdbjni.Env#open(String, int, int)
+	 * @see com.castortech.mdbxjni.Env#open(String, int, int)
 	 */
 	public SecondaryDatabase openSecondaryDatabase(Database primary, String name) {
 		return openSecondaryDatabase(primary, name, Constants.CREATE);
