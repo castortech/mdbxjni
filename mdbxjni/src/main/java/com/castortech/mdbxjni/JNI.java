@@ -38,6 +38,9 @@ public class JNI {
 	public static final Library JNI_LIB = new Library("mdbxjni", JNI.class); //$NON-NLS-1$
 
 	static {
+		//Needed to avoid java.lang.UnsatisfiedLinkError: Can't find dependent libraries
+		//The sha1 strategy on windows will prohibit the JNI lib to find the DB lib.
+		System.setProperty("hawtjni.strategy", "temp"); //$NON-NLS-1$ //$NON-NLS-2$
 		JNI.DB_LIB.load();
 		JNI.JNI_LIB.load();
 		init();
@@ -145,18 +148,18 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"major=" + major +
-					", minor=" + minor +
-					", release=" + release +
-					", revision=" + revision +
+			return "{" + //$NON-NLS-1$
+					"major=" + major + //$NON-NLS-1$
+					", minor=" + minor + //$NON-NLS-1$
+					", release=" + release + //$NON-NLS-1$
+					", revision=" + revision + //$NON-NLS-1$
 //					", git=" + git +
 					'}';
 		}
 
 		@SuppressWarnings("nls")
 		public String getVersionString() {
-			return "" + major + '.' + minor + '.' + release + '.' + revision;
+			return "" + major + '.' + minor + '.' + release + '.' + revision; //$NON-NLS-1$
 		}
 	}
 
@@ -182,12 +185,12 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"datetime=" + new String(datetime) +
-					", target=" + new String(target) +
-					", options=" + new String(options) +
-					", compiler=" + new String(compiler) +
-					", flags=" + new String(flags) +
+			return "{" + //$NON-NLS-1$
+					"datetime=" + new String(datetime) + //$NON-NLS-1$
+					", target=" + new String(target) + //$NON-NLS-1$
+					", options=" + new String(options) + //$NON-NLS-1$
+					", compiler=" + new String(compiler) + //$NON-NLS-1$
+					", flags=" + new String(flags) + //$NON-NLS-1$
 					'}';
 		}
 	}
@@ -217,15 +220,15 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"txn_id=" + txn_id +
-					", txn_reader_lag=" + txn_reader_lag +
-					", txn_space_used=" + txn_space_used +
-					", txn_space_limit_soft=" + txn_space_limit_soft +
-					", txn_space_limit_hard=" + txn_space_limit_hard +
-					", txn_space_retired=" + txn_space_retired +
-					", txn_space_leftover=" + txn_space_leftover +
-					", txn_space_dirty=" + txn_space_dirty +
+			return "{" + //$NON-NLS-1$
+					"txn_id=" + txn_id + //$NON-NLS-1$
+					", txn_reader_lag=" + txn_reader_lag + //$NON-NLS-1$
+					", txn_space_used=" + txn_space_used + //$NON-NLS-1$
+					", txn_space_limit_soft=" + txn_space_limit_soft + //$NON-NLS-1$
+					", txn_space_limit_hard=" + txn_space_limit_hard + //$NON-NLS-1$
+					", txn_space_retired=" + txn_space_retired + //$NON-NLS-1$
+					", txn_space_leftover=" + txn_space_leftover + //$NON-NLS-1$
+					", txn_space_dirty=" + txn_space_dirty + //$NON-NLS-1$
 					'}';
 		}
 	}
@@ -253,14 +256,14 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"preparation=" + preparation +
-					", gc=" + gc +
-					", audit=" + audit +
-					", write=" + write +
-					", sync=" + sync +
-					", ending=" + ending +
-					", whole=" + whole +
+			return "{" + //$NON-NLS-1$
+					"preparation=" + preparation + //$NON-NLS-1$
+					", gc=" + gc + //$NON-NLS-1$
+					", audit=" + audit + //$NON-NLS-1$
+					", write=" + write + //$NON-NLS-1$
+					", sync=" + sync + //$NON-NLS-1$
+					", ending=" + ending + //$NON-NLS-1$
+					", whole=" + whole + //$NON-NLS-1$
 					'}';
 		}
 	}
@@ -282,11 +285,11 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"x=" + x +
-					", y=" + y +
-					", z=" + z +
-					", v=" + v +
+			return "{" + //$NON-NLS-1$
+					"x=" + x + //$NON-NLS-1$
+					", y=" + y + //$NON-NLS-1$
+					", z=" + z + //$NON-NLS-1$
+					", v=" + v + //$NON-NLS-1$
 					'}';
 		}
 	}
@@ -778,49 +781,49 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"mi_geo_lower=" + mi_geo_lower +
-					", mi_geo_upper=" + mi_geo_upper +
-					", mi_geo_current=" + mi_geo_current +
-					", mi_geo_shrink=" + mi_geo_shrink +
-					", mi_geo_grow=" + mi_geo_grow +
-					", mi_mapsize=" + mi_mapsize +
-					", mi_last_pgno=" + mi_last_pgno +
-					", mi_recent_txnid=" + mi_recent_txnid +
-					", mi_latter_reader_txnid=" + mi_latter_reader_txnid +
-					", mi_self_latter_reader_txnid=" + mi_self_latter_reader_txnid +
-					", mi_meta0_txnid=" + mi_meta0_txnid +
-					", mi_meta0_sign=" + mi_meta0_sign +
-					", mi_meta1_txnid=" + mi_meta1_txnid +
-					", mi_meta1_sign=" + mi_meta1_sign +
-					", mi_meta2_txnid=" + mi_meta2_txnid +
-					", mi_meta2_sign=" + mi_meta2_sign +
-					", mi_maxreaders=" + mi_maxreaders +
-					", mi_numreaders=" + mi_numreaders +
-					", mi_dxb_pagesize=" + mi_dxb_pagesize +
-					", mi_sys_pagesize=" + mi_sys_pagesize +
-					", mi_bootid_current_x=" + mi_bootid_current_x +
-					", mi_bootid_current_y=" + mi_bootid_current_y +
-					", mi_bootid_meta0_x=" + mi_bootid_meta0_x +
-					", mi_bootid_meta0_y=" + mi_bootid_meta0_y +
-					", mi_bootid_meta1_x=" + mi_bootid_meta1_x +
-					", mi_bootid_meta1_y=" + mi_bootid_meta1_y +
-					", mi_bootid_meta2_x=" + mi_bootid_meta2_x +
-					", mi_bootid_meta2_y=" + mi_bootid_meta2_y +
-					", mi_unsync_volume=" + mi_unsync_volume +
-					", mi_autosync_threshold=" + mi_autosync_threshold +
-					", mi_since_sync_seconds16dot16=" + mi_since_sync_seconds16dot16 +
-					", mi_autosync_period_seconds16dot16=" + mi_autosync_period_seconds16dot16 +
-					", mi_since_reader_check_seconds16dot16=" + mi_since_reader_check_seconds16dot16 +
-					", mi_mode=" + mi_mode +
-					", mi_pgop_stat_newly=" + mi_pgop_stat_newly +
-					", mi_pgop_stat_cow=" + mi_pgop_stat_cow +
-					", mi_pgop_stat_clone=" + mi_pgop_stat_clone +
-					", mi_pgop_stat_split=" + mi_pgop_stat_split +
-					", mi_pgop_stat_merge=" + mi_pgop_stat_merge +
-					", mi_pgop_stat_spill=" + mi_pgop_stat_spill +
-					", mi_pgop_stat_unspill=" + mi_pgop_stat_unspill +
-					", mi_pgop_stat_wops=" + mi_pgop_stat_wops +
+			return "{" + //$NON-NLS-1$
+					"mi_geo_lower=" + mi_geo_lower + //$NON-NLS-1$
+					", mi_geo_upper=" + mi_geo_upper + //$NON-NLS-1$
+					", mi_geo_current=" + mi_geo_current + //$NON-NLS-1$
+					", mi_geo_shrink=" + mi_geo_shrink + //$NON-NLS-1$
+					", mi_geo_grow=" + mi_geo_grow + //$NON-NLS-1$
+					", mi_mapsize=" + mi_mapsize + //$NON-NLS-1$
+					", mi_last_pgno=" + mi_last_pgno + //$NON-NLS-1$
+					", mi_recent_txnid=" + mi_recent_txnid + //$NON-NLS-1$
+					", mi_latter_reader_txnid=" + mi_latter_reader_txnid + //$NON-NLS-1$
+					", mi_self_latter_reader_txnid=" + mi_self_latter_reader_txnid + //$NON-NLS-1$
+					", mi_meta0_txnid=" + mi_meta0_txnid + //$NON-NLS-1$
+					", mi_meta0_sign=" + mi_meta0_sign + //$NON-NLS-1$
+					", mi_meta1_txnid=" + mi_meta1_txnid + //$NON-NLS-1$
+					", mi_meta1_sign=" + mi_meta1_sign + //$NON-NLS-1$
+					", mi_meta2_txnid=" + mi_meta2_txnid + //$NON-NLS-1$
+					", mi_meta2_sign=" + mi_meta2_sign + //$NON-NLS-1$
+					", mi_maxreaders=" + mi_maxreaders + //$NON-NLS-1$
+					", mi_numreaders=" + mi_numreaders + //$NON-NLS-1$
+					", mi_dxb_pagesize=" + mi_dxb_pagesize + //$NON-NLS-1$
+					", mi_sys_pagesize=" + mi_sys_pagesize + //$NON-NLS-1$
+					", mi_bootid_current_x=" + mi_bootid_current_x + //$NON-NLS-1$
+					", mi_bootid_current_y=" + mi_bootid_current_y + //$NON-NLS-1$
+					", mi_bootid_meta0_x=" + mi_bootid_meta0_x + //$NON-NLS-1$
+					", mi_bootid_meta0_y=" + mi_bootid_meta0_y + //$NON-NLS-1$
+					", mi_bootid_meta1_x=" + mi_bootid_meta1_x + //$NON-NLS-1$
+					", mi_bootid_meta1_y=" + mi_bootid_meta1_y + //$NON-NLS-1$
+					", mi_bootid_meta2_x=" + mi_bootid_meta2_x + //$NON-NLS-1$
+					", mi_bootid_meta2_y=" + mi_bootid_meta2_y + //$NON-NLS-1$
+					", mi_unsync_volume=" + mi_unsync_volume + //$NON-NLS-1$
+					", mi_autosync_threshold=" + mi_autosync_threshold + //$NON-NLS-1$
+					", mi_since_sync_seconds16dot16=" + mi_since_sync_seconds16dot16 + //$NON-NLS-1$
+					", mi_autosync_period_seconds16dot16=" + mi_autosync_period_seconds16dot16 + //$NON-NLS-1$
+					", mi_since_reader_check_seconds16dot16=" + mi_since_reader_check_seconds16dot16 + //$NON-NLS-1$
+					", mi_mode=" + mi_mode + //$NON-NLS-1$
+					", mi_pgop_stat_newly=" + mi_pgop_stat_newly + //$NON-NLS-1$
+					", mi_pgop_stat_cow=" + mi_pgop_stat_cow + //$NON-NLS-1$
+					", mi_pgop_stat_clone=" + mi_pgop_stat_clone + //$NON-NLS-1$
+					", mi_pgop_stat_split=" + mi_pgop_stat_split + //$NON-NLS-1$
+					", mi_pgop_stat_merge=" + mi_pgop_stat_merge + //$NON-NLS-1$
+					", mi_pgop_stat_spill=" + mi_pgop_stat_spill + //$NON-NLS-1$
+					", mi_pgop_stat_unspill=" + mi_pgop_stat_unspill + //$NON-NLS-1$
+					", mi_pgop_stat_wops=" + mi_pgop_stat_wops + //$NON-NLS-1$
 					'}';
 		}
 	}
@@ -848,14 +851,14 @@ public class JNI {
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
-			return "{" +
-					"ms_branch_pages=" + ms_branch_pages +
-					", ms_psize=" + ms_psize +
-					", ms_depth=" + ms_depth +
-					", ms_leaf_pages=" + ms_leaf_pages +
-					", ms_overflow_pages=" + ms_overflow_pages +
-					", ms_entries=" + ms_entries +
-					", ms_mod_txnid=" + ms_mod_txnid +
+			return "{" + //$NON-NLS-1$
+					"ms_branch_pages=" + ms_branch_pages + //$NON-NLS-1$
+					", ms_psize=" + ms_psize + //$NON-NLS-1$
+					", ms_depth=" + ms_depth + //$NON-NLS-1$
+					", ms_leaf_pages=" + ms_leaf_pages + //$NON-NLS-1$
+					", ms_overflow_pages=" + ms_overflow_pages + //$NON-NLS-1$
+					", ms_entries=" + ms_entries + //$NON-NLS-1$
+					", ms_mod_txnid=" + ms_mod_txnid + //$NON-NLS-1$
 					'}';
 		}
 	}
