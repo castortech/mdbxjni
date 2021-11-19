@@ -524,6 +524,11 @@ public class Env extends NativeObject implements Closeable {
 	public float percentageFull() {
 		Stat stat2 = stat();
 		EnvInfo info2 = info();
+
+		if (stat2.ms_psize == 0) {
+			return 0.0f;
+		}
+
 		long nbrPages = info2.getMapSize() / stat2.ms_psize;
 		return (info2.getLastPgNo() / (float)nbrPages) * 100;
 	}
