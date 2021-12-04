@@ -1,7 +1,7 @@
 package com.castortech.mdbxjni;
 
 /**
- * Information about the LMDB environment.
+ * Information about the MDBX environment.
  */
 public class EnvInfo {
 	private final Geo geo;

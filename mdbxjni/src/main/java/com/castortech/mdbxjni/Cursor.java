@@ -187,13 +187,13 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 *          <li>{@link com.castortech.mdbxjni.Constants#NODUPDATA} - enter the new key/data pair only if it
 	 *          does not already appear in the database. This flag may only be specified if the database was
 	 *          opened with {@link com.castortech.mdbxjni.Constants#DUPSORT}. The function will return
-	 *          {@link org.fusesource.MDBXException.LMDBException#KEYEXIST} if the key/data pair already appears in
+	 *          {@link com.castortech.mdbxjni.MDBXException.Status#KEYEXIST} if the key/data pair already appears in
 	 *          the database.
 	 *          <li>{@link com.castortech.mdbxjni.Constants#NOOVERWRITE} - enter the new key/data pair only if
 	 *          the key does not already appear in the database. The function will return
-	 *          {@link org.fusesource.MDBXException.LMDBException#KEYEXIST} if the key already appears in the
+	 *          {@link com.castortech.mdbxjni.MDBXException.Status#KEYEXIST} if the key already appears in the
 	 *          database, even if the database supports duplicates
-	 *          ({@link org.fusesource.MDBXException.LMDBException#KEYEXIST}).
+	 *          ({@link com.castortech.mdbxjni.MDBXException.Status#KEYEXIST}).
 	 *          <li>{@link com.castortech.mdbxjni.Constants#RESERVE} - reserve space for data of the given size,
 	 *          but don't copy the given data. Instead, return a pointer to the reserved space, which the caller
 	 *          can fill in later. This saves an extra memcpy if the data is being generated later.

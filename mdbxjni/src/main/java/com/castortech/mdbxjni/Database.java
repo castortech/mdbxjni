@@ -55,7 +55,7 @@ public class Database extends NativeObject implements Closeable {
 	 * handle or one of its cursors any further. Do not close a handle if an
 	 * existing transaction has modified its database. Doing so can cause
 	 * misbehavior from database corruption to errors like
-	 * {@link org.fusesource.MDBXException.LMDBException#BAD_VALSIZE} (since the DB name
+	 * {@link com.castortech.mdbxjni.MDBXException.Status#BAD_VALSIZE} (since the DB name
 	 * is gone).
 	 */
 	@Override
@@ -358,7 +358,7 @@ public class Database extends NativeObject implements Closeable {
 	 *            <li{@link com.castortech.mdbxjni.Constants#NOOVERWRITE} - enter
 	 *            the new key/data pair only if the key does not already appear in
 	 *            the database. The function will return
-	 *            {@link org.fusesource.MDBXException.LMDBException#KEYEXIST} if the key
+	 *            {@link com.castortech.mdbxjni.MDBXException.Status#KEYEXIST} if the key
 	 *            already appears in the database, even if the database supports
 	 *            duplicates ({@link com.castortech.mdbxjni.Constants#DUPSORT}). The
 	 *            \b data parameter will be set to point to the existing item.
@@ -367,7 +367,7 @@ public class Database extends NativeObject implements Closeable {
 	 *            Instead, return a pointer to the reserved space, which the caller
 	 *            can fill in later - before the next update operation or the
 	 *            transaction ends. This saves an extra memcpy if the data is being
-	 *            generated later. LMDB does nothing else with this memory, the
+	 *            generated later. MDBX does nothing else with this memory, the
 	 *            caller is expected to modify all of the space requested.
 	 *            <li>{@link com.castortech.mdbxjni.Constants#APPEND} - append the
 	 *            given key/data pair to the end of the database. No key comparisons

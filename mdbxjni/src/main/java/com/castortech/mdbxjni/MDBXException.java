@@ -19,7 +19,7 @@
 package com.castortech.mdbxjni;
 
 /**
- * General exception thrown when error codes are reported by LMDB.
+ * General exception thrown when error codes are reported by MDBX.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */

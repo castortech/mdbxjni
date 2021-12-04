@@ -1,7 +1,7 @@
 package com.castortech.mdbxjni;
 
 /**
- * Statistics about the LMDB environment.
+ * Statistics about the MDBX environment.
  */
 public class Stat extends JNI.MDBX_stat {
 	Stat(JNI.MDBX_stat rc) {
