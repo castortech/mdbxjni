@@ -38,7 +38,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import static org.junit.Assert.*;
 
 /**
- * Unit tests for the LMDB API.
+ * Unit tests for the MDBX API.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */

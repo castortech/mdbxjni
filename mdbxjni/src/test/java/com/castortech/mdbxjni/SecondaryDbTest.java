@@ -34,7 +34,7 @@ import static org.junit.Assert.*;
 import static com.castortech.mdbxjni.Constants.*;
 
 /**
- * Unit tests for the LMDB API.
+ * Unit tests for the MDBX API.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
@@ -59,12 +59,12 @@ public class SecondaryDbTest {
 			Env.pushMemoryPool(10);
 			Env.popMemoryPool();
 			Env.popMemoryPool();
-			
+
 			SecondaryDbConfig secConfig = new SecondaryDbConfig();
             secConfig.setCreate(true);
             secConfig.setDupSort(true);
-            
-			try (Database db = env.openDatabase("primary"); 
+
+			try (Database db = env.openDatabase("primary");
 					SecondaryDatabase secDb = env.openSecondaryDatabase(db, "secondary", secConfig)) {
 				doTest(env, db, secDb);
 			}
@@ -163,16 +163,16 @@ public class SecondaryDbTest {
 
 		//secondary get after put
 		assertArrayEquals(secDb.get(bytes("red")), bytes("London"));
-		
+
 		//standard put & get back
 		assertNull(db.put(bytes("New York"), bytes("gray")));
 		assertArrayEquals(db.get(bytes("New York")), bytes("gray"));
-		
+
 		//change value (secondary needs to update as well)
 		assertNull(db.put(bytes("New York"), bytes("green")));
 		assertArrayEquals(db.get(bytes("New York")), bytes("green"));
 		assertNull(secDb.get(bytes("gray")));
-		
+
 		//try to change with flag
 		assertArrayEquals(db.put(bytes("New York"), bytes("silver"), NOOVERWRITE), bytes("green"));
 
@@ -181,25 +181,25 @@ public class SecondaryDbTest {
 
 		//secondary get of unique
 		assertArrayEquals(secDb.get(bytes("red")), bytes("London"));
-		
+
 		//secondary get of multiple (return last value)
 		assertArrayEquals(secDb.get(bytes("green")), bytes("New York"));
 
 		//secondary cursor to get multiple
 		try (Transaction tx = env.createReadTransaction(); Cursor cursor = secDb.openCursor(tx)) {
 			LinkedList<String> values = new LinkedList<>();
-			
+
 			byte[] key = bytes("green");
 			Entry entry = cursor.get(CursorOp.SET, key);
-            
+
            	while (entry != null) {
 				values.add(string(entry.getValue()));
             	entry = cursor.get(CursorOp.NEXT_DUP, key, entry.getValue());
-            }				
+            }
 
 			assertEquals(Arrays.asList(new String[] { "New York", "Tampa" }), values);
 		}
-		
+
 		//standard get
 		assertArrayEquals(db.get(bytes("London")), bytes("red"));
 		assertArrayEquals(db.get(bytes("New York")), bytes("green"));
@@ -216,7 +216,7 @@ public class SecondaryDbTest {
 			assertEquals(Arrays.asList(new String[] { "London", "New York", "Tampa" }), keys);
 			assertEquals(Arrays.asList(new String[] { "red", "green", "green" }), values);
 		}
-		
+
 		//secondary cursor db scan
 		try (Transaction tx = env.createReadTransaction(); Cursor cursor = secDb.openCursor(tx)) {
 			// Lets verify cursoring works..
@@ -240,16 +240,17 @@ public class SecondaryDbTest {
 
 		// We should not be able to delete it again.
 		assertFalse(db.delete(bytes("New York")));
-		
+
 		//standard delete and test of now empty secondary
 		assertTrue(db.delete(bytes("Tampa")));
 		assertNull(secDb.get(bytes("green")));
-		
+
 		// put /w readonly transaction should fail.
 		try (Transaction tx = env.createReadTransaction()) {
 			db.put(tx, bytes("New York"), bytes("silver"));
-			fail("Expected LMDBException");
-		} catch (MDBXException e) {
+			fail("Expected MDBXException");
+		}
+		catch (MDBXException e) {
 			assertTrue(e.getErrorCode() > 0);
 		}
 		env.sync(true);

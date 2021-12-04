@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 import static com.castortech.mdbxjni.Constants.*;
 
 /**
- * Unit tests for the LMDB API.
+ * Unit tests for the MDBX API.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
@@ -180,7 +180,7 @@ public class EnvTest {
 		// put /w readonly transaction should fail.
 		try (Transaction tx = env.createReadTransaction()) {
 			db.put(tx, bytes("New York"), bytes("silver"));
-			fail("Expected LMDBException");
+			fail("Expected MDBXException");
 		}
 		catch (MDBXException e) {
 			assertTrue(e.getErrorCode() > 0);

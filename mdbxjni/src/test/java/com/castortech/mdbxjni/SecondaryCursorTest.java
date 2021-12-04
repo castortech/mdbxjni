@@ -35,7 +35,7 @@ import static org.junit.Assert.*;
 import static com.castortech.mdbxjni.Constants.*;
 
 /**
- * Unit tests for the LMDB API.
+ * Unit tests for the MDBX API.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
@@ -47,10 +47,10 @@ public class SecondaryCursorTest {
 	Env env;
 	Database db;
 	SecondaryDatabase secDb;
-	
+
 	@Rule
 	public TemporaryFolder tmp = new TemporaryFolder();
-	
+
 	@Before
 	public void before() throws IOException {
 		String path = tmp.newFolder().getCanonicalPath();
@@ -71,7 +71,7 @@ public class SecondaryCursorTest {
 		db.close();
 		Env.popMemoryPool();
 		env.close();
-	}	
+	}
 
 	@Test
 	public void doTests() {
@@ -92,12 +92,12 @@ public class SecondaryCursorTest {
 				cursor.put(bytes("London"), bytes("red"), 0);
 			}
 			tx.commit();
-			
+
 			// secondary get after put
 			assertArrayEquals(secDb.get(bytes("red")), bytes("London"));
 		}
 	}
-	
+
 	// standard put & get back
 	private void doTest2() {
 		try (Transaction tx = env.createWriteTransaction()) {
@@ -109,7 +109,7 @@ public class SecondaryCursorTest {
 			assertArrayEquals(db.get(bytes("New York")), bytes("gray"));
 		}
 	}
-	
+
 	//change value (secondary needs to update as well)
 	private void doTest3() {
 		try (Transaction tx = env.createWriteTransaction()) {
@@ -121,7 +121,7 @@ public class SecondaryCursorTest {
 			assertArrayEquals(db.get(bytes("New York")), bytes("green"));
 			assertNull(secDb.get(bytes("gray")));
 		}
-	}	
+	}
 
 	// try to change with flag
 	private void doTest4() {
@@ -134,7 +134,7 @@ public class SecondaryCursorTest {
 			assertArrayEquals(db.get(bytes("New York")), bytes("green"));
 		}
 	}
-	
+
 	// various gets
 	private void doTest5() {
 		// standard get
@@ -210,7 +210,7 @@ public class SecondaryCursorTest {
 			assertFalse(db.delete(bytes("New York")));
 		}
 	}
-	
+
 	// standard delete and test of now empty secondary
 	private void doTest7() {
 		try (Transaction tx = env.createWriteTransaction()) {

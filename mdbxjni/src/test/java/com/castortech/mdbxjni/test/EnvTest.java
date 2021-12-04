@@ -32,7 +32,7 @@ import static com.castortech.mdbxjni.Constants.NEXT;
 import static com.castortech.mdbxjni.Constants.*;
 
 /**
- * Unit tests for the LMDB API.
+ * Unit tests for the MDBX API.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
@@ -95,6 +95,11 @@ public class EnvTest extends TestCase {
 		assertEquals(db.get(bytes("London")), bytes("red"));
 		assertEquals(db.get(bytes("New York")), bytes("blue"));
 
+		{
+			Stat stat = env.stat();
+			System.out.println("Env stat:" + stat);
+		}
+
 		Transaction tx = env.createTransaction();
 		Cursor cursor = db.openCursor(tx);
 
@@ -108,10 +113,10 @@ public class EnvTest extends TestCase {
 		int sequence = db.getSequence(tx, 1);
 		System.out.println("Db sequence:" + sequence);
 
-		EnvInfo envInfo = tx.envInfo();
+		EnvInfo envInfo = env.info(tx);
 		System.out.println("Tx env info:" + envInfo);
 
-		Stat stat = tx.stat();
+		Stat stat = env.stat(tx);
 		System.out.println("Tx stat:" + stat);
 
 		// Lets verify cursoring works..
@@ -138,7 +143,7 @@ public class EnvTest extends TestCase {
 			TxnInfo txnInfo = tx.info(false);
 			System.out.println("TxInfo:" + txnInfo);
 			db.put(tx, bytes("New York"), bytes("silver"));
-			fail("Expected LMDBException");
+			fail("Expected MDBXException");
 		}
 		catch (MDBXException e) {
 			assertEquals(MDBXException.Status.EACCES.getStatusCode(), e.getErrorCode());
