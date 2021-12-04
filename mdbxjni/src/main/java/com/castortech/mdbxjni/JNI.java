@@ -34,13 +34,17 @@ import static org.fusesource.hawtjni.runtime.ArgFlag.*;
  */
 @JniClass
 public class JNI {
-	public static final Library DB_LIB = new Library("mdbx", JNI.class); //$NON-NLS-1$
-	public static final Library JNI_LIB = new Library("mdbxjni", JNI.class); //$NON-NLS-1$
+	public static final Library DB_LIB;
+	public static final Library JNI_LIB;
 
 	static {
 		//Needed to avoid java.lang.UnsatisfiedLinkError: Can't find dependent libraries
 		//The sha1 strategy on windows will prohibit the JNI lib to find the DB lib.
 		System.setProperty("hawtjni.strategy", "temp"); //$NON-NLS-1$ //$NON-NLS-2$
+
+		DB_LIB = new Library("mdbx", JNI.class); //$NON-NLS-1$
+		JNI_LIB = new Library("mdbxjni", JNI.class); //$NON-NLS-1$
+
 		JNI.DB_LIB.load();
 		JNI.JNI_LIB.load();
 		init();
@@ -907,10 +911,10 @@ public class JNI {
 			@JniArg(cast = "char *") long buf,
 			@JniArg(cast = "size_t") long buflen);
 
-	@JniMethod(cast = "char *")
+	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)", cast = "char *")
 	public static final native long mdbx_strerror_ANSI2OEM(int errnum);
 
-	@JniMethod(cast = "char *")
+	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)", cast = "char *")
 	public static final native long mdbx_strerror_r_ANSI2OEM(int errnum,
 			@JniArg(cast = "char *") long buf,
 			@JniArg(cast = "size_t") long buflen);
