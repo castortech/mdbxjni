@@ -20,8 +20,6 @@ package com.castortech.mdbxjni;
 
 import java.io.Closeable;
 
-import com.castortech.mdbxjni.JNI.MDBX_envinfo;
-import com.castortech.mdbxjni.JNI.MDBX_stat;
 import com.castortech.mdbxjni.JNI.MDBX_txn_info;
 
 import static com.castortech.mdbxjni.JNI.*;
@@ -141,28 +139,6 @@ public class Transaction extends NativeObject implements Closeable {
 		MDBX_txn_info rc = new MDBX_txn_info();
 		checkErrorCode(env, mdbx_txn_info(pointer(), rc, scanRlt ? 1 : 0));
 		return new TxnInfo(rc);
-	}
-
-	/**
-	 * Version of the method that runs within a transaction. Replaces previous version from {@link Env}
-	 *
-	 * @return Information about the LMDB environment.
-	 */
-	public EnvInfo envInfo() {
-		MDBX_envinfo rc = new MDBX_envinfo();
-		mdbx_env_info_ex(env.pointer(), pointer(), rc, JNI.SIZEOF_ENVINFO);
-		return new EnvInfo(rc);
-	}
-
-	/**
-	 * Version of the method that runs within a transaction. Replaces previous version from {@link Env}
-	 *
-	 * @return Statistics about the LMDB environment.
-	 */
-	public Stat stat() {
-		MDBX_stat rc = new MDBX_stat();
-		mdbx_env_stat_ex(env.pointer(), pointer(), rc, JNI.SIZEOF_STAT);
-		return new Stat(rc);
 	}
 
 	public int getFlags() {

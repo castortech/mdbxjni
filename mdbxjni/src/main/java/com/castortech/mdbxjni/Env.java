@@ -109,15 +109,15 @@ public class Env extends NativeObject implements Closeable {
 	 *            has allocated memory to shared libraries and other uses. The
 	 *            feature is highly experimental.
 	 *            <li>{@link com.castortech.mdbxjni.Constants#NOSUBDIR} By default,
-	 *            LMDB creates its environment in a directory whose pathname is
+	 *            MDBX creates its environment in a directory whose pathname is
 	 *            given in \b path, and creates its data and lock files under that
 	 *            directory. With this option, \b path is used as-is for the
 	 *            database main data file. The database lock file is the \b path
 	 *            with "-lock" appended.
 	 *            <li>{@link com.castortech.mdbxjni.Constants#RDONLY} Open the
 	 *            environment in read-only mode. No write operations will be
-	 *            allowed. LMDB will still modify the lock file - except on
-	 *            read-only filesystems, where LMDB does not use locks.
+	 *            allowed. MDBX will still modify the lock file - except on
+	 *            read-only file systems, where MDBX does not use locks.
 	 *            <li>{@link com.castortech.mdbxjni.Constants#WRITEMAP} Use a
 	 *            writeable memory map unless MDB_RDONLY is set. This is faster and
 	 *            uses fewer mallocs, but loses protection from application bugs
@@ -157,12 +157,12 @@ public class Env extends NativeObject implements Closeable {
 	 *            <li>{@link com.castortech.mdbxjni.Constants#NOTLS} Don't use
 	 *            Thread-Local Storage. Tie reader locktable slots to #MDB_txn
 	 *            objects instead of to threads. I.e. #mdb_txn_reset() keeps the
-	 *            slot reseved for the #MDB_txn object. A thread may use parallel
+	 *            slot reserved for the #MDB_txn object. A thread may use parallel
 	 *            read-only transactions. A read-only transaction may span threads
 	 *            if the user synchronizes its use. Applications that multiplex many
 	 *            user threads over individual OS threads need this option. Such an
 	 *            application must also serialize the write transactions in an OS
-	 *            thread, since LMDB's write locking is unaware of the user threads.
+	 *            thread, since MDBX's write locking is unaware of the user threads.
 	 *            <li>{@link com.castortech.mdbxjni.Constants#NOLOCK} Don't do any
 	 *            locking. If concurrent access is anticipated, the caller must
 	 *            manage all concurrency itself. For proper operation the caller
@@ -315,7 +315,7 @@ public class Env extends NativeObject implements Closeable {
 
 	/**
 	 * <p>
-	 * Copy an LMDB environment to the specified path.
+	 * Copy an MDBX environment to the specified path.
 	 * </p>
 	 * This function may be used to make a backup of an existing environment. No
 	 * lockfile is created, since it gets recreated at need. This call can trigger
@@ -340,7 +340,7 @@ public class Env extends NativeObject implements Closeable {
 	 * Flush the data buffers to disk.
 	 * </p>
 	 * Data is always written to disk when #mdb_txn_commit() is called, but the
-	 * operating system may keep it buffered. LMDB always flushes the OS buffers
+	 * operating system may keep it buffered. MDBX always flushes the OS buffers
 	 * upon commit as well, unless the environment was opened with
 	 * {@link com.castortech.mdbxjni.Constants#NOSYNC} or in part
 	 * {@link com.castortech.mdbxjni.Constants#NOMETASYNC}
@@ -392,7 +392,7 @@ public class Env extends NativeObject implements Closeable {
 	 *
 	 * If the mapsize is increased by another process, and data has grown beyond the
 	 * range of the current mapsize, #mdb_txn_begin() will return
-	 * {@link org.fusesource.MDBXException.LMDBException#MAP_RESIZED}. This function may
+	 * {@link com.castortech.mdbxjni.MDBXException.Status#MAP_RESIZED}. This function may
 	 * be called with a size of zero to adopt the new size.
 	 *
 	 * Any attempt to set a size smaller than the space already consumed by the
@@ -498,9 +498,9 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @return Information about the LMDB environment.
+	 * @return Information about the MDBX environment.
 	 *
-	 * @deprecated Use {@link Transaction#envInfo()} instead.
+	 * @deprecated Use {@link Env#info(Transaction)} instead.
 	 */
 	@Deprecated
 	public EnvInfo info() {
@@ -510,9 +510,20 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @return Statistics about the LMDB environment.
+	 * Version of the method that runs within a transaction. Replaces previous version from {@link Env}
 	 *
-	 * @deprecated Use {@link Transaction#stat()} instead.
+	 * @return Information about the MDBX environment.
+	 */
+	public EnvInfo info(Transaction txn) {
+		MDBX_envinfo rc = new MDBX_envinfo();
+		mdbx_env_info_ex(pointer(), txn.pointer(), rc, JNI.SIZEOF_ENVINFO);
+		return new EnvInfo(rc);
+	}
+
+	/**
+	 * @return Statistics about the MDBX environment.
+	 *
+	 * @deprecated Use {@link Env#stat(Transaction)} instead.
 	 */
 	@Deprecated
 	public Stat stat() {
@@ -521,9 +532,39 @@ public class Env extends NativeObject implements Closeable {
 		return new Stat(rc);
 	}
 
+	/**
+	 * Version of the method that runs within a transaction. Replaces previous version from {@link Env}
+	 *
+	 * @return Statistics about the MDBX environment.
+	 */
+	public Stat stat(Transaction txn) {
+		MDBX_stat rc = new MDBX_stat();
+		mdbx_env_stat_ex(pointer(), txn.pointer(), rc, JNI.SIZEOF_STAT);
+		return new Stat(rc);
+	}
+
+	/**
+	 * @return Percent full for the whole Db environment.
+	 *
+	 * @deprecated Use version with {@link Transaction} argument instead. This one can at times return erratic
+	 *             results.
+	 */
+	@Deprecated
 	public float percentageFull() {
 		Stat stat2 = stat();
 		EnvInfo info2 = info();
+
+		if (stat2.ms_psize == 0) {
+			return 0.0f;
+		}
+
+		long nbrPages = info2.getMapSize() / stat2.ms_psize;
+		return (info2.getLastPgNo() / (float)nbrPages) * 100;
+	}
+
+	public float percentageFull(Transaction txn) {
+		Stat stat2 = stat(txn);
+		EnvInfo info2 = info(txn);
 
 		if (stat2.ms_psize == 0) {
 			return 0.0f;
