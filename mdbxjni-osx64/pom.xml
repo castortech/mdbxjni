@@ -1,81 +1,138 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  Copyright (C) 2018, Castor Technologies Inc.
+	Copyright (C) 2018, Castor Technologies Inc.
 
-      http://www.castortech.com/
+			http://www.castortech.com/
 
-  Licensed under the Apache License, Version 2.0 (the "License");
-  you may not use this file except in compliance with the License.
-  You may obtain a copy of the License at
+	Licensed under the Apache License, Version 2.0 (the "License");
+	you may not use this file except in compliance with the License.
+	You may obtain a copy of the License at
 
-     http://www.apache.org/licenses/LICENSE-2.0
+		 http://www.apache.org/licenses/LICENSE-2.0
 
-  Unless required by applicable law or agreed to in writing, software
-  distributed under the License is distributed on an "AS IS" BASIS,
-  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-  See the License for the specific language governing permissions and
-  limitations under the License.
+	Unless required by applicable law or agreed to in writing, software
+	distributed under the License is distributed on an "AS IS" BASIS,
+	WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+	See the License for the specific language governing permissions and
+	limitations under the License.
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
-  <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <groupId>com.castortech.mdbxjni</groupId>
-    <artifactId>mdbxjni-project</artifactId>
-    <version>99-master-SNAPSHOT</version>
-  </parent>
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>com.castortech.mdbxjni</groupId>
+		<artifactId>mdbxjni-project</artifactId>
+		<version>99-master-SNAPSHOT</version>
+	</parent>
 
-  <groupId>com.castortech.mdbxjni</groupId>
-  <artifactId>mdbxjni-osx64</artifactId>
-  <version>99-master-SNAPSHOT</version>
-  
-  <name>${project.artifactId}</name>
-  <description>The mdbxjni OS X 64 bit native libraries</description>
+	<groupId>com.castortech.mdbxjni</groupId>
+	<artifactId>mdbxjni-osx64</artifactId>
+	<version>99-master-SNAPSHOT</version>
 
-  <dependencies>
-    <dependency>
-      <groupId>com.castortech.mdbxjni</groupId>
-      <artifactId>mdbxjni</artifactId>
-      <version>99-master-SNAPSHOT</version>
-    </dependency>
-  </dependencies>
+	<name>${project.artifactId}</name>
+	<description>The mdbxjni OS X 64 bit native libraries</description>
 
-  <build>
-    <testSourceDirectory>${basedir}/../mdbxjni/src/test/java</testSourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>${mvn-jar-version}</version>
-        <configuration>
-          <classesDirectory>${basedir}/target/generated-sources/hawtjni/lib</classesDirectory>
-        </configuration>
-      </plugin>
-      <plugin>
-        <groupId>org.fusesource.hawtjni</groupId>
-        <artifactId>hawtjni-maven-plugin</artifactId>
-        <version>${hawtjni-version}</version>
-        <executions>
-          <execution>
-            <goals>
-              <goal>build</goal>
-            </goals>
-          </execution>
-        </executions>
-        <configuration>
-          <name>mdbxjni</name>
-          <classified>false</classified>
-          <nativeSrcDependency>
-            <groupId>com.castortech.mdbxjni</groupId>
-            <artifactId>mdbxjni</artifactId>
-            <version>${project.version}</version>
-            <classifier>native-src</classifier>
-            <type>zip</type>
-          </nativeSrcDependency>
-          <configureArgs>
-            <arg>--with-mdbx=${env.MDBX_HOME}</arg>
-          </configureArgs>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<dependencies>
+		<dependency>
+			<groupId>com.castortech.mdbxjni</groupId>
+			<artifactId>mdbxjni</artifactId>
+			<version>99-master-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>org.fluttercode.datafactory</groupId>
+			<artifactId>datafactory</artifactId>
+			<version>0.8</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<version>${guava-version}</version>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<testSourceDirectory>${basedir}/../mdbxjni/src/test/java</testSourceDirectory>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<version>${mvn-jar-version}</version>
+				<configuration>
+					<classesDirectory>${basedir}/target/generated-sources/hawtjni/lib</classesDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.fusesource.hawtjni</groupId>
+				<artifactId>hawtjni-maven-plugin</artifactId>
+				<version>${hawtjni-version}</version>
+				<executions>
+					<execution>
+						<goals>
+							<goal>build</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<name>mdbxjni</name>
+					<classified>false</classified>
+					<nativeSrcDependency>
+						<groupId>com.castortech.mdbxjni</groupId>
+						<artifactId>mdbxjni</artifactId>
+						<version>${project.version}</version>
+						<classifier>native-src</classifier>
+						<type>zip</type>
+					</nativeSrcDependency>
+					<configureArgs>
+						<arg>--with-mdbx=${env.MDBX_HOME}</arg>
+					</configureArgs>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>fixlibdep</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+							<workingDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/osx64</workingDirectory>
+							<executable>install_name_tool</executable>
+							<commandlineArgs>-change libmdbx.dylib @loader_path/libmdbx.dylib libmdbxjni.dylib</commandlineArgs>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<version>3.1.0</version>
+				<executions>
+					<execution>
+						<id>copy-dll</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/osx64</outputDirectory>
+							<overwrite>true</overwrite>
+							<resources>
+								<resource>
+									<directory>${basedir}/../../libmdbx/</directory>
+									<filtering>false</filtering>
+									<includes>
+										<include>libmdbx.dylib</include>
+									</includes>	
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
 </project>
