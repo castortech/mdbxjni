@@ -33,7 +33,8 @@ public class Setup {
 		}
 		else if (isMac()) {
 			if (!inTarget) {
-				path = new File(path, "../mdbxjni-osx64/target/native-build/target/lib"); //$NON-NLS-1$
+				path = new File(path, "../mdbxjni-osx64/target/generated-sources/hawtjni/lib/META-INF/native"); //$NON-NLS-1$
+//				path = new File(path, "../mdbxjni-osx64/target/native-build/target/lib"); //$NON-NLS-1$
 			}
 			else {
 				path = new File(path, "/native-build/target/lib"); //$NON-NLS-1$
@@ -71,7 +72,7 @@ public class Setup {
 		//TODO: Adjust for specific platforms
 		else if (isMac()) {
 			if (!inTarget) {
-				path = new File(path, "../mdbxjni-osx64/target/native-build/target/lib"); //$NON-NLS-1$
+				path = new File(path, "../mdbxjni-osx64/target/generated-sources/hawtjni/lib/META-INF/native"); //$NON-NLS-1$
 			}
 			else {
 				path = new File(path, "/native-build/target/lib"); //$NON-NLS-1$
