@@ -83,7 +83,7 @@
             <Embed-Transitive>true</Embed-Transitive>
             <Bundle-NativeCode>
               META-INF/native/windows64/lmdbjni.dll;osname=Win32;processor=x86-64,
-              META-INF/native/osx64/liblmdbjni.jnilib;osname=macosx;processor=x86-64,
+              META-INF/native/osx64/liblmdbjni.dylib;osname=macosx;processor=x86-64,
               META-INF/native/linux64/liblmdbjni.so;osname=Linux;processor=x86-64
             </Bundle-NativeCode>
          </instructions>
