@@ -327,7 +327,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            already exist and be writable but must otherwise be empty.
 	 */
 	public void copy(String path) {
-		copy(path, 0);
+		copy(path, JNI.MDBX_CP_DEFAULTS);
 	}
 
 	public void copy(String path, int flags) {

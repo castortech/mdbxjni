@@ -31,6 +31,8 @@ import static com.castortech.mdbxjni.JNI.strlen;
 class Util {
 	public static final boolean isAndroid = isAndroid();
 
+	private Util() { }
+
 	public static int errno() {
 		return errno();
 	}
@@ -46,10 +48,10 @@ class Util {
 	}
 
 	public static void checkErrorCode(Env env, int rc) {
-		if (rc != 0) {
+		if (rc != JNI.MDBX_SUCCESS && rc != JNI.MDBX_RESULT_TRUE) {
 			String msg = string(mdbx_strerror(rc));
 			if (env != null) {
-				System.err.println("MDBX Exception. Env:" + env.info().toString());
+				System.err.println("MDBX Exception. Msg:" + msg + ", Env:" + env.info().toString());
 			}
 			throw new MDBXException(msg, rc);
 		}
@@ -75,7 +77,7 @@ class Util {
 			Class.forName("android.os.Process"); //$NON-NLS-1$
 			return true;
 		}
-		catch (Throwable ignored) {
+		catch (Exception ignored) {
 			return false;
 		}
 	}
