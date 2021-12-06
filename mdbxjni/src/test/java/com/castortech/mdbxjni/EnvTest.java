@@ -25,8 +25,9 @@ import org.junit.rules.TemporaryFolder;
 import java.util.Arrays;
 import java.util.LinkedList;
 
-import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 import static com.castortech.mdbxjni.Constants.*;
 
@@ -35,6 +36,7 @@ import static com.castortech.mdbxjni.Constants.*;
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
+@SuppressWarnings("nls")
 public class EnvTest {
 	static {
 		Setup.setLibraryPaths();
@@ -64,7 +66,7 @@ public class EnvTest {
 	@Test
 	public void testBackup() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
-		String backupPath = backup.newFolder().getCanonicalPath();
+		String backupPath = backup.newFolder().getCanonicalPath() + "/mdbx.dat";
 		try (Env env = new Env()) {
 			env.open(path);
 			try (Database db = env.openDatabase()) {
@@ -84,14 +86,17 @@ public class EnvTest {
 	@Test
 	public void testBackupCompact() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
-		String backupPath = backup.newFolder().getCanonicalPath();
+		String backupPath = backup.newFolder().getCanonicalPath() + "/mdbx.dat";
 		try (Env env = new Env()) {
 			env.open(path);
 			try (Database db = env.openDatabase()) {
 				db.put(new byte[]{1}, new byte[]{1});
-//				env.copyCompact(backupPath);
-				env.copy(backupPath);
 			}
+		}
+
+		try (Env env = new Env()) {
+			env.open(path);
+			env.copy(backupPath, JNI.MDBX_CP_COMPACT);
 		}
 		try (Env env = new Env()) {
 			env.open(backupPath);
@@ -147,7 +152,6 @@ public class EnvTest {
 	}
 
 	private void doTest(Env env, Database db) {
-
 		assertNull(db.put(bytes("Tampa"), bytes("green")));
 		assertNull(db.put(bytes("London"), bytes("red")));
 
