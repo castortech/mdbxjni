@@ -131,7 +131,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.3.1</version>
 
 				<dependencies>
 					<dependency>
@@ -171,7 +171,7 @@
 		 <plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.3.1</version>
 				<configuration>
 					<docfilessubdirs>true</docfilessubdirs>
 					<useStandardDocletOptions>true</useStandardDocletOptions>
@@ -206,7 +206,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.0.0</version>
+				<version>3.3.1</version>
 				<configuration>
 					<excludePackageNames>*.internal</excludePackageNames>
 					<linksource>true</linksource>
