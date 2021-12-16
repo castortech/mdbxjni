@@ -27,7 +27,7 @@
 	<groupId>com.castortech.mdbxjni</groupId>
 	<artifactId>mdbxjni-linux64</artifactId>
 	<version>99-master-SNAPSHOT</version>
-	
+
 	<name>${project.artifactId}</name>
 	<description>The mdbxjni linux 64 bit native libraries</description>
 
