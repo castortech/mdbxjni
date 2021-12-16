@@ -1,4 +1,4 @@
-package org.fusesource.lmdbjni;
+package com.castortech.leveldbjni;
 
 public class All {
 }
