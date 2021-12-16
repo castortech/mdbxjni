@@ -112,8 +112,9 @@ public class EnvTest {
 		String path = tmp.newFolder().getCanonicalPath();
 		try (Env env = new Env()) {
 //			env.addFlags(CREATE);
+			env.setGeometry(1048576L, -1L, 4000L * 1024 * 1024, 1048576L, -1L, -1L);
 			env.open(path);
-			env.setMapSize(1048576L);
+//			env.setMapSize(1048576L);
 			try (Database db = env.openDatabase()) {
 				db.put(new byte[]{1}, new byte[]{1});
 				EnvInfo info = env.info();

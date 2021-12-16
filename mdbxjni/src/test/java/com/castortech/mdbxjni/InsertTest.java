@@ -74,6 +74,8 @@ public class InsertTest {
 //		envConfig.setSafeNoSync(true);
 //		envConfig.setWriteMap(true);
 
+			envConfig.setMapSize(2000L * 1024 * 1024);	//2gb
+			envConfig.setMapGrowth(1000L * 1024 * 1024);	//1gb
 
 		//nosync
 //		envConfig.setWriteMap(true);
@@ -84,7 +86,6 @@ public class InsertTest {
 
 		env = new Env();
 		env.setMaxDbs(2);
-		env.setMapSize(6000L * 1024 * 1024);	//4gb
 		Env.pushMemoryPool(1024*512);
 		env.open(path, envConfig);
 //		db = env.openDatabase("primary");
