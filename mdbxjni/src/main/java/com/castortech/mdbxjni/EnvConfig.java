@@ -21,7 +21,13 @@ public class EnvConfig implements Cloneable {
 	private int mode = 0644;  //this is octal
 	private int maxReaders = -1;
 	private long maxDbs = -1;
-	private long mapSize = -1;
+	private long pageSize = -1;
+
+	private long mapLower = -1;
+	private long mapSize = -1;  //represents geo now
+	private long mapUpper = -1;
+	private long mapGrowth = -1;
+	private long mapShrink = -1;
 
 	public int getMode() {
 		return mode;
@@ -47,12 +53,52 @@ public class EnvConfig implements Cloneable {
 		this.maxDbs = maxDbs;
 	}
 
+	public long getPageSize() {
+		return pageSize;
+	}
+
+	public void setPageSize(long pageSize) {
+		this.pageSize = pageSize;
+	}
+
+	public long getMapLower() {
+		return mapLower;
+	}
+
+	public void setMapLower(long mapLower) {
+		this.mapLower = mapLower;
+	}
+
 	public long getMapSize() {
 		return mapSize;
 	}
 
 	public void setMapSize(long mapSize) {
 		this.mapSize = mapSize;
+	}
+
+	public long getMapUpper() {
+		return mapUpper;
+	}
+
+	public void setMapUpper(long mapUpper) {
+		this.mapUpper = mapUpper;
+	}
+
+	public long getMapGrowth() {
+		return mapGrowth;
+	}
+
+	public void setMapGrowth(long mapGrowth) {
+		this.mapGrowth = mapGrowth;
+	}
+
+	public long getMapShrink() {
+		return mapShrink;
+	}
+
+	public void setMapShrink(long mapShrink) {
+		this.mapShrink = mapShrink;
 	}
 
 	public boolean isNoSubDir() {

@@ -284,9 +284,8 @@ public class Env extends NativeObject implements Closeable {
 			setMaxReaders(config.getMaxReaders());
 		}
 
-		if (config.getMapSize() != -1) {
-			setMapSize(config.getMapSize());
-		}
+		setGeometry(config.getMapLower(), config.getMapSize(), config.getMapUpper(), config.getMapGrowth(),
+				config.getMapShrink(), config.getPageSize());
 
 		int rc = mdbx_env_open(pointer(), path, flags, config.getMode());
 		if (rc != 0) {
