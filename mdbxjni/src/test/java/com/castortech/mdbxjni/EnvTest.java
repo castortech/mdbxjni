@@ -108,6 +108,16 @@ public class EnvTest {
 	}
 
 	@Test
+	public void testEnvVersion() throws Exception {
+		String path = tmp.newFolder().getCanonicalPath();
+		try (Env env = new Env()) {
+			Env.version();
+			env.open(path);
+			env.version2();
+		}
+	}
+
+	@Test
 	public void testEnvInfo() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
 		try (Env env = new Env()) {

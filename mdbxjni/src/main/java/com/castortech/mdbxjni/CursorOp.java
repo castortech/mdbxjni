@@ -116,6 +116,12 @@ public enum CursorOp {
    * return both key and data, and the return code depends on a exact match.
    */
 	SET_LOWERBOUND(MDBX_SET_LOWERBOUND),
+
+	/** Positions cursor at first key-value pair greater than specified,
+   * return both key and data, and the return code depends on whether a
+   * upper-bound was found.
+   */
+	SET_UPPERBOUND(MDBX_SET_UPPERBOUND),
 	;
 
 	private final int value;

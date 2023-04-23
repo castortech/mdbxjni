@@ -20,6 +20,7 @@ package com.castortech.mdbxjni;
 
 import java.io.Closeable;
 import java.util.Comparator;
+import java.util.List;
 
 import org.fusesource.hawtjni.runtime.Callback;
 import com.castortech.mdbxjni.JNI.MDBX_envinfo;
@@ -35,7 +36,7 @@ import static com.castortech.mdbxjni.Util.*;
  */
 public class Env extends NativeObject implements Closeable {
 	public static String version() {
-		return "" + JNI.MDBX_VERSION_MAJOR + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
+		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
 	}
 
 	private Callback keyCmpCallback = null;
@@ -212,68 +213,72 @@ public class Env extends NativeObject implements Closeable {
 		checkArgNotNull(config, "config"); //$NON-NLS-1$
 		int flags = 0;
 
+		if (config.isValidation()) {
+			flags |= EnvFlags.VALIDATION;
+		}
+
 		if (config.isNoSubDir()) {
-			flags |= Constants.NOSUBDIR;
+			flags |= EnvFlags.NOSUBDIR;
 		}
 
 		if (config.isReadOnly()) {
-			flags |= Constants.RDONLY;
+			flags |= EnvFlags.RDONLY;
 		}
 
 		if (config.isExclusive()) {
-			flags |= Constants.EXCLUSIVE;
+			flags |= EnvFlags.EXCLUSIVE;
 		}
 
 		if (config.isAccede()) {
-			flags |= Constants.ACCEDE;
+			flags |= EnvFlags.ACCEDE;
 		}
 
 		if (config.isWriteMap()) {
-			flags |= Constants.WRITEMAP;
+			flags |= EnvFlags.WRITEMAP;
 		}
 
 		if (config.isNoTLS()) {
-			flags |= Constants.NOTLS;
+			flags |= EnvFlags.NOTLS;
 		}
 
 		if (config.isNoReadAhead()) {
-			flags |= Constants.NORDAHEAD;
+			flags |= EnvFlags.NORDAHEAD;
 		}
 
 		if (config.isNoMemInit()) {
-			flags |= Constants.NOMEMINIT;
+			flags |= EnvFlags.NOMEMINIT;
 		}
 
 		if (config.isCoalesce()) {
-			flags |= Constants.COALESCE;
+			flags |= EnvFlags.COALESCE;
 		}
 
 		if (config.isLifoReclaim()) {
-			flags |= Constants.LIFORECLAIM;
+			flags |= EnvFlags.LIFORECLAIM;
 		}
 
 		if (config.isPagePerturb()) {
-			flags |= Constants.PAGEPERTURB;
+			flags |= EnvFlags.PAGEPERTURB;
 		}
 
 		if (config.isSyncDurable()) {
-			flags |= Constants.SYNCDURABLE;
+			flags |= EnvFlags.SYNCDURABLE;
 		}
 
 		if (config.isNoMetaSync()) {
-			flags |= Constants.NOMETASYNC;
+			flags |= EnvFlags.NOMETASYNC;
 		}
 
 		if (config.isSafeNoSync()) {
-			flags |= Constants.SAFENOSYNC;
+			flags |= EnvFlags.SAFENOSYNC;
 		}
 
 		if (config.isMapAsync()) {
-			flags |= Constants.MAPASYNC;
+			flags |= EnvFlags.MAPASYNC;
 		}
 
 		if (config.isUtterlyNoSync()) {
-			flags |= Constants.UTTERLY_NOSYNC;
+			flags |= EnvFlags.UTTERLY_NOSYNC;
 		}
 
 		if (config.getMaxDbs() != -1) {
@@ -282,6 +287,10 @@ public class Env extends NativeObject implements Closeable {
 
 		if (config.getMaxReaders() != -1) {
 			setMaxReaders(config.getMaxReaders());
+		}
+
+		if (!config.getOptions().isEmpty()) {
+			setOptions(config.getOptions());
 		}
 
 		setGeometry(config.getMapLower(), config.getMapSize(), config.getMapUpper(), config.getMapGrowth(),
@@ -461,8 +470,20 @@ public class Env extends NativeObject implements Closeable {
 		checkErrorCode(this, mdbx_env_set_maxreaders(pointer(), size));
 	}
 
+	/**
+	 * @deprecated Use {@link Env#getMaxKeySize(int)} or {@link Env#getMaxValSize(int)} instead.
+	 */
+	@Deprecated
 	public long getMaxKeySize() {
 		return mdbx_env_get_maxkeysize(pointer());
+	}
+
+	public long getMaxKeySize(int flags) {
+		return mdbx_env_get_maxkeysize_ex(pointer(), flags);
+	}
+
+	public long getMaxValSize(int flags) {
+		return mdbx_env_get_maxvalsize_ex(pointer(), flags);
 	}
 
 	public int getFlags() {
@@ -493,6 +514,12 @@ public class Env extends NativeObject implements Closeable {
 	public void setUserContext(NativeObject ctx) {
 		if (ctx != null) {
 			mdbx_env_set_userctx(pointer(), ctx.pointer());
+		}
+	}
+
+	public void setOptions(List<EnvOption> options) {
+		for (EnvOption option : options) {
+			checkErrorCode(this, mdbx_env_set_option(pointer(), option.getOption(), option.getValue()));
 		}
 	}
 

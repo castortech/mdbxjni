@@ -1,6 +1,11 @@
 package com.castortech.mdbxjni;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class EnvConfig implements Cloneable {
+	/** Extra validation of DB structure and pages content. */
+	private boolean validation = false;
 	private boolean noSubDir = false;
 	private boolean readOnly = false;
 	private boolean exclusive = false;
@@ -17,6 +22,8 @@ public class EnvConfig implements Cloneable {
 	private boolean safeNoSync = false;
 	private boolean mapAsync = false;
 	private boolean utterlyNoSync = false;
+
+	private List<EnvOption> options = new ArrayList<>();
 
 	private int mode = 0644;  //this is octal
 	private int maxReaders = -1;
@@ -99,6 +106,14 @@ public class EnvConfig implements Cloneable {
 
 	public void setMapShrink(long mapShrink) {
 		this.mapShrink = mapShrink;
+	}
+
+	public boolean isValidation() {
+		return validation;
+	}
+
+	public void setValidation(boolean validation) {
+		this.validation = validation;
 	}
 
 	public boolean isNoSubDir() {
@@ -245,6 +260,14 @@ public class EnvConfig implements Cloneable {
 
 	public void setSafeNoSync(boolean safeNoSync) {
 		this.safeNoSync = safeNoSync;
+	}
+
+	public List<EnvOption> getOptions() {
+		return options;
+	}
+
+	public void setOptions(List<EnvOption> options) {
+		this.options = options;
 	}
 
 	/**

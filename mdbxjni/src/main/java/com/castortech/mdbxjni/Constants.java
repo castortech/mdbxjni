@@ -27,27 +27,6 @@ import static com.castortech.mdbxjni.JNI.*;
  */
 public class Constants {
 	//====================================================//
-	// Environment Flags
-	//====================================================//
-	public static final int ENVDEFAULTS = MDBX_ENV_DEFAULTS;
-	public static final int NOSUBDIR    = MDBX_NOSUBDIR    ;
-	public static final int RDONLY      = MDBX_RDONLY      ;
-	public static final int EXCLUSIVE   = MDBX_EXCLUSIVE   ;
-	public static final int ACCEDE      = MDBX_ACCEDE      ;
-	public static final int WRITEMAP    = MDBX_WRITEMAP    ;
-	public static final int NOTLS       = MDBX_NOTLS       ;
-	public static final int NORDAHEAD 	= MDBX_NORDAHEAD	 ;
-	public static final int NOMEMINIT   = MDBX_NOMEMINIT   ;
-	public static final int COALESCE 		= MDBX_COALESCE		 ;
-	public static final int LIFORECLAIM = MDBX_LIFORECLAIM ;
-	public static final int PAGEPERTURB = MDBX_PAGEPERTURB ;
-	public static final int SYNCDURABLE = MDBX_SYNC_DURABLE;
-	public static final int NOMETASYNC  = MDBX_NOMETASYNC  ;
-	public static final int SAFENOSYNC  = MDBX_SAFE_NOSYNC ;
-	public static final int MAPASYNC    = MDBX_MAPASYNC    ;
-	public static final int UTTERLY_NOSYNC = MDBX_UTTERLY_NOSYNC;
-
-	//====================================================//
 	// Database Flags
 	//====================================================//
 	public static final int DBDEFAULTS  = MDBX_DB_DEFAULTS ;
@@ -90,10 +69,12 @@ public class Constants {
 	public static final CursorOp PREV           = CursorOp.PREV           ;
 	public static final CursorOp PREV_DUP       = CursorOp.PREV_DUP       ;
 	public static final CursorOp PREV_NODUP     = CursorOp.PREV_NODUP     ;
+	public static final CursorOp PREV_MULTIPLE  = CursorOp.PREV_MULTIPLE  ;
 	public static final CursorOp SET	          = CursorOp.SET	          ;
 	public static final CursorOp KEY            = CursorOp.SET_KEY        ;
 	public static final CursorOp RANGE          = CursorOp.SET_RANGE      ;
 	public static final CursorOp LOWERBOUND     = CursorOp.SET_LOWERBOUND ;
+	public static final CursorOp UPPERBOUND     = CursorOp.SET_UPPERBOUND ;
 
 	public static final int IMMUTABLE_KEY = 0x2;  //used for secondary db
 

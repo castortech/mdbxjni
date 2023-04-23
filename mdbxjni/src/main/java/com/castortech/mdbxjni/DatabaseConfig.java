@@ -55,7 +55,7 @@ public class DatabaseConfig implements Cloneable {
 			setCreate(true);
 		}
 
-		if ((flags & Constants.ACCEDE) == Constants.ACCEDE) {
+		if ((flags & EnvFlags.ACCEDE) == EnvFlags.ACCEDE) {
 			setAccede(true);
 		}
 	}

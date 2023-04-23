@@ -9,7 +9,7 @@ that provides an ordered mapping from string keys to string values.
 
 ## Using Prebuilt Jar
 
-The prebuilt binary jars only work on 64 bit OS X or Linux machines.
+The prebuilt binary jars only work on 64 bit machines.
 
 ### License
 
@@ -26,7 +26,7 @@ You just need to add the following dependency and repository to your Maven `pom.
 
     <dependencies>
       <dependency>
-        <groupId>org.fusesource.lmdbjni</groupId>
+        <groupId>com.castortech.mdbxjni</groupId>
         <artifactId>mdbxjni-all</artifactId>
         <version>99-master-SNAPSHOT</version>
       </dependency>
@@ -35,7 +35,7 @@ You just need to add the following dependency and repository to your Maven `pom.
     <repositories>
         <repository>
           <id>fusesource.nexus.snapshot</id>
-          <name>FuseSource Community Snapshot Repository</name>
+          <name>Castor Technology Community Snapshot Repository</name>
           <url>http://repo.fusesource.com/nexus/content/groups/public-snapshots</url>
         </repository>
     </repositories>
