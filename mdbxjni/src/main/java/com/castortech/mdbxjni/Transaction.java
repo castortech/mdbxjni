@@ -61,7 +61,7 @@ public class Transaction extends NativeObject implements Closeable {
 	 * must be called before a reset transaction may be used again.
 	 */
 	public void renew() {
-		checkErrorCode(env, mdbx_txn_renew(pointer()));
+		checkErrorCode(env, this, mdbx_txn_renew(pointer()));
 	}
 
 	/**
@@ -78,7 +78,7 @@ public class Transaction extends NativeObject implements Closeable {
 	 */
 	public void commit() {
 		if (self != 0) {
-			checkErrorCode(env, mdbx_txn_commit(self));
+			checkErrorCode(env, this, mdbx_txn_commit(self));
 			self = 0;
 		}
 	}
@@ -86,7 +86,7 @@ public class Transaction extends NativeObject implements Closeable {
 	public CommitLatency commitWithLatency() {
 		if (self != 0) {
 			MDBX_commit_latency rc = new MDBX_commit_latency();
-			checkErrorCode(env, mdbx_txn_commit_ex(self, rc));
+			checkErrorCode(env, this, mdbx_txn_commit_ex(self, rc));
 			self = 0;
 			return new CommitLatency(rc);
 		}
@@ -132,12 +132,12 @@ public class Transaction extends NativeObject implements Closeable {
 	}
 
 	public void broken() {
-		checkErrorCode(env, mdbx_txn_break(pointer()));
+		checkErrorCode(env, this, mdbx_txn_break(pointer()));
 	}
 
 	public TxnInfo info(boolean scanRlt) {
 		MDBX_txn_info rc = new MDBX_txn_info();
-		checkErrorCode(env, mdbx_txn_info(pointer(), rc, scanRlt ? 1 : 0));
+		checkErrorCode(env, this, mdbx_txn_info(pointer(), rc, scanRlt ? 1 : 0));
 		return new TxnInfo(rc);
 	}
 

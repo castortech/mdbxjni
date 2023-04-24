@@ -61,7 +61,8 @@ public class EnvInfo {
 
 		pgopStat =  new PgopStat(rc.mi_pgop_stat_newly, rc.mi_pgop_stat_cow, rc.mi_pgop_stat_clone,
 				rc.mi_pgop_stat_split, rc.mi_pgop_stat_merge, rc.mi_pgop_stat_spill, rc.mi_pgop_stat_unspill,
-				rc.mi_pgop_stat_wops);
+				rc.mi_pgop_stat_wops, rc.mi_pgop_stat_prefault, rc.mi_pgop_stat_mincore, rc.mi_pgop_stat_msync,
+				rc.mi_pgop_stat_fsync);
 	}
 
 	public Geo getGeo() {
@@ -338,9 +339,13 @@ public class EnvInfo {
 		private final long spill;
 		private final long unspill;
 		private final long wops;
+		private final long prefault;
+		private final long mincore;
+		private final long msync;
+		private final long fsync;
 
 		public PgopStat(long newly, long cow, long clone, long split, long merge, long spill, long unspill,
-				long wops) {
+				long wops, long prefault, long mincore, long msync, long fsync) {
 			super();
 			this.newly = newly;
 			this.cow = cow;
@@ -350,6 +355,10 @@ public class EnvInfo {
 			this.spill = spill;
 			this.unspill = unspill;
 			this.wops = wops;
+			this.prefault = prefault;
+			this.mincore = mincore;
+			this.msync = msync;
+			this.fsync = fsync;
 		}
 
 		public long getNewly() {
@@ -384,6 +393,22 @@ public class EnvInfo {
 			return wops;
 		}
 
+		public long getPrefault() {
+			return prefault;
+		}
+
+		public long getMincore() {
+			return mincore;
+		}
+
+		public long getMsync() {
+			return msync;
+		}
+
+		public long getFsync() {
+			return fsync;
+		}
+
 		@SuppressWarnings("nls")
 		@Override
 		public String toString() {
@@ -396,6 +421,10 @@ public class EnvInfo {
 					", spill=" + spill +
 					", unspill=" + unspill +
 					", wops=" + wops +
+					", prefault=" + prefault +
+					", mincore=" + mincore +
+					", msync=" + msync +
+					", fsync=" + fsync +
 					"}";
 		}
 	}

@@ -28,6 +28,7 @@ import static com.castortech.mdbxjni.JNI.strlen;
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
+@SuppressWarnings("nls")
 class Util {
 	public static final boolean isAndroid = isAndroid();
 
@@ -52,6 +53,16 @@ class Util {
 			String msg = string(mdbx_strerror(rc));
 			if (env != null) {
 				System.err.println("MDBX Exception. Msg:" + msg + ", Env:" + env.info().toString());
+			}
+			throw new MDBXException(msg, rc);
+		}
+	}
+
+	public static void checkErrorCode(Env env, Transaction txn, int rc) {
+		if (rc != JNI.MDBX_SUCCESS && rc != JNI.MDBX_RESULT_TRUE) {
+			String msg = string(mdbx_strerror(rc));
+			if (env != null) {
+				System.err.println("MDBX Exception. Msg:" + msg + ", Env:" + env.info(txn).toString());
 			}
 			throw new MDBXException(msg, rc);
 		}

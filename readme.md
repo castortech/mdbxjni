@@ -3,7 +3,7 @@
 ## Description
 
 MDBX JNI gives you a Java interface to the 
-[libmdbx](https://github.com/leo-yuriev/libmdbx) library
+[libmdbx](https://gitflic.ru/project/leo-yuriev/libmdbx) library
 which is a fast key-value storage library written for ReOpenLDAP project
 that provides an ordered mapping from string keys to string values.
 
