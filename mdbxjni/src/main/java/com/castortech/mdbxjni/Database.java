@@ -24,6 +24,11 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.castortech.mdbxjni.pool.CursorKey;
+
 import static com.castortech.mdbxjni.JNI.*;
 import static com.castortech.mdbxjni.Util.checkArgNotNull;
 import static com.castortech.mdbxjni.Util.checkErrorCode;
@@ -33,11 +38,12 @@ import static com.castortech.mdbxjni.Util.checkSize;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Database extends NativeObject implements Closeable {
+	private static final Logger log = LoggerFactory.getLogger(Database.class);
 	private final Env env;
 	private final String name;
 	private List<SecondaryDatabase> secondaries = null;
 
-	Database(Env env, long self, String name) {
+	/*package*/Database(Env env, long self, String name) {
 		super(self);
 		this.env = env;
 		this.name = name;
@@ -61,6 +67,8 @@ public class Database extends NativeObject implements Closeable {
 	@Override
 	public void close() {
 		if (self != 0) {
+			if (log.isTraceEnabled())
+				log.trace("Calling db close for {}", this); //$NON-NLS-1$
 			mdbx_dbi_close(env.pointer(), self);
 			self = 0;
 		}
@@ -82,6 +90,8 @@ public class Database extends NativeObject implements Closeable {
 	public Stat stat(Transaction tx) {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		MDBX_stat rc = new MDBX_stat();
+		if (log.isTraceEnabled())
+			log.trace("Calling db stats for {}", this); //$NON-NLS-1$
 		mdbx_dbi_stat(tx.pointer(), pointer(), rc, JNI.SIZEOF_STAT);
 		return new Stat(rc);
 	}
@@ -112,6 +122,8 @@ public class Database extends NativeObject implements Closeable {
 	 */
 	public void drop(Transaction tx, boolean delete) {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
+		if (log.isTraceEnabled())
+			log.trace("Calling db drop for {}", this); //$NON-NLS-1$
 		mdbx_drop(tx.pointer(), pointer(), delete ? 1 : 0);
 		if (delete) {
 			self = 0;
@@ -270,6 +282,8 @@ public class Database extends NativeObject implements Closeable {
 
 	/* package */byte[] get(Transaction tx, Value key) {
 		Value value = new Value();
+		if (log.isTraceEnabled())
+			log.trace("Calling db get for {}", this); //$NON-NLS-1$
 		int rc = mdbx_get(tx.pointer(), pointer(), key, value);
 		if (rc == MDBX_NOTFOUND) {
 			return null;
@@ -282,6 +296,8 @@ public class Database extends NativeObject implements Closeable {
 		Value value = new Value();
 		long[] valCnt = new long[1];
 
+		if (log.isTraceEnabled())
+			log.trace("Calling db getex for {}", this); //$NON-NLS-1$
 		int rc = mdbx_get_ex(tx.pointer(), pointer(), key, value, valCnt);
 		if (rc == MDBX_NOTFOUND) {
 			return null;
@@ -292,6 +308,8 @@ public class Database extends NativeObject implements Closeable {
 
 	/* package */Entry getEqOrGE(Transaction tx, Value key) {
 		Value value = new Value();
+		if (log.isTraceEnabled())
+			log.trace("Calling db get eq or great for {}", this); //$NON-NLS-1$
 		int rc = mdbx_get_equal_or_great(tx.pointer(), pointer(), key, value);
 		if (rc == MDBX_NOTFOUND) {
 			return null;
@@ -431,6 +449,8 @@ public class Database extends NativeObject implements Closeable {
 			}
 		}
 
+		if (log.isTraceEnabled())
+			log.trace("Calling db put for {}", this); //$NON-NLS-1$
 		int rc = mdbx_put(tx.pointer(), pointer(), keySlice, valueSlice, flags);
 		if (((flags & MDBX_NOOVERWRITE) != 0 || (flags & MDBX_NODUPDATA) != 0) && rc == MDBX_KEYEXIST) {
 			// Return the existing value if it was a dup insert attempt.
@@ -550,6 +570,8 @@ public class Database extends NativeObject implements Closeable {
 			int rc = 0;
 
 			while (true) {
+				if (log.isTraceEnabled())
+					log.trace("Calling db replace for {}", this); //$NON-NLS-1$
 				rc = mdbx_replace(tx.pointer(), pointer(), keySlice, valueSlice, oldValSlice, flags);
 				if (rc == MDBX_RESULT_TRUE) {  //we have a dirty old value that couldn't fit in old value buffer
 					if (didResize) {  //been here already, bail out.
@@ -691,6 +713,8 @@ public class Database extends NativeObject implements Closeable {
 			valueSlices.add(valueSlice);
 		}
 
+		if (log.isTraceEnabled())
+			log.trace("Calling db del for {}", this); //$NON-NLS-1$
 		int rc = mdbx_del(tx.pointer(), pointer(), keySlice, valueSlice);
 		if (rc == MDBX_NOTFOUND) {
 			return false;
@@ -737,19 +761,43 @@ public class Database extends NativeObject implements Closeable {
 	 * @return cursor handle
 	 */
 	public Cursor openCursor(Transaction tx) {
-		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
+		try {
+			checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 
-		long cursor[] = new long[1];
-		checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
-		return new Cursor(env, cursor[0], tx, this);
+			if (env.usePooledCursors()) {
+				return env.getCursorPool().borrow(new CursorKey(env, this, tx));
+			}
+
+			long[] cursor = new long[1];
+			if (log.isTraceEnabled())
+				log.trace("Calling cursor open for {}", this); //$NON-NLS-1$
+			checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+			return new Cursor(env, cursor[0], tx, this);
+		}
+		catch (Exception e) {
+			String msg = "Failed opening cursor for " + this; //$NON-NLS-1$
+			throw new MDBXException(msg, e);
+		}
 	}
 
 	public SecondaryCursor openSecondaryCursor(Transaction tx) {
-		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
+		try {
+			checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 
-		long cursor[] = new long[1];
-		checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
-		return new SecondaryCursor(env, cursor[0], tx, this);
+			if (env.usePooledCursors()) {
+				return env.getCursorPool().borrowSecondary(new CursorKey(env, this, tx));
+			}
+
+			long[] cursor = new long[1];
+			if (log.isTraceEnabled())
+				log.trace("Calling sec cursor open for {}", this); //$NON-NLS-1$
+			checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+			return new SecondaryCursor(env, cursor[0], tx, this);
+		}
+		catch (Exception e) {
+			String msg = "Failed opening secondary cursor for " + this; //$NON-NLS-1$
+			throw new MDBXException(msg, e);
+		}
 	}
 
 	public int getFlags() {
@@ -764,6 +812,8 @@ public class Database extends NativeObject implements Closeable {
 
 	public int getFlags(Transaction tx) {
 		long[] flags = new long[1];
+		if (log.isTraceEnabled())
+			log.trace("Calling db flags for {}", this); //$NON-NLS-1$
 		checkErrorCode(env, mdbx_dbi_flags(tx.pointer(), pointer(), flags));
 		return (int)flags[0];
 	}
@@ -771,18 +821,24 @@ public class Database extends NativeObject implements Closeable {
 	public FlagState getFlagsState(Transaction tx) {
 		long[] flags = new long[1];
 		long[] state = new long[1];
+		if (log.isTraceEnabled())
+			log.trace("Calling db flags ex for {}", this); //$NON-NLS-1$
 		checkErrorCode(env, mdbx_dbi_flags_ex(tx.pointer(), pointer(), flags, state));
 		return new FlagState((int)flags[0], (int)state[0]);
 	}
 
 	public int getDupsortDepthMask(Transaction tx) {
 		long[] mask = new long[1];
+		if (log.isTraceEnabled())
+			log.trace("Calling db dupsort for {}", this); //$NON-NLS-1$
 		checkErrorCode(env, mdbx_dbi_dupsort_depthmask(tx.pointer(), pointer(), mask));
 		return (int)mask[0];
 	}
 
 	public int getSequence(Transaction tx, long increment) {
 		long[] res = new long[1];
+		if (log.isTraceEnabled())
+			log.trace("Calling db sequence for {}", this); //$NON-NLS-1$
 		checkErrorCode(env, mdbx_dbi_sequence(tx.pointer(), pointer(), res, increment));
 		return (int)res[0];
 	}
@@ -809,7 +865,6 @@ public class Database extends NativeObject implements Closeable {
 
 		secondaries.add(secondary);
 	}
-
 	// int associateFlags = 0;
 	// associateFlags |= config.getAllowPopulate() ? Constants.CREATE : 0;
 	// if (config.getImmutableSecondaryKey())
@@ -818,4 +873,10 @@ public class Database extends NativeObject implements Closeable {
 	// config.getKeyCreator()
 	//
 	// }
+
+	@SuppressWarnings("nls")
+	@Override
+	public String toString() {
+		return "Database [id=" + pointer() + ", name=" + name + "]";
+	}
 }

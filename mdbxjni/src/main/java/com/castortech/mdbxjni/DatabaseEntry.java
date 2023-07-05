@@ -1,5 +1,7 @@
 package com.castortech.mdbxjni;
 
+import java.util.Arrays;
+
 public class DatabaseEntry {
 	/* package */ byte[] data;
 	/* package */ int offset = 0;
@@ -20,7 +22,7 @@ public class DatabaseEntry {
 	public DatabaseEntry(final byte[] data) {
 		this.data = data;
 		if (data != null) {
-			this.size = data.length;
+			size = data.length;
 		}
 	}
 
@@ -64,6 +66,7 @@ public class DatabaseEntry {
 		this.size = size;
 	}
 
+	@Override
 	public boolean equals(Object o) {
 		if (!(o instanceof DatabaseEntry)) {
 			return false;
@@ -89,6 +92,7 @@ public class DatabaseEntry {
 	/**
 	 * Returns a hash code based on the data value.
 	 */
+	@Override
 	public int hashCode() {
 		int hash = 0;
 		if (data != null) {
@@ -98,4 +102,12 @@ public class DatabaseEntry {
 		}
 		return hash;
 	}
+
+	@SuppressWarnings("nls")
+	@Override
+	public String toString() {
+		return "DatabaseEntry [data=" + Arrays.toString(data) + ", offset=" + offset + ", size=" + size + "]";
+	}
+
+
 }
