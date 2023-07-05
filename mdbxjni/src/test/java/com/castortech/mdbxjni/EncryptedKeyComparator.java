@@ -4,10 +4,10 @@ import java.util.Comparator;
 
 public class EncryptedKeyComparator implements Comparator<byte[]> {
 	EncryptUtils encrypt;
-	
+
 	public EncryptedKeyComparator(EncryptUtils encrypt) throws Exception {
 		super();
-    this.encrypt = encrypt;
+		this.encrypt = encrypt;
 	}
 
 	@Override
@@ -19,10 +19,10 @@ public class EncryptedKeyComparator implements Comparator<byte[]> {
 		if (key1.length < 4 || key2.length < 4) {
 			throw new RuntimeException("Encrypted data is a minimum of 4 bytes");
 		}
-		
+
 		//compare the client id part of the keys
 		int comp = compareUnsignedBytes(key1, 2, 2, key2, 2, 2);
-		
+
 		if (comp == 0) {
 			try {
 				byte[] k1 = encrypt.decryptWithInfo(key1).array();
@@ -34,7 +34,7 @@ public class EncryptedKeyComparator implements Comparator<byte[]> {
 				throw new RuntimeException("Exception decrypting key data", e);
 			}
 		}
-		
+
 		return comp;
 	}
 

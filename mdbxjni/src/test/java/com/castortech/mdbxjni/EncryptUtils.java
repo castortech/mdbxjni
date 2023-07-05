@@ -89,7 +89,7 @@ public class EncryptUtils {
 	}
 
 	private int unsigned(byte b) {
-	 return b & 0xff;
+		return b & 0xff;
 	}
 
 	private int readUnsignedShort(ByteBuffer buff) throws IndexOutOfBoundsException {
