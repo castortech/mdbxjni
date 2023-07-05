@@ -76,6 +76,9 @@
 					<name>mdbxjni</name>
 					<windowsProjectName>mdbxjni</windowsProjectName>
 					<windowsBuildTool>msbuild</windowsBuildTool>
+					<!-- make sure to also change copy resource below to match -->
+<!--					<windowsConfiguration>debug</windowsConfiguration>-->
+					<windowsConfiguration>release</windowsConfiguration>
 					<classified>false</classified>
 					<nativeSrcDependency>
 						<groupId>com.castortech.mdbxjni</groupId>
@@ -103,6 +106,7 @@
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>
+<!--									<directory>${basedir}/../../libmdbx/bin/Debug</directory>-->
 									<directory>${basedir}/../../libmdbx/bin/Release</directory>
 									<filtering>false</filtering>
 									<includes>
