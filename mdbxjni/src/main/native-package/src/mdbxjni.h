@@ -55,6 +55,7 @@
 #include <stdint.h>
 #include <stdarg.h>
 #include "mdbx.h"
+#include "src/internals.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -63,6 +64,10 @@ extern "C" {
 void buffer_copy(const void *source, size_t source_pos, void *dest, size_t dest_pos, size_t length);
 
 void map_val(MDBX_val *in, MDBX_val *out);
+
+char* map_printf(char *buf, int size, const char * format, va_list args);
+
+int ptr_2_cursor(MDBX_cursor * ptr, MDBX_cursor * cursor, size_t bytes);
 
 #ifdef __cplusplus
 } /* extern "C" */

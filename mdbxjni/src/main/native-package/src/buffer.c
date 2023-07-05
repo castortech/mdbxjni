@@ -1,4 +1,4 @@
-/**
+ /**
  * Copyright (C) 2013, RedHat, Inc.
  *
  *    http://www.redhat.com/
@@ -19,10 +19,23 @@
 #include "mdbxjni.h"
 
 void buffer_copy(const void *source, size_t source_pos, void *dest, size_t dest_pos, size_t length) {
-  memmove(((char *)dest)+dest_pos, ((const char *)source)+source_pos, length);
+	memmove(((char *)dest)+dest_pos, ((const char *)source)+source_pos, length);
 }
 
 void map_val(MDBX_val *in, MDBX_val *out) {
 	out->iov_base = in->iov_base;
 	out->iov_len = in->iov_len;
+}
+
+char* map_printf(char *buf, int size, const char * format, va_list args) {
+	static char buffer[1024];
+	int buflen = vsprintf(buffer,format, args);
+	buffer[buflen] = '\0';
+	strncpy(buf, buffer, size);
+	return buf;
+}
+
+int ptr_2_cursor(MDBX_cursor * ptr, MDBX_cursor * cursor, size_t bytes) {
+	memcpy(cursor, ptr, bytes);
+	return 0;
 }
