@@ -22,12 +22,16 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import com.castortech.mdbxjni.JNIIntern.MDBX_cursor;
+
 import java.util.Arrays;
 import java.util.LinkedList;
+import java.util.stream.Collectors;
 
 import static org.hamcrest.core.IsNot.not;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static com.castortech.mdbxjni.JNI.*;
 import static org.junit.Assert.*;
 import static com.castortech.mdbxjni.Constants.*;
 
@@ -52,14 +56,18 @@ public class EnvTest {
 	public void testCRUD() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
 		try (Env env = new Env()) {
+			env.setMaxDbs(5);
 			env.open(path);
 			Env.pushMemoryPool(10);
 			Env.pushMemoryPool(10);
 			Env.popMemoryPool();
 			Env.popMemoryPool();
+
 			try (Database db = env.openDatabase()) {
 				doTest(env, db);
 			}
+
+			testMainDb(env);
 		}
 	}
 
@@ -113,7 +121,6 @@ public class EnvTest {
 		try (Env env = new Env()) {
 			Env.version();
 			env.open(path);
-			env.version2();
 		}
 	}
 
@@ -160,6 +167,56 @@ public class EnvTest {
 			env.open(path);
 			assertThat(env.getMaxKeySize(), is(1980L));
 		}
+	}
+
+	@Test
+	public void testSetupDebug() throws Exception {
+		String path = tmp.newFolder().getCanonicalPath();
+		try (Env env = new Env()) {
+			env.open(path);
+			DebugState debugState = env.setupDebug(MdbxLogLevel.TRACE, MDBX_DBG_AUDIT | MDBX_DBG_ASSERT);
+			System.out.println("DebugState:" + debugState);
+			assertThat(env.getMaxKeySize(), is(1980L));
+
+			debugState = env.setupDebug(MdbxLogLevel.ERROR, MDBX_DBG_DONT_UPGRADE);
+			System.out.println("DebugState:" + debugState);
+
+			debugState = env.setupDebug(MdbxLogLevel.FATAL, MDBX_DBG_AUDIT);
+			System.out.println("DebugState:" + debugState);
+		}
+	}
+
+	private void testMainDb(Env env) {
+		Database db = env.openDatabase("foo");
+		db = env.openDatabase("bar");
+
+		try (Transaction tx = env.createWriteTransaction(); Cursor cursor = env.getMainDb().openCursor(tx)) {
+			LinkedList<String> keys = new LinkedList<>();
+			MDBX_cursor mdbx_cursor = cursor.internCursor();
+			CursorState cursorState = new CursorState(mdbx_cursor.mc_flags);
+
+			while (true) {
+				byte[] key = new byte[1];
+				Entry entry = cursor.get(NEXT_NODUP, key, null);
+				mdbx_cursor = cursor.internCursor();
+				cursorState = new CursorState(mdbx_cursor.mc_flags);
+				if (entry == null) {
+					break;
+				}
+				String keyVal = string(entry.getKey());
+//				if (keyVal.equals("bar")) {
+//					cursor.delete();
+//				}
+
+				keys.add(keyVal);
+			}
+			System.out.println(keys.stream().collect(Collectors.joining("\n")));
+		}
+
+//		byte[] data = bytes("bar");
+//		try (Transaction tx = env.createWriteTransaction()) {
+//			env.getMainDb().delete(tx, data);
+//		}
 	}
 
 	private void doTest(Env env, Database db) {
