@@ -1,5 +1,6 @@
 package com.castortech.mdbxjni;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,6 +36,23 @@ public class EnvConfig implements Cloneable {
 	private long mapUpper = -1;
 	private long mapGrowth = -1;
 	private long mapShrink = -1;
+
+	//Section of local settings (i.e. not part of what is configured mdbx but this library)
+
+	/** True if cursors should be pooled and use bind/renew instead of standard open/close */
+	private boolean usePooledCursors = false;
+
+	/** Time between runs of the evictor thread */
+	private Duration pooledCursorTimeBetweenEvictionRuns = Duration.ofMinutes(3);
+
+	/** Maximum number of idle cursors to maintain in the pool */
+	private int pooledCursorMaxIdle = 100;
+
+	/** Minimum time that a cursor has to be idle before it can be discarded/closed */
+	private Duration pooledCursorMinEvictableIdleTime = Duration.ofMinutes(1);
+
+	/** Maximum number of seconds to wait for active cursors to be released when the pool is closing */
+	private int pooledCloseMaxWaitSeconds = 10;
 
 	public int getMode() {
 		return mode;
@@ -260,6 +278,66 @@ public class EnvConfig implements Cloneable {
 
 	public void setSafeNoSync(boolean safeNoSync) {
 		this.safeNoSync = safeNoSync;
+	}
+
+	public boolean isUsePooledCursors() {
+		return usePooledCursors;
+	}
+
+	/**
+	 * @see #usePooledCursors
+	 * @param usePooledCursors
+	 */
+	public void setUsePooledCursors(boolean usePooledCursors) {
+		this.usePooledCursors = usePooledCursors;
+	}
+
+	public Duration getPooledCursorTimeBetweenEvictionRuns() {
+		return pooledCursorTimeBetweenEvictionRuns;
+	}
+
+	/**
+	 * @see #pooledCursorTimeBetweenEvictionRuns
+	 * @param pooledCursorTimeBetweenEvictionRuns
+	 */
+	public void setPooledCursorTimeBetweenEvictionRuns(Duration pooledCursorTimeBetweenEvictionRuns) {
+		this.pooledCursorTimeBetweenEvictionRuns = pooledCursorTimeBetweenEvictionRuns;
+	}
+
+	public int getPooledCursorMaxIdle() {
+		return pooledCursorMaxIdle;
+	}
+
+	/**
+	 * @see #pooledCursorMaxIdle
+	 * @param pooledCursorMaxIdle
+	 */
+	public void setPooledCursorMaxIdle(int pooledCursorMaxIdle) {
+		this.pooledCursorMaxIdle = pooledCursorMaxIdle;
+	}
+
+	public Duration getPooledCursorMinEvictableIdleTime() {
+		return pooledCursorMinEvictableIdleTime;
+	}
+
+	/**
+	 * @see #pooledCursorMinEvictableIdleTime
+	 * @param pooledCursorMinEvictableIdleTime
+	 */
+	public void setPooledCursorMinEvictableIdleTime(Duration pooledCursorMinEvictableIdleTime) {
+		this.pooledCursorMinEvictableIdleTime = pooledCursorMinEvictableIdleTime;
+	}
+
+	public int getPooledCloseMaxWaitSeconds() {
+		return pooledCloseMaxWaitSeconds;
+	}
+
+	/**
+	 * @see #pooledCloseMaxWaitSeconds
+	 * @param pooledCloseMaxWaitSeconds
+	 */
+	public void setPooledCloseMaxWaitSeconds(int pooledCloseMaxWaitSeconds) {
+		this.pooledCloseMaxWaitSeconds = pooledCloseMaxWaitSeconds;
 	}
 
 	public List<EnvOption> getOptions() {

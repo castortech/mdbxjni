@@ -144,6 +144,10 @@ public class MDBXException extends RuntimeException {
 		this.errorCode = errorCode;
 	}
 
+	public MDBXException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
 	public int getErrorCode() {
 		return errorCode;
 	}

@@ -20,6 +20,9 @@ package com.castortech.mdbxjni;
 
 import java.io.Closeable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.castortech.mdbxjni.JNI.MDBX_txn_info;
 
 import static com.castortech.mdbxjni.JNI.*;
@@ -31,11 +34,25 @@ import static com.castortech.mdbxjni.Util.checkErrorCode;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Transaction extends NativeObject implements Closeable {
+	private static final Logger log = LoggerFactory.getLogger(Transaction.class);
+
+	private final long threadId;
 	private final Env env;
 
 	Transaction(Env env, long self) {
 		super(self);
+		threadId = Thread.currentThread().getId();
 		this.env = env;
+	}
+
+	/**
+	 * Transaction are associated with a specific thread and will throw an MDBX_THREAD_MISMATCH if used with the
+	 * wrong thread. This method provides visibility into the creating thread.
+	 *
+	 * @return the id of the thread that created this transaction
+	 */
+	public long getThreadId() {
+		return threadId;
 	}
 
 	/**
@@ -64,6 +81,11 @@ public class Transaction extends NativeObject implements Closeable {
 		checkErrorCode(env, this, mdbx_txn_renew(pointer()));
 	}
 
+
+	public int releaseCursors() {
+		return mdbx_txn_release_all_cursors(pointer());
+	}
+
 	/**
 	 * <p>
 	 * Commit all the operations of a transaction into the database.
@@ -79,6 +101,15 @@ public class Transaction extends NativeObject implements Closeable {
 	public void commit() {
 		if (self != 0) {
 			checkErrorCode(env, this, mdbx_txn_commit(self));
+
+			if (env.usePooledCursors()) {
+				try {
+					env.getCursorPool().closeTransaction(this);
+				}
+				catch (Exception e) {
+					log.error("Exception occurred", e); //$NON-NLS-1$
+				}
+			}
 			self = 0;
 		}
 	}
@@ -165,5 +196,20 @@ public class Transaction extends NativeObject implements Closeable {
 	@Override
 	public void close() {
 		abort();
+	}
+
+	@SuppressWarnings("nls")
+	@Override
+	public String toString() {
+		if (!isAllocated()) {
+			return "Transaction [Id=Freed]";
+		}
+
+		try {
+			return "Transaction [ThreadId=" + getThreadId() + ", Id=" + getId() + "]";
+		}
+		catch (MDBXException e) {
+			return "Transaction [Id=Freed]";
+		}
 	}
 }

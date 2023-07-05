@@ -19,12 +19,21 @@
 package com.castortech.mdbxjni;
 
 import java.io.Closeable;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
-
 import org.fusesource.hawtjni.runtime.Callback;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.castortech.mdbxjni.JNI.MDBX_envinfo;
 import com.castortech.mdbxjni.JNI.MDBX_stat;
+import com.castortech.mdbxjni.pool.CursorPool;
+import com.castortech.mdbxjni.pool.CursorPoolConfig;
+import com.castortech.mdbxjni.pool.CursorPoolImpl;
+
+import static com.castortech.mdbxjni.Constants.NEXT_NODUP;
+import static com.castortech.mdbxjni.Constants.string;
 import static com.castortech.mdbxjni.JNI.*;
 import static com.castortech.mdbxjni.Util.*;
 
@@ -35,14 +44,17 @@ import static com.castortech.mdbxjni.Util.*;
  * @author <a href="http://castortech.com">Alain Picard</a>
  */
 public class Env extends NativeObject implements Closeable {
-	public static String version() {
-		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
-	}
+	private static final Logger log = LoggerFactory.getLogger(Env.class);
+
+	private static final String MAIN_DB = "MAIN_DB"; //$NON-NLS-1$
 
 	private Callback keyCmpCallback = null;
 	private Callback dataCmpCallback = null;
+	private Callback loggerCallback = null;
 	private Comparator<byte[]> keyComparator;
 	private Comparator<byte[]> dataComparator;
+	private Database mainDb;  //represents the main DB used by MDBX to maintain the list of databases
+	private CursorPool cursorPool;
 
 	/**
 	 * Create an environment handle and open it at the same time with default
@@ -62,6 +74,10 @@ public class Env extends NativeObject implements Closeable {
 	public Env() {
 		super(create());
 		setMaxDbs(1);
+	}
+
+	public static String version() {
+		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
 	}
 
 	private static long create() {
@@ -206,6 +222,9 @@ public class Env extends NativeObject implements Closeable {
 		if (rc != 0) {
 			close();
 		}
+		else {
+			mainDb = new Database(this, 1L, MAIN_DB);
+		}
 		checkErrorCode(this, rc);
 	}
 
@@ -300,12 +319,29 @@ public class Env extends NativeObject implements Closeable {
 		if (rc != 0) {
 			close();
 		}
+		else {
+			mainDb = new Database(this, 1L, MAIN_DB);
+		}
+
+		if (config.isUsePooledCursors()) {
+			CursorPoolConfig poolConfig = new CursorPoolConfig();
+			poolConfig.setTimeBetweenEvictionRuns(config.getPooledCursorTimeBetweenEvictionRuns());
+			poolConfig.setMaxIdlePerKey(config.getPooledCursorMaxIdle());
+			poolConfig.setSoftMinEvictableIdleTime(config.getPooledCursorMinEvictableIdleTime());
+			poolConfig.setCloseMaxWaitSeconds(config.getPooledCloseMaxWaitSeconds());
+			cursorPool = new CursorPoolImpl(poolConfig, this);
+		}
 		checkErrorCode(this, rc);
 	}
 
 	@Override
 	public void close() {
 		if (self != 0) {
+			if (getCursorPool() != null) {
+				getCursorPool().close();
+				cursorPool = null;
+			}
+
 			mdbx_env_close(self);
 			self = 0;
 		}
@@ -423,6 +459,18 @@ public class Env extends NativeObject implements Closeable {
 		long[] rc = new long[1];
 		checkErrorCode(this, mdbx_env_get_maxdbs(pointer(), rc));
 		return rc[0];
+	}
+
+	public Database getMainDb() {
+		return mainDb;
+	}
+
+	public CursorPool getCursorPool() {
+		return cursorPool;
+	}
+
+	public boolean usePooledCursors() {
+		return cursorPool != null;
 	}
 
 	/**
@@ -569,6 +617,13 @@ public class Env extends NativeObject implements Closeable {
 		return new Stat(rc);
 	}
 
+	public String getPoolStats() {
+		if (usePooledCursors()) {
+			return cursorPool.getStats();
+		}
+		return null;
+	}
+
 	/**
 	 * @return Percent full for the whole Db environment.
 	 *
@@ -598,6 +653,36 @@ public class Env extends NativeObject implements Closeable {
 
 		long nbrPages = info2.getMapSize() / stat2.ms_psize;
 		return (info2.getLastPgNo() / (float)nbrPages) * 100;
+	}
+
+	public Cursor createCursor() {
+		try {
+			return new Cursor(this, createMdbxCursor(), null, null);
+		}
+		catch (MDBXException e) {
+			String msg = "Failed creating cursor for " + this; //$NON-NLS-1$
+			throw new MDBXException(msg, e);
+		}
+	}
+
+	public Cursor createSecondaryCursor() {
+		try {
+			return new SecondaryCursor(this, createMdbxCursor(), null, null);
+		}
+		catch (MDBXException e) {
+			String msg = "Failed creating secondary cursor for " + this; //$NON-NLS-1$
+			throw new MDBXException(msg, e);
+		}
+	}
+
+	private long createMdbxCursor() {
+		if (log.isTraceEnabled())
+			log.trace("Calling cursor open for {}", this); //$NON-NLS-1$
+		long cursorPtr = mdbx_cursor_create(0);
+		if (cursorPtr == 0) {
+			throw new MDBXException("Create cursor returned null"); //$NON-NLS-1$
+		}
+		return cursorPtr;
 	}
 
 	public Transaction createTransaction() {
@@ -844,20 +929,20 @@ public class Env extends NativeObject implements Closeable {
 		if (keyComp != null) {
 			keyCmpCallback = new Callback(this, "compareKey", 2); //$NON-NLS-1$
 			keyCmpAddr = keyCmpCallback.getAddress();
-			keyComparator =  keyComp;
+			keyComparator = keyComp;
 		}
 
 		if (dataComp != null) {
 			dataCmpCallback = new Callback(dataComp.getClass(), "compareData", 2); //$NON-NLS-1$
 			dataCmpAddr = dataCmpCallback.getAddress();
-			dataComparator =  dataComp;
+			dataComparator = dataComp;
 		}
 
 		checkErrorCode(this, mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
 		return new Database(this, dbi[0], name);
 	}
 
-	public long compareKey(long o1, long o2) {
+	public long compareKey(long o1, long o2) {  //NOUCD: Called via Callback constructor in openDatabase
 		Value v1 = new Value();
 		map_val(o1, v1);
 
@@ -870,7 +955,7 @@ public class Env extends NativeObject implements Closeable {
 		return keyComparator.compare(key1, key2);
 	}
 
-	public long compareData(long o1, long o2) {
+	public long compareData(long o1, long o2) {  //NOUCD: Called via Callback constructor in openDatabase
 		Value v1 = new Value();
 		map_val(o1, v1);
 
@@ -965,11 +1050,28 @@ public class Env extends NativeObject implements Closeable {
 				try {
 					primary.close();
 				}
-				catch (Throwable t) {
+				catch (Exception e) {
 					// Ignore it -- there is already an exception in flight.
 				}
 		}
 		return succeeded;
+	}
+
+	public List<String> listDatabases(Transaction tx) {
+		List<String> dbNames = new ArrayList<>();
+
+		try (Cursor cursor = getMainDb().openCursor(tx)) {
+			while (true) {
+				byte[] key = new byte[1];
+				Entry entry = cursor.get(NEXT_NODUP, key, null);
+				if (entry == null) {
+					break;
+				}
+				String keyVal = string(entry.getKey());
+				dbNames.add(keyVal);
+			}
+		}
+		return dbNames;
 	}
 
 	public static void pushMemoryPool(int size) {
@@ -1016,5 +1118,37 @@ public class Env extends NativeObject implements Closeable {
 		}
 
 		return flags;
+	}
+
+	public DebugState setupDebug(MdbxLogLevel logLevel, int debugFlags) {
+		long logDebugAddr = 0L;
+
+		if (loggerCallback == null) {
+			loggerCallback = new Callback(this, "logDebug", 5); //$NON-NLS-1$
+			logDebugAddr = loggerCallback.getAddress();
+		}
+
+		int rc = mdbx_setup_debug(logLevel.getValue(), debugFlags, logDebugAddr);
+		return new DebugState(rc);
+	}
+
+	/**
+	 * Method callback for MDBX issued log entries
+	 * @param level
+	 * @param fctnNamePtr
+	 * @param line
+	 * @param formatPtr
+	 * @param argsPtr
+	 * @return
+	 */
+	public long logDebug(long level, long fctnNamePtr, long line, long formatPtr, long argsPtr) {  //NOUCD: Called via Callback constructor in openDatabase
+		String fctnName = Util.string(fctnNamePtr);
+		NativeBuffer buffer = NativeBuffer.create(1024);
+		map_printf(buffer.self, 1024, formatPtr, argsPtr);
+		String msg = Util.string(buffer.self);
+		buffer.delete();
+
+		MdbxLogLevel.log((int)level, log, "Function:{}, line:{}, msg:{}", fctnName, line, msg); //$NON-NLS-1$
+		return 0;
 	}
 }

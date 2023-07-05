@@ -38,6 +38,8 @@ public class JNI {
 	public static final Library DB_LIB;
 	public static final Library JNI_LIB;
 
+	private static final int CURSOR_STACK = 32;
+
 	static {
 		//Needed to avoid java.lang.UnsatisfiedLinkError: Can't find dependent libraries
 		//The sha1 strategy on windows will prohibit the JNI lib to find the DB lib.
@@ -481,26 +483,59 @@ public class JNI {
 	public static int MDBX_LOG_TRACE;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_LOG_EXTRA;
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_LOG_DONTCHANGE;
 
 	//====================================================//
 	// MDBX debug flags (MDBX_debug_flags_t)
+	// Runtime debug flags
 	//====================================================//
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_NONE;
+
+	/** Enable assertion checks.
+   * \note Always enabled for builds with `MDBX_FORCE_ASSERTIONS` option,
+   * otherwise requires build with \ref MDBX_DEBUG > 0
+   */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_ASSERT;
+
+	/** Enable pages usage audit at commit transactions.
+   * \note Requires build with \ref MDBX_DEBUG > 0
+   */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_AUDIT;
+
+	/** Enable small random delays in critical points.
+   * \note Requires build with \ref MDBX_DEBUG > 0
+   */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_JITTER;
+
+	/** Include or not meta-pages in coredump files.
+   * \note May affect performance in \ref MDBX_WRITEMAP mode
+   */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_DUMP;
+
+	/** Allow multi-opening environment(s) */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_LEGACY_MULTIOPEN;
+
+	/** Allow read and write transactions overlapping for the same thread. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_LEGACY_OVERLAP;
+
+	/** Don't auto-upgrade format signature.
+   * \note However a new write transactions will use and store
+   * the last signature regardless this flag
+   */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DBG_DONT_UPGRADE;
+
+	/** for mdbx_setup_debug() only: Don't change current settings */
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_DBG_DONTCHANGE;
 
 	// ====================================================//
 	// Database Flags (MDBX_db_flags_t)
@@ -1018,11 +1053,27 @@ public class JNI {
 	// ====================================================//
 	// Debug methods
 	// ====================================================//
+	@JniMethod(cast = "char *")
+	public static final native long map_printf(
+			@JniArg(cast = "char *", flags={NO_OUT}) long buf,
+			@JniArg(cast = "unsigned") int size,
+			@JniArg(cast = "const char *", flags={NO_OUT}) long fmt,
+			@JniArg(cast = "va_list", flags={NO_OUT}) long args);
+
 //	@JniMethod
-//	public static final native int mdbx_setup_debug(
-//			@JniArg(cast = "unsigned") int log_level,
-//			@JniArg(cast = "unsigned") int debug_flags,
-//  MDBX_debug_func *logger)
+//	public static final native void debug_func(
+//			@JniArg(cast = "unsigned", flags={NO_OUT}) int logLevel,
+//			@JniArg(cast = "const char *", flags={NO_OUT}) long function,
+//			@JniArg(cast = "unsigned", flags={NO_OUT}) long line,
+//			@JniArg(cast = "const char *", flags={NO_OUT}) long fmt,
+//			@JniArg(cast = "const char *", flags={NO_OUT}) long args);
+
+	@JniMethod
+	public static final native int mdbx_setup_debug(
+			@JniArg(cast = "MDBX_log_level_t") int log_level,
+			@JniArg(cast = "MDBX_debug_flags_t") int debug_flags,
+			@JniArg(cast = "void(*)(MDBX_log_level_t, const char *, unsigned int, const char *, va_list)",
+					flags = ArgFlag.POINTER_ARG) long logger);
 
 	// ====================================================//
 	// Error methods
@@ -1349,6 +1400,10 @@ public class JNI {
 
 	@JniMethod
 	public static final native int mdbx_txn_renew(
+			@JniArg(cast = "MDBX_txn *") long txn);
+
+	@JniMethod
+	public static final native int mdbx_txn_release_all_cursors(
 			@JniArg(cast = "MDBX_txn *") long txn);
 
 	/**

@@ -148,6 +148,11 @@ public class DatabaseConfig implements Cloneable {
 		this.dataComparator = dataComparator;
 	}
 
+	@Override
+	protected Object clone() throws CloneNotSupportedException {
+		return super.clone();
+	}
+
 	/**
 	 * Returns a copy of this configuration object.
 	 */

@@ -20,6 +20,8 @@ package com.castortech.mdbxjni;
 
 import java.nio.charset.Charset;
 
+import org.slf4j.helpers.MessageFormatter;
+
 import static com.castortech.mdbxjni.JNI.mdbx_strerror;
 import static com.castortech.mdbxjni.JNI.strlen;
 
@@ -92,4 +94,9 @@ class Util {
 			return false;
 		}
 	}
+
+	public static String format(String format, Object... params) {
+		return MessageFormatter.arrayFormat(format, params).getMessage();
+	}
+
 }
