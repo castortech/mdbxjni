@@ -1058,7 +1058,7 @@ public class JNI {
 			@JniArg(cast = "char *", flags={NO_OUT}) long buf,
 			@JniArg(cast = "unsigned") int size,
 			@JniArg(cast = "const char *", flags={NO_OUT}) long fmt,
-			@JniArg(cast = "va_list", flags={NO_OUT}) long args);
+			@JniArg(cast = "void *", flags={NO_OUT}) long args);
 
 //	@JniMethod
 //	public static final native void debug_func(

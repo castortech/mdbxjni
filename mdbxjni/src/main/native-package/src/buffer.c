@@ -27,7 +27,7 @@ void map_val(MDBX_val *in, MDBX_val *out) {
 	out->iov_len = in->iov_len;
 }
 
-char* map_printf(char *buf, int size, const char * format, va_list args) {
+char* map_printf(char *buf, int size, const char * format, void *args) {
 	static char buffer[1024];
 	int buflen = vsprintf(buffer,format, args);
 	buffer[buflen] = '\0';
