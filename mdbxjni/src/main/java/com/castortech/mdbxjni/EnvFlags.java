@@ -37,8 +37,11 @@ public class EnvFlags {
 	public static final int NOTLS       = MDBX_NOTLS       ;
 	public static final int NORDAHEAD 	= MDBX_NORDAHEAD	 ;
 	public static final int NOMEMINIT   = MDBX_NOMEMINIT   ;
+	/** @see JNI#MDBX_COALESCE */
 	public static final int COALESCE 		= MDBX_COALESCE		 ;
+	/** @see JNI#MDBX_LIFORECLAIM */
 	public static final int LIFORECLAIM = MDBX_LIFORECLAIM ;
+	/** @see JNI#MDBX_PAGEPERTURB */
 	public static final int PAGEPERTURB = MDBX_PAGEPERTURB ;
 	public static final int SYNCDURABLE = MDBX_SYNC_DURABLE;
 	public static final int NOMETASYNC  = MDBX_NOMETASYNC  ;

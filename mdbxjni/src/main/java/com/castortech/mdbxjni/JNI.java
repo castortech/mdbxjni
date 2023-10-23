@@ -202,8 +202,8 @@ public class JNI {
 		}
 	}
 
-//	@JniField(flags = { CONSTANT })
-//	public static MDBX_build_info mdbx_build;
+	@JniField(accessor="sizeof(struct MDBX_build_info)", flags={CONSTANT})
+	public static int SIZEOF_BUILDINFO;
 
 	//====================================================//
 	// Transaction Info
@@ -248,22 +248,162 @@ public class JNI {
 	//====================================================//
 	@JniClass(flags = STRUCT)
 	public static class MDBX_commit_latency {
+		/**
+		 * Duration of preparation (commit child transactions, update sub-databases records and cursors
+		 * destroying).
+		 */
 		@JniField(cast = "uint32_t")
-		public int preparation; // Duration of preparation (commit child transactions, update sub-databases records and cursors destroying).
+		public int preparation;
+
+		/**
+		 * Duration of GC update by wall clock
+		 */
 		@JniField(cast = "uint32_t")
-		public int gc_wallclock; //Duration of GC update by wall clock
+		public int gc_wallclock;
+
+		/**
+		 * Duration of internal audit if enabled.
+		 */
 		@JniField(cast = "uint32_t")
-		public int audit; //Duration of internal audit if enabled.
+		public int audit;
+
+		/**
+		 * Duration of writing dirty/modified data pages.
+		 */
 		@JniField(cast = "uint32_t")
-		public int write; //Duration of writing dirty/modified data pages.
+		public int write;
+
+		/**
+		 * Duration of syncing written data to the dist/storage.
+		 */
 		@JniField(cast = "uint32_t")
-		public int sync; //Duration of syncing written data to the dist/storage.
+		public int sync;
+
+		/**
+		 * Duration of transaction ending (releasing resources).
+		 */
 		@JniField(cast = "uint32_t")
-		public int ending; //Duration of transaction ending (releasing resources).
+		public int ending;
+
+		/**
+		 * The total duration of a commit
+		 */
 		@JniField(cast = "uint32_t")
-		public int whole; //The total duration of a commit
+		public int whole;
+
+		/**
+		 * Duration of GC update by wall clock
+		 */
 		@JniField(cast = "uint32_t")
-		public int gc_cputime; //Duration of GC update by wall clock
+		public int gc_cputime;
+
+		/**
+		 * Number of GC update iterations, more than 1 if there were repetitions/restarts.
+		 */
+		@JniField(accessor="gc_prof.wloops", cast = "uint32_t")
+		public int gc_prof_wloops;
+
+		/**
+		 * Number of iterations to merge GC records.
+		 */
+		@JniField(accessor="gc_prof.coalescences", cast = "uint32_t")
+		public int gc_prof_coalescences;
+
+		/**
+		 * The number of times previous good/resilient commit points were killed when running in
+		 * MDBX_UTTERLY_NOSYNC mode.
+		 */
+		@JniField(accessor="gc_prof.wipes", cast = "uint32_t")
+		public int gc_prof_wipes;
+
+		/**
+		 * The number of forced commits to disk to avoid database growth when working outside of the
+		 * MDBX_UTTERLY_NOSYNC mode.
+		 */
+		@JniField(accessor="gc_prof.flushes", cast = "uint32_t")
+		public int gc_prof_flushes;
+
+		/**
+		 * The number of calls to the Handle-Slow-Readers mechanism to avoid database increment. See also
+		 * MDBX_hsr_func
+		 */
+		@JniField(accessor="gc_prof.kicks", cast = "uint32_t")
+		public int gc_prof_kicks;
+
+		/**
+		 * Slow path execution count GC for user data.
+		 */
+		@JniField(accessor="gc_prof.work_counter", cast = "uint32_t")
+		public int gc_prof_work_counter;
+
+		/**
+		 * Wall clock time spent reading and searching within the GC for user data.
+		 */
+		@JniField(accessor="gc_prof.work_rtime_monotonic", cast = "uint32_t")
+		public int gc_prof_work_rtime_monotonic;
+
+		/**
+		 * CPU time in user mode spent preparing pages fetched from the GC for user data, including paging from disk.
+		 */
+		@JniField(accessor="gc_prof.work_xtime_cpu", cast = "uint32_t")
+		public int gc_prof_work_xtime_cpu;
+
+		/**
+		 * The number of search iterations inside the GC when allocating pages for user data.
+		 */
+		@JniField(accessor="gc_prof.work_rsteps", cast = "uint32_t")
+		public int gc_prof_work_rsteps;
+
+		/**
+		 * Number of requests to allocate sequences of pages for user data.
+		 */
+		@JniField(accessor="gc_prof.work_xpages", cast = "uint32_t")
+		public int gc_prof_work_xpages;
+
+		/**
+		 * The number of page faults within the GC when allocating and preparing pages for user data.
+		 */
+		@JniField(accessor="gc_prof.work_majflt", cast = "uint32_t")
+		public int gc_prof_work_majflt;
+
+		/**
+		 * GC slow path execution count for purposes of maintaining and updating the GC itself.
+		 */
+		@JniField(accessor="gc_prof.self_counter", cast = "uint32_t")
+		public int gc_prof_self_counter;
+
+		/**
+		 * Wall clock time spent reading and searching within the GC for purposes of maintaining and updating the
+		 * GC itself.
+		 */
+		@JniField(accessor="gc_prof.self_rtime_monotonic", cast = "uint32_t")
+		public int gc_prof_self_rtime_monotonic;
+
+		/**
+		 * CPU time in user mode spent preparing pages to be retrieved from the GC for the purposes of maintaining
+		 * and updating the GC itself, including paging from disk.
+		 */
+		@JniField(accessor="gc_prof.self_rtime_monotonic", cast = "uint32_t")
+		public int gc_prof_self_xtime_cpu;
+
+		/**
+		 * The number of iterations of searching within the GC when allocating pages for the purpose of
+		 * maintaining and updating the GC itself.
+		 */
+		@JniField(accessor="gc_prof.self_rsteps", cast = "uint32_t")
+		public int gc_prof_self_rsteps;
+
+		/**
+		 * Number of requests to allocate sequences of pages for user data.
+		 */
+		@JniField(accessor="gc_prof.self_xpages", cast = "uint32_t")
+		public int gc_prof_self_xpages;
+
+		/**
+		 * The number of page faults within the GC when allocating and preparing pages for the GC itself.
+		 */
+		@JniField(accessor="gc_prof.self_xpages", cast = "uint32_t")
+		public int gc_prof_self_majflt;
 
 		@SuppressWarnings("nls")
 		@Override
@@ -277,7 +417,24 @@ public class JNI {
 					", ending=" + ending +
 					", whole=" + whole +
 					", gc_cputime=" + gc_cputime +
-					'}';
+					", gc_prof_wloops=" + gc_prof_wloops +
+					", gc_prof_coalescences=" + gc_prof_coalescences +
+					", gc_prof_wipes=" + gc_prof_wipes +
+					", gc_prof_flushes=" + gc_prof_flushes +
+					", gc_prof_kicks=" + gc_prof_kicks +
+					", gc_prof_work_counter=" + gc_prof_work_counter +
+					", gc_prof_work_rtime_monotonic=" + gc_prof_work_rtime_monotonic +
+					", gc_prof_work_xtime_cpu=" + gc_prof_work_xtime_cpu +
+					", gc_prof_work_rsteps=" + gc_prof_work_rsteps +
+					", gc_prof_work_xpages=" + gc_prof_work_xpages +
+					", gc_prof_work_majflt=" + gc_prof_work_majflt +
+					", gc_prof_self_counter=" + gc_prof_self_counter +
+					", gc_prof_self_rtime_monotonic=" + gc_prof_self_rtime_monotonic +
+					", gc_prof_self_xtime_cpu=" + gc_prof_self_xtime_cpu +
+					", gc_prof_self_rsteps=" + gc_prof_self_rsteps +
+					", gc_prof_self_xpages=" + gc_prof_self_xpages +
+					", gc_prof_self_majflt=" + gc_prof_self_majflt +
+					"}";
 		}
 	}
 
@@ -330,12 +487,52 @@ public class JNI {
 	public static int MDBX_NORDAHEAD;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_NOMEMINIT;
+
+	/**
+	 * Aims to coalesce a Garbage Collection items.
+	 *
+	 * Note Always enabled since v0.12
+	 *
+	 * With MDBX_COALESCE flag MDBX will aims to coalesce items while recycling a Garbage Collection.
+	 * Technically, when possible short lists of pages will be combined into longer ones, but to fit on one
+	 * database page. As a result, there will be fewer items in Garbage Collection and a page lists are longer,
+	 * which slightly increases the likelihood of returning pages to Unallocated space and reducing the database
+	 * file.
+	 *
+	 * This flag may be changed at any time using mdbx_env_set_flags().
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_COALESCE;
+
+	/**
+	 * LIFO policy for recycling a Garbage Collection items.
+	 *
+	 * MDBX_LIFORECLAIM flag turns on LIFO policy for recycling a Garbage Collection items, instead of FIFO by
+	 * default. On systems with a disk write-back cache, this can significantly increase write performance, up
+	 * to several times in a best case scenario.
+	 *
+	 * LIFO recycling policy means that for reuse pages will be taken which became unused the lastest (i.e. just
+	 * now or most recently). Therefore the loop of database pages circulation becomes as short as possible. In
+	 * other words, the number of pages, that are overwritten in memory and on disk during a series of write
+	 * transactions, will be as small as possible. Thus creates ideal conditions for the efficient operation of
+	 * the disk write-back cache.
+	 *
+	 * MDBX_LIFORECLAIM is compatible with all no-sync flags, but gives NO noticeable impact in combination with
+	 * MDBX_SAFE_NOSYNC or MDBX_UTTERLY_NOSYNC. Because MDBX will reused pages only before the last "steady"
+	 * MVCC-snapshot, i.e. the loop length of database pages circulation will be mostly defined by frequency of
+	 * calling mdbx_env_sync() rather than LIFO and FIFO difference.
+	 *
+	 * This flag may be changed at any time using mdbx_env_set_flags().
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_LIFORECLAIM;
+
+	/**
+	 * Debugging option, fill/perturb released pages.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_PAGEPERTURB;
+
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_SYNC_DURABLE;
 	@JniField(flags = { CONSTANT })
@@ -578,7 +775,15 @@ public class JNI {
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_CREATE;
 
-	/** Opens an existing sub-database created with unknown flags.*/
+	/**
+	 * Opens an existing sub-database created with unknown flags.
+	 *
+	 * The MDBX_DB_ACCEDE flag is intend to open a existing sub-database which was created with unknown flags
+	 * (MDBX_REVERSEKEY, MDBX_DUPSORT, MDBX_INTEGERKEY, MDBX_DUPFIXED, MDBX_INTEGERDUP and MDBX_REVERSEDUP).
+	 *
+	 * In such cases, instead of returning the MDBX_INCOMPATIBLE error, the sub-database will be opened with
+	 * flags which it was created, and then an application could determine the actual flags by mdbx_dbi_flags().
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DB_ACCEDE;
 
@@ -837,13 +1042,13 @@ public class JNI {
 		@JniField(accessor="mi_geo.lower", cast = "uint64_t")
 		public long mi_geo_lower;		/* lower limit for datafile size */
 		@JniField(accessor="mi_geo.upper", cast = "uint64_t")
-		public long mi_geo_upper;  	/* upper limit for datafile size */
+		public long mi_geo_upper;		/* upper limit for datafile size */
 		@JniField(accessor="mi_geo.current", cast = "uint64_t")
-		public long mi_geo_current; 	/* current datafile size */
+		public long mi_geo_current;		/* current datafile size */
 		@JniField(accessor="mi_geo.shrink", cast = "uint64_t")
-		public long mi_geo_shrink;  	/* shrink treshold for datafile */
+		public long mi_geo_shrink;		/* shrink treshold for datafile */
 		@JniField(accessor="mi_geo.grow", cast = "uint64_t")
-		public long mi_geo_grow;    	/* growth step for datafile */
+		public long mi_geo_grow;			/* growth step for datafile */
 
 		@JniField(cast = "uint64_t")
 		public long mi_mapsize;							/* Size of the data memory map */
@@ -1049,6 +1254,11 @@ public class JNI {
 	public static final native void map_val(
 			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) long in,
 			@JniArg(cast = "MDBX_val *", flags={NO_IN}) MDBX_val out);
+
+//	@JniMethod
+//	public static final native int get_mdbx_build_info(
+//			@JniArg(cast = "void *", flags = {NO_IN}) long arg,
+//			@JniArg(cast = "size_t") long bytes);
 
 	// ====================================================//
 	// Debug methods
@@ -1532,6 +1742,15 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "unsigned") int flags);
 
+	@JniMethod
+	public static final native int mdbx_put_multiple(
+			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
+			@JniArg(cast = "uint32_t") long dbi,
+			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
+			@JniArg(cast = "MDBX_val *") MDBX_val data1,
+			@JniArg(cast = "MDBX_val *") MDBX_val data2,
+			@JniArg(cast = "unsigned") int flags);
+
 //	@JniMethod
 //	public static final native int mdbx_put_attr(
 //			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -1577,6 +1796,38 @@ public class JNI {
 	//====================================================//
 	// Cursor methods
 	//====================================================//
+	/**
+	 * <p>
+	 * Create a cursor handle for the specified transaction and DBI handle.
+	 * </p>
+	 *
+	 * <p>
+	 * Using of the mdbx_cursor_open() is equivalent to calling mdbx_cursor_create() and then mdbx_cursor_bind()
+	 * functions.
+	 * </p>
+	 *
+	 * <p>
+	 * A cursor cannot be used when its database handle is closed. Nor when its transaction has ended, except
+	 * with mdbx_cursor_bind() and mdbx_cursor_renew(). Also it can be discarded with mdbx_cursor_close().
+	 * </p>
+	 *
+	 * <p>
+	 * A cursor must be closed explicitly always, before or after its transaction ends. It can be reused with
+	 * mdbx_cursor_bind() or mdbx_cursor_renew() before finally closing it.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Note</b> In contrast to LMDB, the MDBX required that any opened cursors can be reused and must be
+	 * freed explicitly, regardless ones was opened in a read-only or write transaction. The REASON for this is
+	 * eliminates ambiguity which helps to avoid errors such as: use-after-free, double-free, i.e. memory
+	 * corruption and segfaults.
+	 * </p>
+	 *
+	 * @param txn
+	 * @param dbi
+	 * @param cursor
+	 * @return
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_open(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -1865,6 +2116,16 @@ public class JNI {
 			@JniArg(cast = "MDBX_txn *") long txn,
 			@JniArg(cast = "const void *") long ptr);
 
+	/**
+	 * Returns basic information about system RAM. This function provides a portable way to get information
+	 * about available RAM and can be useful in that it returns the same information that libmdbx uses
+	 * internally to adjust various options and control readahead.
+	 *
+	 * @param page_size
+	 * @param total_pages
+	 * @param avail_pages
+	 * @return
+	 */
 	@JniMethod
 	public static final native int mdbx_get_sysraminfo(
 			@JniArg(cast = "intptr_t *") long[] page_size,

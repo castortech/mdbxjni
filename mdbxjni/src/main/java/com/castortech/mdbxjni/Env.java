@@ -80,6 +80,28 @@ public class Env extends NativeObject implements Closeable {
 		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
 	}
 
+//	public static BuildInfo buildInfo() {
+//		MDBX_build_info rc = new MDBX_build_info();
+//
+//		NativeBuffer buffer = NativeBuffer.create(JNI.SIZEOF_BUILDINFO);
+//		get_mdbx_build_info(buffer.pointer(), JNI.SIZEOF_BUILDINFO);
+//		return new BuildInfo(rc);
+//	}
+
+
+//	printf("mdbx_copy version %d.%d.%d.%d\n"
+//      " - source: %s %s, commit %s, tree %s\n"
+//      " - anchor: %s\n"
+//      " - build: %s for %s by %s\n"
+//      " - flags: %s\n"
+//      " - options: %s\n",
+//      mdbx_version.major, mdbx_version.minor, mdbx_version.release,
+//      mdbx_version.revision, mdbx_version.git.describe,
+//      mdbx_version.git.datetime, mdbx_version.git.commit,
+//      mdbx_version.git.tree, mdbx_sourcery_anchor, mdbx_build.datetime,
+//      mdbx_build.target, mdbx_build.compiler, mdbx_build.flags,
+//      mdbx_build.options);
+
 	private static long create() {
 		long[] envPtr = new long[1];
 		checkErrorCode(null, mdbx_env_create(envPtr));
@@ -754,14 +776,14 @@ public class Env extends NativeObject implements Closeable {
 		long[] txpointer = new long[1];
 		checkErrorCode(this, mdbx_txn_begin(pointer(),
 				parent == null ? 0 : parent.pointer(), readOnly ? MDBX_RDONLY : 0, txpointer));
-		return new Transaction(this, txpointer[0]);
+		return new Transaction(this, txpointer[0], readOnly);
 	}
 
 	public Transaction createTransaction(Transaction parent, boolean readOnly, NativeObject ctx) {
 		long[] txpointer = new long[1];
 		checkErrorCode(this, mdbx_txn_begin_ex(pointer(),
 				parent == null ? 0 : parent.pointer(), readOnly ? MDBX_RDONLY : 0, txpointer, ctx.pointer()));
-		return new Transaction(this, txpointer[0]);
+		return new Transaction(this, txpointer[0], readOnly);
 	}
 
 	/**

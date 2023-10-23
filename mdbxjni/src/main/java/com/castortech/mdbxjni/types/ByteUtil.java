@@ -1,7 +1,10 @@
 package com.castortech.mdbxjni.types;
 
+import java.nio.ByteBuffer;
+
 public class ByteUtil {
 	private static final String HexStringForLongMaxValue = Long.toHexString(Long.MAX_VALUE);
+	private static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
 
 	private ByteUtil() { }
 
@@ -111,12 +114,15 @@ public class ByteUtil {
 
 	// little endian
 	public static byte[] byteArrayForLong(long l) {
-		byte[] buf = new byte[4];
-		buf[0] = (byte)(l & 0x000000FF);
-		buf[1] = (byte)((l & 0x0000FF00) >> 8);
-		buf[2] = (byte)((l & 0x00FF0000) >> 16);
-		buf[3] = (byte)((l & 0xFF000000) >> 24);
-		return buf;
+//		byte[] buf = new byte[4];
+//		buf[0] = (byte)(l & 0x000000FF);
+//		buf[1] = (byte)((l & 0x0000FF00) >> 8);
+//		buf[2] = (byte)((l & 0x00FF0000) >> 16);
+//		buf[3] = (byte)((l & 0xFF000000) >> 24);
+
+		buffer.putLong(0, l);
+		byte[] bs = buffer.array();
+		return bs;
 	}
 
 	// convert between little and big endian and vice versa

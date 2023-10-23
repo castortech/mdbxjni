@@ -28,7 +28,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.castortech.mdbxjni.pool.CursorKey;
-
 import static com.castortech.mdbxjni.JNI.*;
 import static com.castortech.mdbxjni.Util.checkArgNotNull;
 import static com.castortech.mdbxjni.Util.checkErrorCode;
@@ -423,6 +422,53 @@ public class Database extends NativeObject implements Closeable {
 		}
 	}
 
+	@SuppressWarnings("nls")
+	public byte[] put(Transaction tx, byte[] key, byte[] value, int flags, long valueCnt) {
+		if (valueCnt > 0) {  //indicates a put multiple for dupsort/dupfixed
+			int flags2 = getFlags(tx);
+			if ((flags2 & MDBX_DUPSORT) == 0 || (flags2 & MDBX_DUPFIXED) == 0) {
+				String msg = "Put multiple only applies to DUPSORT with DUPFIXED";
+				throw new MDBXException(msg, JNI.MDBX_PROBLEM);
+			}
+
+			if (tx == null) {
+				String msg = "Put multiple only supported with non null tx argument";
+				throw new MDBXException(msg, JNI.MDBX_BAD_TXN);
+			}
+
+			if (value.length % valueCnt != 0) {
+				String msg = "Value length must be an exact multiple of valueSize";
+				throw new MDBXException(msg, JNI.MDBX_PROBLEM);
+			}
+
+			checkArgNotNull(tx, "tx");
+			long valueSize = value.length / valueCnt;
+			NativeBuffer keyBuffer = NativeBuffer.create(key);
+			try {
+				NativeBuffer valueBuffer = NativeBuffer.create(value);
+//				NativeBuffer valArray = NativeBuffer.create(32);
+//				valArray.write(0, ByteUtil.byteArrayForLong(valueBuffer.pointer()), 0, 8);
+//				valArray.write(8, ByteUtil.byteArrayForLong(valueSize), 0, 8);
+//				valArray.write(16, ByteUtil.byteArrayForLong(0L), 0, 8);
+//				valArray.write(24, ByteUtil.byteArrayForLong(valueCnt), 0, 8);
+
+				Value value1 = new Value(valueBuffer.pointer(), valueSize);
+				Value value2 = new Value(0L, valueCnt);
+
+				try {
+					return put(tx, new Value(keyBuffer), value1, value2, flags);
+				}
+				finally {
+					valueBuffer.delete();
+				}
+			}
+			finally {
+				keyBuffer.delete();
+			}
+		}
+		return null;
+	}
+
 	private byte[] put(Transaction tx, NativeBuffer keyBuffer, NativeBuffer valueBuffer, int flags) {
 		return put(tx, new Value(keyBuffer), new Value(valueBuffer), flags);
 	}
@@ -468,6 +514,28 @@ public class Database extends NativeObject implements Closeable {
 
 			putSecondaries(tx, keySlice, valueSlice);
 
+			return null;
+		}
+	}
+
+	private byte[] put(Transaction tx, Value keySlice, Value value1Slice, Value value2Slice, int flags) {
+		checkSize(env, keySlice);
+		if ((flags & MDBX_DUPSORT) != 0) {
+			checkSize(env, value1Slice);
+		}
+
+		if (log.isTraceEnabled())
+			log.trace("Calling db put for {}", this); //$NON-NLS-1$
+		int rc = mdbx_put_multiple(tx.pointer(), pointer(), keySlice, value1Slice, value2Slice, flags);
+		if (((flags & MDBX_NOOVERWRITE) != 0 || (flags & MDBX_NODUPDATA) != 0) && rc == MDBX_KEYEXIST) {
+			// Return the existing value if it was a dup insert attempt.
+			return value1Slice.toByteArray();
+		}
+		else {
+			// If the put failed, throw an exception..
+			if (rc != 0) {
+				throw new MDBXException("put failed", rc); //$NON-NLS-1$
+			}
 			return null;
 		}
 	}
@@ -743,21 +811,12 @@ public class Database extends NativeObject implements Closeable {
 	 * Create a cursor handle.
 	 * </p>
 	 *
-	 * A cursor is associated with a specific transaction and database. A cursor
-	 * cannot be used when its database handle is closed. Nor when its transaction
-	 * has ended, except with #mdb_cursor_renew(). It can be discarded with
-	 * #mdb_cursor_close(). A cursor in a write-transaction can be closed before its
-	 * transaction ends, and will otherwise be closed when its transaction ends. A
-	 * cursor in a read-only transaction must be closed explicitly, before or after
-	 * its transaction ends. It can be reused with #mdb_cursor_renew() before
-	 * finally closing it.
-	 *
-	 * @note Earlier documentation said that cursors in every transaction were
-	 *       closed when the transaction committed or aborted.
+	 * <p>
+	 * For more info see {@link JNI#mdbx_cursor_open(long, long, long[])}
+	 * </p>
 	 *
 	 * @param tx
-	 *            transaction handle
-	 * @return Address where the new #MDB_cursor handle will be stored
+	 *          transaction handle
 	 * @return cursor handle
 	 */
 	public Cursor openCursor(Transaction tx) {

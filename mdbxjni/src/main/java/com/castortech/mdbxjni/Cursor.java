@@ -24,6 +24,7 @@ import static com.castortech.mdbxjni.Util.checkErrorCode;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,10 +90,20 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 * Renew a cursor handle.
 	 * </p>
 	 *
-	 * A cursor is associated with a specific transaction and database. Cursors that are only used in read-only
-	 * transactions may be re-used, to avoid unnecessary malloc/free overhead. The cursor may be associated with
-	 * a new read-only transaction, and referencing the same database handle as it was created with. This may be
-	 * done whether the previous transaction is live or dead.
+	 * <p>
+	 * The cursor may be associated with a new transaction, and referencing a new or the same database handle as
+	 * it was created with. This may be done whether the previous transaction is live or dead.
+	 * </p>
+	 *
+	 * <p>
+	 * Using of the mdbx_cursor_renew() is equivalent to calling mdbx_cursor_bind() with the DBI handle that
+	 * previously the cursor was used with.
+	 * </p>
+	 *
+	 * <p>
+	 * <b>Note</b> In contrast to LMDB, the MDBX allow any cursor to be re-used by using mdbx_cursor_renew(), to avoid
+	 * unnecessary malloc/free overhead until it freed by mdbx_cursor_close().
+	 * </p>
 	 *
 	 * @param tx
 	 *          transaction handle
@@ -109,10 +120,14 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 * Bind cursor to specified transaction and DBI handle.
 	 * </p>
 	 *
+	 * <p>
 	 * Using of this method is equivalent to calling renew but with specifying an arbitrary database.
+	 * </p>
 	 *
+	 * <p>
 	 * A cursor may be associated with a new transaction, and referencing a new or the same database as
 	 * it was created with. This may be done whether the previous transaction is live or dead.
+	 * </p>
 	 *
 	 * <p>
 	 * <b>Note:</b> In contrast to LMDB, MDBX requires that any opened cursors can be reused and must be freed
@@ -183,6 +198,10 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	}
 
 	public Entry get(CursorOp op, byte[] key, byte[] value) {
+		return get(op, key, value, x -> true);
+	}
+
+	public Entry get(CursorOp op, byte[] key, byte[] value, Predicate<byte[]> matchPredicate) {
 		checkArgNotNull(op, "op"); //$NON-NLS-1$
 		NativeBuffer keyBuffer = NativeBuffer.create(key);
 		NativeBuffer valBuffer = NativeBuffer.create(value);
@@ -197,6 +216,10 @@ public class Cursor extends NativeObject implements AutoCloseable {
 				return null;
 			}
 			checkErrorCode(env, tx, rc);
+
+			if (!matchPredicate.test(valValue.toByteArray())) {
+				return null;
+			}
 			return new Entry(keyValue.toByteArray(), valValue.toByteArray());
 		}
 		finally {
@@ -208,6 +231,11 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	}
 
 	public OperationStatus get(CursorOp op, DatabaseEntry key, DatabaseEntry value) {
+		return get(op, key, value, null, null);
+	}
+
+	public OperationStatus get(CursorOp op, DatabaseEntry key, DatabaseEntry value,
+			Predicate<DatabaseEntry> keyMatchPredicate, Predicate<DatabaseEntry> valMatchPredicate) {
 		checkArgNotNull(op, "op"); //$NON-NLS-1$
 		NativeBuffer keyBuffer = NativeBuffer.create(key.getData());
 		NativeBuffer valBuffer = NativeBuffer.create(value.getData());
@@ -222,8 +250,16 @@ public class Cursor extends NativeObject implements AutoCloseable {
 				return OperationStatus.NOTFOUND;
 			}
 			checkErrorCode(env, tx, rc);
+
 			key.setData(keyValue.toByteArray());
+			if (keyMatchPredicate !=null && !keyMatchPredicate.test(key)) {
+				return OperationStatus.NOTFOUND;
+			}
+
 			value.setData(valValue.toByteArray());
+			if (valMatchPredicate !=null && !valMatchPredicate.test(value)) {
+				return OperationStatus.NOTFOUND;
+			}
 			return OperationStatus.SUCCESS;
 		}
 		finally {
@@ -403,6 +439,27 @@ public class Cursor extends NativeObject implements AutoCloseable {
 			log.trace("Calling cursor count for {}", this); //$NON-NLS-1$
 		checkErrorCode(env, tx, mdbx_cursor_count(pointer(), rc));
 		return rc[0];
+	}
+
+	/**
+	 * Special version of count that starts with a positioned cursor and will iterate to count duplicates for
+	 * the current key
+	 *
+	 * @return count of scanned records. Note that if cursor was initialized via a cursor op that returns data,
+	 *         the count will have to be incremented to account for 1st value.
+	 */
+	public long count(CursorOp op, DatabaseEntry key, DatabaseEntry value,
+			Predicate<DatabaseEntry> valMatchPredicate) {
+		long cnt = 0;
+
+		while (true) {
+			OperationStatus status = get(op, key, value, null, valMatchPredicate);
+			if (status != OperationStatus.SUCCESS) {
+				break;
+			}
+			cnt++;
+		}
+		return cnt;
 	}
 
 	public Database getDatabase() {

@@ -17,7 +17,7 @@ public class DatabaseConfig implements Cloneable {
 	private boolean reverseDup = false;
 	/** @see JNI#MDBX_CREATE */
 	private boolean create = false;
-	/** @see JNI#MDBX_ACCEDE */
+	/** @see JNI#MDBX_DB_ACCEDE */
 	private boolean accede = false;
 
 	private Comparator<byte[]> keyComparator;
@@ -83,6 +83,7 @@ public class DatabaseConfig implements Cloneable {
 		return dupFixed;
 	}
 
+	/** @see JNI#MDBX_DUPFIXED */
 	public void setDupFixed(boolean dupFixed) {
 		this.dupFixed = dupFixed;
 	}
@@ -92,6 +93,7 @@ public class DatabaseConfig implements Cloneable {
 		return integerKey;
 	}
 
+	/** @see JNI#MDBX_INTEGERKEY */
 	public void setIntegerKey(boolean integerKey) {
 		this.integerKey = integerKey;
 	}

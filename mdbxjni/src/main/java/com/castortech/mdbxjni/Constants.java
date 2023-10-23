@@ -46,6 +46,7 @@ public class Constants {
 	public static final int NOOVERWRITE = MDBX_NOOVERWRITE ;
 	public static final int NODUPDATA   = MDBX_NODUPDATA   ;
 	public static final int CURRENT     = MDBX_CURRENT     ;
+	public static final int ALLDUPS     = MDBX_ALLDUPS     ;
 	public static final int RESERVE     = MDBX_RESERVE     ;
 	public static final int APPEND      = MDBX_APPEND      ;
 	public static final int APPENDDUP   = MDBX_APPENDDUP   ;

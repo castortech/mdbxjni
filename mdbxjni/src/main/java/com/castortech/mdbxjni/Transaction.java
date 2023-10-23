@@ -36,13 +36,23 @@ import static com.castortech.mdbxjni.Util.checkErrorCode;
 public class Transaction extends NativeObject implements Closeable {
 	private static final Logger log = LoggerFactory.getLogger(Transaction.class);
 
+	private final boolean readOnly;
 	private final long threadId;
 	private final Env env;
 
-	Transaction(Env env, long self) {
+	/**
+	 * Special user controlled object that can be added to a transaction to capture various information or
+	 * metrics.
+	 *
+	 * There is no format and how to use and handle is left to the user.
+	 */
+	private Object logData;
+
+	Transaction(Env env, long self, boolean readOnly) {
 		super(self);
 		threadId = Thread.currentThread().getId();
 		this.env = env;
+		this.readOnly = readOnly;
 	}
 
 	/**
@@ -193,9 +203,21 @@ public class Transaction extends NativeObject implements Closeable {
 		}
 	}
 
+	/** @see #logData */
+	public Object getLogData() {
+		return logData;
+	}
+
+	/** @see #logData */
+	public void setLogData(Object logData) {
+		this.logData = logData;
+	}
+
 	@Override
 	public void close() {
-		abort();
+		if (readOnly)
+			abort();
+		commit();
 	}
 
 	@SuppressWarnings("nls")

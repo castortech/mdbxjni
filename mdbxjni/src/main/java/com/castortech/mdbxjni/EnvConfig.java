@@ -16,7 +16,9 @@ public class EnvConfig implements Cloneable {
 	private boolean noReadAhead = false;
 	private boolean noMemInit = false;
 	private boolean coalesce = false;
+	/** @see JNI#MDBX_LIFORECLAIM */
 	private boolean lifoReclaim = false;
+	/** @see JNI#MDBX_PAGEPERTURB */
 	private boolean pagePerturb = false;
 	private boolean syncDurable = false;
 	private boolean noMetaSync = false;
@@ -224,10 +226,12 @@ public class EnvConfig implements Cloneable {
 		this.coalesce = coalesce;
 	}
 
+	/** @see #lifoReclaim */
 	public boolean isLifoReclaim() {
 		return lifoReclaim;
 	}
 
+	/** @see #lifoReclaim */
 	public void setLifoReclaim(boolean lifoReclaim) {
 		this.lifoReclaim = lifoReclaim;
 	}
@@ -240,10 +244,12 @@ public class EnvConfig implements Cloneable {
 		this.utterlyNoSync = utterlyNoSync;
 	}
 
+	/** @see #pagePerturb */
 	public boolean isPagePerturb() {
 		return pagePerturb;
 	}
 
+	/** @see #pagePerturb */
 	public void setPagePerturb(boolean pagePerturb) {
 		this.pagePerturb = pagePerturb;
 	}

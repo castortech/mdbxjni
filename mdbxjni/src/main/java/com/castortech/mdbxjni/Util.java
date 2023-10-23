@@ -20,6 +20,8 @@ package com.castortech.mdbxjni;
 
 import java.nio.charset.Charset;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.slf4j.helpers.MessageFormatter;
 
 import static com.castortech.mdbxjni.JNI.mdbx_strerror;
@@ -32,6 +34,8 @@ import static com.castortech.mdbxjni.JNI.strlen;
  */
 @SuppressWarnings("nls")
 class Util {
+	private static final Logger log = LoggerFactory.getLogger(Util.class);
+
 	public static final boolean isAndroid = isAndroid();
 
 	private Util() { }
@@ -54,7 +58,7 @@ class Util {
 		if (rc != JNI.MDBX_SUCCESS && rc != JNI.MDBX_RESULT_TRUE) {
 			String msg = string(mdbx_strerror(rc));
 			if (env != null) {
-				System.err.println("MDBX Exception. Msg:" + msg + ", Env:" + env.info().toString());
+				log.info("MDBX Exception. Msg:{}, Env:{}", msg, env.info().toString());
 			}
 			throw new MDBXException(msg, rc);
 		}
@@ -64,7 +68,7 @@ class Util {
 		if (rc != JNI.MDBX_SUCCESS && rc != JNI.MDBX_RESULT_TRUE) {
 			String msg = string(mdbx_strerror(rc));
 			if (env != null) {
-				System.err.println("MDBX Exception. Msg:" + msg + ", Env:" + env.info(txn).toString());
+				log.info("MDBX Exception. Msg:{}, Env:{}", msg, env.info().toString());
 			}
 			throw new MDBXException(msg, rc);
 		}
@@ -74,7 +78,7 @@ class Util {
 		long size = val.getOffendingSize(env.getMaxKeySize());
 
 		if (size >= 0) {
-			String msg = "Key size (" + size + ") is too short or too long.";
+			String msg = format("Key size ({}) is too short or too long.", size);
 			throw new MDBXException(msg, JNI.MDBX_BAD_VALSIZE);
 		}
 	}
@@ -98,5 +102,4 @@ class Util {
 	public static String format(String format, Object... params) {
 		return MessageFormatter.arrayFormat(format, params).getMessage();
 	}
-
 }
