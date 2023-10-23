@@ -15,8 +15,10 @@ import static com.castortech.mdbxjni.Bytes.fromLong;
 import static com.castortech.mdbxjni.Constants.bytes;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.*;
 
+@SuppressWarnings("nls")
 public class DatabaseTest {
 	private SecretProvider secretProvider;
 	private IvProvider ivProvider;

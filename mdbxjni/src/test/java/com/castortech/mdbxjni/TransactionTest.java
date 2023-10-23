@@ -52,7 +52,11 @@ public class TransactionTest {
 	@Test
 	public void testCommit() {
 		try (Transaction tx = env.createWriteTransaction()) {
+			TxnInfo txnInfo = tx.info(false);
+			System.out.println("TxInfo:" + txnInfo);
 			db.put(tx, data, data);
+			txnInfo = tx.info(false);
+			System.out.println("TxInfo after put:" + txnInfo);
 			tx.commit();
 		}
 		assertArrayEquals(data, db.get(data));

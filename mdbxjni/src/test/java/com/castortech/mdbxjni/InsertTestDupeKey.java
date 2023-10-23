@@ -29,12 +29,17 @@ import org.junit.runners.MethodSorters;
 import com.google.common.primitives.UnsignedBytes;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Random;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.stream.Collectors;
 
 import static org.junit.Assert.*;
 
@@ -45,7 +50,7 @@ import static org.junit.Assert.*;
  */
 @SuppressWarnings("nls")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class InsertTest {
+public class InsertTestDupeKey {
 	private static int I_CNT = 1000;
 	private static int J_CNT = 100;
 	private static long pageSize = -1;
@@ -80,6 +85,7 @@ public class InsertTest {
 
 	@Rule
 	public TemporaryFolder tmp = new TemporaryFolder();
+	private OperationStatus operationStatus;
 
 	@Before
 	public void before() throws Exception {
@@ -114,7 +120,12 @@ public class InsertTest {
 		env.open(path, envConfig);
 //		db = env.openDatabase("primary");
 //		db = env.openDatabase("primary", new KeyComparator(), null);
-		db = env.openDatabase("primary", UnsignedBytes.lexicographicalComparator(), null);
+		DatabaseConfig dbConfig = new DatabaseConfig();
+		dbConfig.setDupSort(true);
+		dbConfig.setDupFixed(true);
+		dbConfig.setCreate(true);
+		dbConfig.setKeyComparator(UnsignedBytes.lexicographicalComparator());
+		db = env.openDatabase("primary", dbConfig);
 
 //		SecondaryDbConfig secConfig = new SecondaryDbConfig();
 //		secConfig.setCreate(true);
@@ -122,7 +133,7 @@ public class InsertTest {
 //		secDb = env.openSecondaryDatabase(db, "secondary", secConfig);
 
 		//warm up routine
-		longSequential_100Bytes_intern();
+//		longSequential_100Bytes_intern();
 	}
 
 	@After
@@ -144,17 +155,22 @@ public class InsertTest {
 	}
 
 	//standard puts
-	@Test
-	public void A_uuidRandom_100Bytes() {
+//	@Test
+	public void A1_uuidRandom_100Bytes() {
 		long start = System.nanoTime();
-		System.out.println("Starting uuidRandom_100Bytes");
+		System.out.println("Starting uuidRandom_100Bytes ungrouped");
 		for (int i=0; i < I_CNT; i++) {
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
 				for (int j= 0; j < J_CNT; j++) {
 					UUID uuid = UUID.randomUUID();
 ///					System.out.println("\t putting " + uuid);
-					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), new byte[100]);
+
+					for (int k= 0; k < 6; k++) {  //6 = 96 bytes
+						UUID valid = UUID.randomUUID();
+						db.put(tx, UuidAdapter.getBytesFromUUID(uuid), UuidAdapter.getBytesFromUUID(valid),
+								Constants.NODUPDATA);
+					}
 				}
 
 				tx.commit();
@@ -165,14 +181,65 @@ public class InsertTest {
 			}
 		}
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+		System.out.println(TestUtils.getStats(env, env.createReadTransaction(), Collections.emptyMap()));
 	}
 
-	@Test
+//	@Test
+	public void A2_uuidRandom_100Bytes() {
+		long start = System.nanoTime();
+		UUID getUuid = null;
+		System.out.println("Starting uuidRandom_100Bytes grouped");
+		for (int i=0; i < I_CNT; i++) {
+//			System.out.println("start trans " + i);
+			try (Transaction tx = env.createWriteTransaction()) {
+				for (int j= 0; j < J_CNT; j++) {
+					UUID uuid = UUID.randomUUID();
+
+					if (j == 22) {
+						getUuid = uuid;
+					}
+///					System.out.println("\t putting " + uuid);
+					byte[] vals = new byte[6*16];
+
+					for (int k= 0; k < 6; k++) {  //6 = 96 bytes
+						UUID valid = UUID.randomUUID();
+						System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, vals, k *16, 16);
+					}
+					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), vals, Constants.MULTIPLE, 6);
+				}
+
+				tx.commit();
+
+//				CommitLatency latency = tx.commitWithLatency();
+//				System.out.println("Latency:" + latency);
+				assertTrue(true);
+			}
+		}
+		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+
+		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
+			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
+			LinkedList<UUID> values = new LinkedList<>();
+
+			byte[] key = UuidAdapter.getBytesFromUUID(getUuid);
+			Entry entry = cursor.get(CursorOp.SET, key);
+
+			while (entry != null) {
+				values.add(UuidAdapter.getUUIDFromBytes(entry.getValue()));
+				entry = cursor.get(CursorOp.GET_MULTIPLE, key, entry.getValue());
+			}
+
+			System.out.println("\t got values:" + values);
+		}
+	}
+
+//	@Test
 	public void B_longSequential_100Bytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting longSequential_100Bytes");
 		longSequential_100Bytes_intern();
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+		System.out.println(TestUtils.getStats(env, env.createReadTransaction(), Collections.emptyMap()));
 	}
 
 	public void longSequential_100Bytes_intern() {
@@ -183,10 +250,15 @@ public class InsertTest {
 			try (Transaction tx = env.createWriteTransaction()) {
 				for (int j= 0; j < J_CNT; j++) {
 					long l = along.getAndIncrement();
-					db.put(tx, longToBytes(l), new byte[100]);
+					for (int k= 0; k < 6; k++) {  //6 = 96 bytes
+						UUID uuid = UUID.randomUUID();
+						db.put(tx, longToBytes(l), UuidAdapter.getBytesFromUUID(uuid), Constants.NODUPDATA);
+					}
 				}
 
-				CommitLatency latency = tx.commitWithLatency();
+				tx.commit();
+
+//				CommitLatency latency = tx.commitWithLatency();
 //				System.out.println("Latency:" + latency);
 				assertTrue(true);
 			}
@@ -194,10 +266,11 @@ public class InsertTest {
 		}
 	}
 
-	@Test
-	public void C_longRandom_100Bytes() {
+//	@Test
+	public void C1_longRandom_100Bytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting longRandom_100Bytes");
+
 		for (int i=0; i < I_CNT; i++) {
 //			long start = System.nanoTime();
 //			System.out.println("start trans " + i);
@@ -213,9 +286,64 @@ public class InsertTest {
 //			System.out.println("Completed " + i + " in " + TimeUtils.elapsedSinceNano(start));
 		}
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+		System.out.println(TestUtils.getStats(env, env.createReadTransaction(), Collections.emptyMap()));
 	}
 
-	@Test
+//	@Test
+	public void C2_longRandom_200Bytes() {
+		long start = System.nanoTime();
+		System.out.println("Starting longRandom_200Bytes ungrouped");
+		long getLong = 0;
+
+		for (int i=0; i < I_CNT; i++) {
+//			long start = System.nanoTime();
+//			System.out.println("start trans " + i);
+			try (Transaction tx = env.createWriteTransaction()) {
+				for (int j= 0; j < J_CNT; j++) {
+					long l = new Random().nextLong();
+
+					if (j == 22) {
+						getLong = l;
+					}
+
+					for (int k= 0; k < 1; k++) {  //25 = 200 bytes
+						long val = new Random().nextLong();
+						db.put(tx, longToBytes(l), longToBytes(val), Constants.NODUPDATA);
+					}
+				}
+
+				tx.commit();
+				assertTrue(true);
+			}
+//			System.out.println("Completed " + i + " in " + TimeUtils.elapsedSinceNano(start));
+		}
+		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+
+		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
+			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
+			LinkedList<Long> values = new LinkedList<>();
+
+			byte[] key = longToBytes(getLong);
+//			Entry entry = cursor.get(CursorOp.SET, key);
+			Entry entry = cursor.get(CursorOp.GET_MULTIPLE, key);
+			if (entry != null) {
+				entry = cursor.get(CursorOp.GET_MULTIPLE, key, entry.getValue());
+
+				while (entry != null) {
+					byte[] entryVal = entry.getValue();
+					int lgth = entryVal.length / 8;
+					for (int i = 0; i < lgth; i++) {
+						values.add(bytesToLong(Arrays.copyOfRange(entryVal, i * 8, (i * 8) + 8)));
+					}
+					entry = cursor.get(CursorOp.NEXT_MULTIPLE, key, entry.getValue());
+				}
+			}
+
+			System.out.println("\t got values:" + values);
+		}
+	}
+
+//	@Test
 	public void D_longSequential_4kBytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting longSequential_4kBytes");
@@ -237,7 +365,89 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
+	public void E1_uuidRandom_4kBytes() {
+		long start = System.nanoTime();
+		System.out.println("Starting uuidRandom_4kBytes");
+		UUID getUuid = null;
+
+		for (int i=0; i < I_CNT; i++) {
+//			System.out.println("start trans " + i);
+			try (Transaction tx = env.createWriteTransaction()) {
+				for (int j= 0; j < J_CNT; j++) {
+					UUID uuid = UUID.randomUUID();
+
+					if (j == 22) {
+						getUuid = uuid;
+					}
+
+					byte[] vals = new byte[256*16];
+					for (int k= 0; k < 256; k++) {  //256 = 4096 bytes
+						UUID valid = UUID.randomUUID();
+						System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, vals, k *16, 16);
+					}
+					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), vals, Constants.MULTIPLE, 256);
+				}
+
+				tx.commit();
+
+//				CommitLatency latency = tx.commitWithLatency();
+//				System.out.println("Latency:" + latency);
+				assertTrue(true);
+			}
+		}
+		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
+			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
+			LinkedList<UUID> values = new LinkedList<>();
+
+			byte[] key = UuidAdapter.getBytesFromUUID(getUuid);
+			Entry entry = cursor.get(CursorOp.GET_MULTIPLE, key);
+
+			while (entry != null) {
+				byte[] entryVal = entry.getValue();
+				int lgth = entryVal.length / 16;
+				for (int i = 0; i < lgth; i++) {
+					values.add(UuidAdapter.getUUIDFromBytes(ByteBuffer.wrap(entryVal, i * 16, 16).slice().array()));
+				}
+				entry = cursor.get(CursorOp.NEXT_MULTIPLE, key, entry.getValue());
+			}
+
+			System.out.println("\tGot " + values.size() + " values:" + values);
+		}
+	}
+
+//	@Test
+	public void E2_uuidRandom_4kBytes() {
+		long start = System.nanoTime();
+		System.out.println("Starting uuidRandom_4kBytes");
+		for (int i=0; i < I_CNT; i++) {
+//			System.out.println("start trans " + i);
+			try (Transaction tx = env.createWriteTransaction()) {
+				for (int j= 0; j < J_CNT; j++) {
+					UUID uuid = UUID.randomUUID();
+///					System.out.println("\t putting " + uuid);
+					byte[] vals = new byte[256*16];
+
+					for (int k= 0; k < 256; k++) {  //256 = 4096 bytes
+						UUID valid = UUID.randomUUID();
+						System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, vals, k *16, 16);
+					}
+					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), vals, Constants.MULTIPLE, 256);
+				}
+
+				tx.commit();
+
+//				CommitLatency latency = tx.commitWithLatency();
+//				System.out.println("Latency:" + latency);
+				assertTrue(true);
+			}
+		}
+		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+		System.out.println(TestUtils.getStats(env, env.createReadTransaction(), Collections.emptyMap()));
+	}
+
+//	@Test
 	public void E_longSequential_3kBytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting longSequential_3kBytes");
@@ -260,7 +470,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void F_longRandom_4kBytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting longRandom_4kBytes");
@@ -281,29 +491,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
-	public void F_uuidRandom_4kBytes() {
-		long start = System.nanoTime();
-		System.out.println("Starting uuidRandom_4kBytes");
-		for (int i=0; i < I_CNT; i++) {
-//			long start = System.nanoTime();
-//			System.out.println("start trans " + i);
-			try (Transaction tx = env.createWriteTransaction()) {
-				for (int j= 0; j < J_CNT; j++) {
-					UUID uuid = UUID.randomUUID();
-///					System.out.println("\t putting " + uuid);
-					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), new byte[4096]);
-				}
-
-				tx.commit();
-				assertTrue(true);
-			}
-//			System.out.println("Completed " + i + " in " + TimeUtils.elapsedSinceNano(start));
-		}
-		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
-	}
-
-	@Test
+//	@Test
 	public void G_longRandom_3kBytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting longRandom_3kBytes");
@@ -324,7 +512,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void H_longSequential_3kBytes_withUpdate() {
 		System.out.println("Starting longSequential_3kBytes_withUpdate");
 		AtomicLong along = new AtomicLong();
@@ -371,7 +559,7 @@ public class InsertTest {
 		System.out.println("Completed updates in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void I_longSequential_3kBytes_withGet() {
 		long start = System.nanoTime();
 		System.out.println("Starting longSequential_3kBytes_withGet");
@@ -399,7 +587,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void J_longSequential_3kBytes_withGetParallel() {
 		long start = System.nanoTime();
 		System.out.println("Starting longSequential_3kBytes_withGet");
@@ -427,7 +615,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void K_longSequential_3kBytes_withGetInSingleTransact() {
 		long start = System.nanoTime();
 		System.out.println("Starting longSequential_3kBytes_withGet");
@@ -457,7 +645,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void L_longRandom_3kBytes_withGetInSingleTransact() {
 		long start = System.nanoTime();
 		System.out.println("Starting longRandom_3kBytes_withGet");
@@ -486,7 +674,7 @@ public class InsertTest {
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 	}
 
-	@Test
+//	@Test
 	public void M_longSequential_Resize() {
 		System.out.println("Starting longSequential_Resize");
 		AtomicLong along = new AtomicLong();
@@ -513,7 +701,7 @@ public class InsertTest {
 		System.out.println("Completed with totSize " + totSize);
 	}
 
-	@Test
+//	@Test
 	public void N_UpdateResize() {
 		long start = System.nanoTime();
 		System.out.println("Starting UpdateResize");
@@ -537,6 +725,148 @@ public class InsertTest {
 //			System.out.println("Completed " + i + " in " + TimeUtils.elapsedSinceNano(start) + ", last Size:" + sz);
 		}
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
+	}
+
+//	@Test
+	public void multiple_put_replace() {
+		long start = System.nanoTime();
+		System.out.println("Starting multiple_put_replace");
+		long getLong = 0;
+
+		try (Transaction tx = env.createWriteTransaction()) {
+			for (int j= 0; j < J_CNT; j++) {
+				long l = new Random().nextLong();
+
+				if (j == 22) {
+					getLong = l;
+				}
+
+				for (int k= 0; k < 5; k++) {  //25 = 200 bytes
+					long val = k;
+					db.put(tx, longToBytes(l), longToBytes(val), Constants.NODUPDATA);
+				}
+			}
+
+			tx.commit();
+			assertTrue(true);
+		}
+
+		{
+			Transaction tx = env.createReadTransaction();
+			Cursor cursor = db.openCursor(tx);
+			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
+			LinkedList<Long> values = new LinkedList<>();
+
+			byte[] key = longToBytes(getLong);
+			Entry entry = cursor.get(CursorOp.GET_MULTIPLE, key);
+			if (entry != null) {
+				while (entry != null) {
+					byte[] entryVal = entry.getValue();
+					int lgth = entryVal.length / 8;
+					for (int i = 0; i < lgth; i++) {
+						values.add(bytesToLong(Arrays.copyOfRange(entryVal, i * 8, (i * 8) + 8)));
+					}
+					entry = cursor.get(CursorOp.NEXT_MULTIPLE, key, entry.getValue());
+				}
+			}
+
+			System.out.println("\t got values:" + values);
+			cursor.close();
+			tx.commit();
+		}
+
+		try (Transaction tx = env.createWriteTransaction()) {
+			byte[] vals = new byte[5*8];
+			for (int k= 0; k < 5; k++) {  //25 = 200 bytes
+				long val = k + 5;
+				System.arraycopy(longToBytes(val), 0, vals, k *8, 8);
+			}
+
+			db.put(tx, longToBytes(getLong), vals, Constants.MULTIPLE | Constants.CURRENT | Constants.ALLDUPS, 5);
+
+			tx.commit();
+			assertTrue(true);
+		}
+
+		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
+			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
+			LinkedList<Long> values = new LinkedList<>();
+
+			byte[] key = longToBytes(getLong);
+			Entry entry = cursor.get(CursorOp.GET_MULTIPLE, key);
+			if (entry != null) {
+				while (entry != null) {
+					byte[] entryVal = entry.getValue();
+					int lgth = entryVal.length / 8;
+					for (int i = 0; i < lgth; i++) {
+						values.add(bytesToLong(Arrays.copyOfRange(entryVal, i * 8, (i * 8) + 8)));
+					}
+					entry = cursor.get(CursorOp.NEXT_MULTIPLE, key, entry.getValue());
+				}
+			}
+
+			System.out.println("\t got values:" + values);
+		}
+	}
+
+	@Test
+	public void testCursorPutGetRange() {
+		UUID typeId = UUID.randomUUID();
+
+		try (Transaction tx = env.createWriteTransaction()) {
+			for (int j= 0; j < J_CNT; j++) {
+				byte[] vals = new byte[25*32];  //25 x 2 id
+				for (int k = 0; k < 50; k++) {
+					UUID valid = UUID.randomUUID();
+					if (j == 8 && k % 2 == 0)
+						valid = typeId;
+					System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, vals, k *16, 16);
+				}
+				db.put(tx, Bytes.fromLong(j), vals, Constants.MULTIPLE, 25);
+			}
+			tx.commit();
+		}
+
+		Transaction read = env.createReadTransaction();
+
+		try (Cursor cursor = db.openCursor(read)) {
+			Entry entry = cursor.get(CursorOp.GET_BOTH_RANGE, Bytes.fromLong(8),
+					Arrays.copyOf(UuidAdapter.getBytesFromUUID(typeId), 32));
+			LinkedList<Pair<UUID, UUID>> values = new LinkedList<>();
+
+			if (entry != null) {
+				while (entry != null) {
+					UUID part1 = UuidAdapter.getUUIDFromBytes(Arrays.copyOf(entry.getValue(), 16));
+					if (!Objects.equals(part1, typeId)) {
+						break;
+					}
+					byte[] entryVal = entry.getValue();
+					int lgth = entryVal.length / 32;
+					for (int i = 0; i < lgth; i++) {
+						values.add(new Pair<>(part1,
+								UuidAdapter.getUUIDFromBytes(Arrays.copyOfRange(entry.getValue(), 16, 32))));
+					}
+					entry = cursor.get(CursorOp.NEXT_DUP, Bytes.fromLong(8), entry.getValue());
+				}
+			}
+
+			System.out.println("Got " + values.size() + " values:\n" + values.stream()
+					.map(val -> val.getA().toString() + " -> " + val.getB().toString())
+					.collect(Collectors.joining("\n")));
+		}
+
+		try (Cursor cursor = db.openCursor(read)) {
+			DatabaseEntry key = new DatabaseEntry(Bytes.fromLong(8));
+			byte[] uuidBA = UuidAdapter.getBytesFromUUID(typeId);
+			DatabaseEntry value = new DatabaseEntry(Arrays.copyOf(uuidBA, 32));
+			operationStatus = cursor.get(CursorOp.GET_BOTH_RANGE, key, value);
+			if (operationStatus == OperationStatus.SUCCESS) {
+				long cnt = cursor.count(CursorOp.NEXT_DUP, key, value,
+						val -> Arrays.equals(Arrays.copyOf(val.getData(), 16), uuidBA));
+				System.out.println("count is:" + cnt + " so total is:" + ++cnt);
+			}
+		}
+//		assertArrayEquals(db.get(Bytes.fromLong(1)), Bytes.fromLong(1));
 	}
 
 
@@ -672,4 +1002,9 @@ public class InsertTest {
 		buffer.putLong(x);
 		return buffer.array();
 	}
+
+	public long bytesToLong(byte[] ba) {
+		return ByteBuffer.wrap(ba).getLong();
+	}
+
 }

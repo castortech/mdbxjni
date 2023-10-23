@@ -55,6 +55,8 @@ public class EnvTest {
 	@Test
 	public void testCRUD() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
+		System.out.println("testCRUD Using path:" + path);
+
 		try (Env env = new Env()) {
 			env.setMaxDbs(5);
 			env.open(path);
@@ -74,6 +76,7 @@ public class EnvTest {
 	@Test
 	public void testBackup() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
+		System.out.println("testBackup Using path:" + path);
 		String backupPath = backup.newFolder().getCanonicalPath() + "/mdbx.dat";
 		try (Env env = new Env()) {
 			env.open(path);
@@ -94,7 +97,9 @@ public class EnvTest {
 	@Test
 	public void testBackupCompact() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
+		System.out.println("testBackupCompact Using path:" + path);
 		String backupPath = backup.newFolder().getCanonicalPath() + "/mdbx.dat";
+
 		try (Env env = new Env()) {
 			env.open(path);
 			try (Database db = env.openDatabase()) {
@@ -127,16 +132,72 @@ public class EnvTest {
 	@Test
 	public void testEnvInfo() throws Exception {
 		String path = tmp.newFolder().getCanonicalPath();
-		try (Env env = new Env()) {
-//			env.addFlags(CREATE);
-			env.setGeometry(1048576L, -1L, 4000L * 1024 * 1024, 1048576L, -1L, -1L);
-			env.open(path);
+		System.out.println("testEnvInfo Using path:" + path);
+
+//		try (Env env = new Env()) {
+//			env.setMaxDbs(5);
+////			env.addFlags(CREATE);
+//			env.setGeometry(1048576L, -1L, 4000L * 1024 * 1024, 1048576L, -1L, -1L);
+//			env.open(path);
+//
+//			Database d1 = env.openDatabase("db1");
+//			d1.close();
+//		}
+//
+//		try (Env env = new Env()) {
+//			env.setGeometry(1048576L, -1L, 4000L * 1024 * 1024, 1048576L, -1L, 32768);
+//			env.open(path);
+//			Database d2 = env.openDatabase("db2");
+//			d2.close();
+//		}
+
 //			env.setMapSize(1048576L);
-			try (Database db = env.openDatabase()) {
+
+		try (Env env = new Env()) {
+			env.setMaxDbs(5);
+			env.setGeometry(1048576L, -1L, 4000L * 1024 * 1024, 1048576L, -1L, 32768);
+			env.open(path);
+			StringBuilder sb = new StringBuilder();
+			float percentFull;
+			sb.append("Env Version:");
+			sb.append(Env.version());
+
+			MDBX_stat stat = env.stat();
+			sb.append(" Stats:");
+			sb.append(stat.toString());
+			sb.append('\n');
+
+			EnvInfo info = env.info();
+			sb.append("Info:");
+			sb.append(info.toString());
+			sb.append('\n');
+
+			try (Database db = env.openDatabase("db1")) {
+//			try (Database db = env.openDatabase(null, "db1", new DatabaseConfig())) {
 				db.put(new byte[]{1}, new byte[]{1});
-				EnvInfo info = env.info();
+				info = env.info();
 				assertNotNull(info);
+
+				stat = db.stat();
+				sb.append("Db1 Stats:");
+				sb.append(stat.toString());
+				sb.append('\n');
 			}
+
+			env.setGeometry(1048576L, -1L, 4000L * 1024 * 1024, 1048576L, -1L, -1L);
+			try (Database db = env.openDatabase("db2")) {
+//			try (Database db = env.openDatabase(null, "db2", new DatabaseConfig())) {
+				db.put(new byte[]{1}, new byte[]{1});
+				info = env.info();
+				assertNotNull(info);
+
+				stat = db.stat();
+				sb.append("Db1 Stats:");
+				sb.append(stat.toString());
+				sb.append('\n');
+			}
+
+			System.out.println(sb.toString());
 		}
 	}
 

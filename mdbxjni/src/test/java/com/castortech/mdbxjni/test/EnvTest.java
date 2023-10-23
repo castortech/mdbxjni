@@ -20,13 +20,10 @@ package com.castortech.mdbxjni.test;
 
 import junit.framework.TestCase;
 import com.castortech.mdbxjni.*;
-import org.junit.Test;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.LinkedList;
-
 import static com.castortech.mdbxjni.Constants.FIRST;
 import static com.castortech.mdbxjni.Constants.NEXT;
 import static com.castortech.mdbxjni.Constants.*;
@@ -52,7 +49,7 @@ public class EnvTest extends TestCase {
 	}
 
 	@SuppressWarnings("nls")
-	@Test
+//	@Test
 	public void testCRUD() throws IOException {
 		String path = getTestDirectory(getName()).getCanonicalPath();
 
