@@ -49,6 +49,26 @@
 				<version>${guava-version}</version>
 		</dependency>
 	</dependencies>
+	
+	<profiles>
+		<profile>
+			<id>debug</id>
+			<properties>
+				<windowsConfigMode>debug</windowsConfigMode>
+				<directorySuffix>Debug</directorySuffix>
+			</properties>
+		</profile>
+		<profile>
+			<id>release</id>
+			<properties>
+				<windowsConfigMode>release</windowsConfigMode>
+				<directorySuffix>Release</directorySuffix>
+			</properties>
+			<activation>
+				<activeByDefault>true</activeByDefault>
+			</activation>
+		</profile>
+	</profiles>
 
 	<build>
 		<testSourceDirectory>${basedir}/../mdbxjni/src/test/java</testSourceDirectory>
@@ -77,8 +97,7 @@
 					<windowsProjectName>mdbxjni</windowsProjectName>
 					<windowsBuildTool>msbuild</windowsBuildTool>
 					<!-- make sure to also change copy resource below to match -->
-<!--					<windowsConfiguration>debug</windowsConfiguration>-->
-					<windowsConfiguration>release</windowsConfiguration>
+					<windowsConfiguration>${windowsConfigMode}</windowsConfiguration>
 					<classified>false</classified>
 					<nativeSrcDependency>
 						<groupId>com.castortech.mdbxjni</groupId>
@@ -106,9 +125,8 @@
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>
-<!--									<directory>${basedir}/../../libmdbx/bin/Debug</directory>-->
-									<directory>${basedir}/../../libmdbx/bin/Release</directory>
-									<filtering>false</filtering>
+									<directory>${basedir}/../../libmdbx/${directorySuffix}</directory>
+<!--									<filtering>false</filtering>-->
 									<includes>
 										<include>mdbx.dll</include>
 									</includes>	
