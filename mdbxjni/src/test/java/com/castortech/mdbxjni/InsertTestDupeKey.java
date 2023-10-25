@@ -25,8 +25,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runners.MethodSorters;
-
-import com.google.common.primitives.UnsignedBytes;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.ByteBuffer;
 import java.util.Arrays;
@@ -51,8 +51,14 @@ import static org.junit.Assert.*;
 @SuppressWarnings("nls")
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class InsertTestDupeKey {
-	private static int I_CNT = 1000;
-	private static int J_CNT = 100;
+	private static final Logger log = LoggerFactory.getLogger(InsertTestDupeKey.class);
+
+	private static int I_CNT = 1;
+	private static int J_CNT = 1000000;
+
+//	private static int I_CNT = 1000;
+//	private static int J_CNT = 100;
+
 	private static long pageSize = -1;
 
 	static {
@@ -124,7 +130,7 @@ public class InsertTestDupeKey {
 		dbConfig.setDupSort(true);
 		dbConfig.setDupFixed(true);
 		dbConfig.setCreate(true);
-		dbConfig.setKeyComparator(UnsignedBytes.lexicographicalComparator());
+//		dbConfig.setKeyComparator(UnsignedBytes.lexicographicalComparator());
 		db = env.openDatabase("primary", dbConfig);
 
 //		SecondaryDbConfig secConfig = new SecondaryDbConfig();
@@ -155,7 +161,7 @@ public class InsertTestDupeKey {
 	}
 
 	//standard puts
-//	@Test
+	@Test
 	public void A1_uuidRandom_100Bytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting uuidRandom_100Bytes ungrouped");
@@ -171,6 +177,7 @@ public class InsertTestDupeKey {
 						db.put(tx, UuidAdapter.getBytesFromUUID(uuid), UuidAdapter.getBytesFromUUID(valid),
 								Constants.NODUPDATA);
 					}
+					log.info("\t Putting, j:{}, uuid:{}", j, uuid);
 				}
 
 				tx.commit();
@@ -198,13 +205,13 @@ public class InsertTestDupeKey {
 					if (j == 22) {
 						getUuid = uuid;
 					}
-///					System.out.println("\t putting " + uuid);
 					byte[] vals = new byte[6*16];
 
 					for (int k= 0; k < 6; k++) {  //6 = 96 bytes
 						UUID valid = UUID.randomUUID();
 						System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, vals, k *16, 16);
 					}
+					log.info("\t Putting, j:{}, uuid:{}", j, uuid);
 					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), vals, Constants.MULTIPLE, 6);
 				}
 
@@ -217,20 +224,20 @@ public class InsertTestDupeKey {
 		}
 		System.out.println("Completed " + I_CNT + " in " + TimeUtils.elapsedSinceNano(start));
 
-		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
-			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
-			LinkedList<UUID> values = new LinkedList<>();
-
-			byte[] key = UuidAdapter.getBytesFromUUID(getUuid);
-			Entry entry = cursor.get(CursorOp.SET, key);
-
-			while (entry != null) {
-				values.add(UuidAdapter.getUUIDFromBytes(entry.getValue()));
-				entry = cursor.get(CursorOp.GET_MULTIPLE, key, entry.getValue());
-			}
-
-			System.out.println("\t got values:" + values);
-		}
+//		try (Transaction tx = env.createReadTransaction(); Cursor cursor = db.openCursor(tx)) {
+//			System.out.println(TestUtils.getStats(env, tx, Collections.emptyMap()));
+//			LinkedList<UUID> values = new LinkedList<>();
+//
+//			byte[] key = UuidAdapter.getBytesFromUUID(getUuid);
+//			Entry entry = cursor.get(CursorOp.SET, key);
+//
+//			while (entry != null) {
+//				values.add(UuidAdapter.getUUIDFromBytes(entry.getValue()));
+//				entry = cursor.get(CursorOp.GET_MULTIPLE, key, entry.getValue());
+//			}
+//
+//			System.out.println("\t got values:" + values);
+//		}
 	}
 
 //	@Test
@@ -809,7 +816,7 @@ public class InsertTestDupeKey {
 		}
 	}
 
-	@Test
+//	@Test
 	public void testCursorPutGetRange() {
 		UUID typeId = UUID.randomUUID();
 

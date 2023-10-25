@@ -3,8 +3,8 @@ package com.castortech.mdbxjni;
 import java.io.File;
 
 public class Setup {
-//	private static final String MODE = "Release"; //$NON-NLS-1$
-	private static final String MODE = "Debug"; //$NON-NLS-1$
+	private static final String MODE = "Release"; //$NON-NLS-1$
+//	private static final String MODE = "Debug"; //$NON-NLS-1$
 
 	private static final String MODE_LC = MODE.toLowerCase();
 
