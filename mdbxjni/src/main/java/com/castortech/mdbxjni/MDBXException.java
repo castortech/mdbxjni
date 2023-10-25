@@ -69,7 +69,7 @@ public class MDBXException extends RuntimeException {
 		EMULTIVAL(JNI.MDBX_EMULTIVAL, "The mdbx_put() or mdbx_replace() was called for key, that has more that one associated value."),
 		BAD_SIGNATGURE(JNI.MDBX_EBADSIGN, "Bad signature of a runtime object(s), this can mean: - memory corruption or double-free; - ABI version mismatch (rare case)"),
 		WANNA_RECOVERY(JNI.MDBX_WANNA_RECOVERY, "Database should be recovered, but this could NOT be done automatically right now (e.g. in readonly mode and so forth)."),
-		KE_YMISMATCH(JNI.MDBX_EKEYMISMATCH, "The given key value is mismatched to the current cursor position, when mdbx_cursor_put() called with MDBX_CURRENT option."),
+		KEY_MISMATCH(JNI.MDBX_EKEYMISMATCH, "The given key value is mismatched to the current cursor position, when mdbx_cursor_put() called with MDBX_CURRENT option."),
 		TOO_LARGE(JNI.MDBX_TOO_LARGE, "Database is too large for current system, e.g. could NOT be mapped into RAM."),
 		THREAD_MISMATCH(JNI.MDBX_THREAD_MISMATCH, "A thread has attempted to use a not owned object, e.g. a transaction that started by another thread."),
 		TXN_OVERLAPPING(JNI.MDBX_TXN_OVERLAPPING, "Overlapping read and write transactions for the current thread"),
