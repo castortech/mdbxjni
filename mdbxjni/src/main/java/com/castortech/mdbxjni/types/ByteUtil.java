@@ -125,6 +125,15 @@ public class ByteUtil {
 		return bs;
 	}
 
+	public static byte[] unsignedIntByteArray(long l) {
+		byte[] buf = new byte[4];
+		buf[0] = (byte)(l >>> 24);
+		buf[1] = (byte)(l >>> 16);
+		buf[2] = (byte)(l >>> 8);
+		buf[3] = (byte)l;
+		return buf;
+	}
+
 	// convert between little and big endian and vice versa
 	public static byte[] reverseByteOrderInPlace(byte[] bytes) {
 		for (int index = 0, count = bytes.length / 2; index < count; index++) {

@@ -28,6 +28,8 @@ import org.junit.runners.MethodSorters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.castortech.mdbxjni.types.ByteUtil;
+
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.Collections;
@@ -124,6 +126,12 @@ public class InsertTestDupeKey {
 		env.setMaxDbs(2);
 		Env.pushMemoryPool(1024*512);
 		env.open(path, envConfig);
+
+
+		DebugState debugState = env.setupDebug(MdbxLogLevel.EXTRA, JNI.MDBX_DBG_AUDIT | JNI.MDBX_DBG_ASSERT);
+		System.out.println("DebugState:" + debugState);
+
+
 //		db = env.openDatabase("primary");
 //		db = env.openDatabase("primary", new KeyComparator(), null);
 		DatabaseConfig dbConfig = new DatabaseConfig();
@@ -161,7 +169,7 @@ public class InsertTestDupeKey {
 	}
 
 	//standard puts
-	@Test
+//	@Test
 	public void A1_uuidRandom_100Bytes() {
 		long start = System.nanoTime();
 		System.out.println("Starting uuidRandom_100Bytes ungrouped");
@@ -191,7 +199,7 @@ public class InsertTestDupeKey {
 		System.out.println(TestUtils.getStats(env, env.createReadTransaction(), Collections.emptyMap()));
 	}
 
-//	@Test
+	@Test
 	public void A2_uuidRandom_100Bytes() {
 		long start = System.nanoTime();
 		UUID getUuid = null;
@@ -199,26 +207,46 @@ public class InsertTestDupeKey {
 		for (int i=0; i < I_CNT; i++) {
 //			System.out.println("start trans " + i);
 			try (Transaction tx = env.createWriteTransaction()) {
+				EnvInfo envInfo = env.info(tx);
+				System.out.println("Tx env info, at txn start:" + envInfo);
+				Random random = new Random();
+
 				for (int j= 0; j < J_CNT; j++) {
 					UUID uuid = UUID.randomUUID();
 
 					if (j == 22) {
 						getUuid = uuid;
 					}
-					byte[] vals = new byte[6*16];
 
-					for (int k= 0; k < 6; k++) {  //6 = 96 bytes
+					int valCnt = random.nextInt(10) + 1;
+					byte[] vals = new byte[valCnt*20];
+
+					for (int k= 0; k < valCnt; k++) {  //6 = 96 bytes
+						byte[] buf = new byte[20];
+
+						System.arraycopy(ByteUtil.unsignedIntByteArray(k), 0, buf, 0, 4);
+
 						UUID valid = UUID.randomUUID();
-						System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, vals, k *16, 16);
+						System.arraycopy(UuidAdapter.getBytesFromUUID(valid), 0, buf, 4, 16);
+
+						System.arraycopy(buf, 0, vals, k *20, 20);
 					}
-					log.info("\t Putting, j:{}, uuid:{}", j, uuid);
-					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), vals, Constants.MULTIPLE, 6);
+					log.info("\t Putting, j:{}, uuid:{}, valCnt:{}", j, uuid, valCnt);
+					db.put(tx, UuidAdapter.getBytesFromUUID(uuid), vals, Constants.MULTIPLE, valCnt);
 				}
 
-				tx.commit();
+				envInfo = env.info(tx);
+				System.out.println("Tx env info, at pre-commit:" + envInfo);
 
-//				CommitLatency latency = tx.commitWithLatency();
-//				System.out.println("Latency:" + latency);
+//				tx.commit();
+
+				CommitLatency latency = tx.commitWithLatency();
+				System.out.println("Latency:" + latency);
+
+				envInfo = env.info();
+				System.out.println("Tx env info, after commit:" + envInfo);
+
+
 				assertTrue(true);
 			}
 		}
