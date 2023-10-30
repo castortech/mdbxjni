@@ -91,9 +91,8 @@ public class Transaction extends NativeObject implements Closeable {
 		checkErrorCode(env, this, mdbx_txn_renew(pointer()));
 	}
 
-
 	public int releaseCursors() {
-		return mdbx_txn_release_all_cursors(pointer());
+		return mdbx_txn_release_all_cursors(pointer(), 0);
 	}
 
 	/**
@@ -110,26 +109,41 @@ public class Transaction extends NativeObject implements Closeable {
 	 */
 	public void commit() {
 		if (self != 0) {
-			checkErrorCode(env, this, mdbx_txn_commit(self));
-
-			if (env.usePooledCursors()) {
-				try {
-					env.getCursorPool().closeTransaction(this);
-				}
-				catch (Exception e) {
-					log.error("Exception occurred", e); //$NON-NLS-1$
-				}
+			try {
+				checkErrorCode(env, this, mdbx_txn_commit(self));
 			}
-			self = 0;
+			finally {
+				if (env.usePooledCursors()) {
+					try {
+						env.getCursorPool().closeTransaction(this);
+					}
+					catch (Exception e) {
+						log.error("Exception occurred", e); //$NON-NLS-1$
+					}
+				}
+				self = 0;
+			}
 		}
 	}
 
 	public CommitLatency commitWithLatency() {
 		if (self != 0) {
-			MDBX_commit_latency rc = new MDBX_commit_latency();
-			checkErrorCode(env, this, mdbx_txn_commit_ex(self, rc));
-			self = 0;
-			return new CommitLatency(rc);
+			try {
+				MDBX_commit_latency rc = new MDBX_commit_latency();
+				checkErrorCode(env, this, mdbx_txn_commit_ex(self, rc));
+				return new CommitLatency(rc);
+			}
+			finally {
+				if (env.usePooledCursors()) {
+					try {
+						env.getCursorPool().closeTransaction(this);
+					}
+					catch (Exception e) {
+						log.error("Exception occurred", e); //$NON-NLS-1$
+					}
+				}
+				self = 0;
+			}
 		}
 		return null;
 	}

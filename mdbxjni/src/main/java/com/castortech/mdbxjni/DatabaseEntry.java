@@ -108,6 +108,4 @@ public class DatabaseEntry {
 	public String toString() {
 		return "DatabaseEntry [data=" + Arrays.toString(data) + ", offset=" + offset + ", size=" + size + "]";
 	}
-
-
 }
