@@ -92,7 +92,7 @@ public class Transaction extends NativeObject implements Closeable {
 	}
 
 	public int releaseCursors() {
-		return mdbx_txn_release_all_cursors(pointer(), 0);
+		return mdbx_txn_release_all_cursors(pointer());
 	}
 
 	/**
