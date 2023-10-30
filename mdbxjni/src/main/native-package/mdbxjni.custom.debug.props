@@ -8,7 +8,7 @@
       <AdditionalIncludeDirectories>C:\ALPIC\git\libmdbx;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
-      <AdditionalDependencies>C:\ALPIC\git\libmdbx\Debug\mdbx.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>C:\ALPIC\git\libmdbx\bin\Debug\mdbx.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
 </Project>
