@@ -1060,18 +1060,21 @@ public class JNI {
 		public long mi_latter_reader_txnid; 	/* ID of the last reader transaction */
 		@JniField(cast = "uint64_t")
 		public long mi_self_latter_reader_txnid; /* ID of the last reader transaction of caller process */
-		@JniField(cast = "uint64_t")
+
+		@JniField(accessor="mi_meta_txnid[0]", cast = "uint64_t")
 		public long mi_meta0_txnid;
-		@JniField(cast = "uint64_t")
-		public long mi_meta0_sign;
-		@JniField(cast = "uint64_t")
+		@JniField(accessor="mi_meta_txnid[1]", cast = "uint64_t")
 		public long mi_meta1_txnid;
-		@JniField(cast = "uint64_t")
-		public long mi_meta1_sign;
-		@JniField(cast = "uint64_t")
+		@JniField(accessor="mi_meta_txnid[1]", cast = "uint64_t")
 		public long mi_meta2_txnid;
-		@JniField(cast = "uint64_t")
+
+		@JniField(accessor="mi_meta_sign[0]", cast = "uint64_t")
+		public long mi_meta0_sign;
+		@JniField(accessor="mi_meta_sign[1]", cast = "uint64_t")
+		public long mi_meta1_sign;
+		@JniField(accessor="mi_meta_sign[2]", cast = "uint64_t")
 		public long mi_meta2_sign;
+
 		@JniField(cast = "uint32_t")
 		public long mi_maxreaders; /* max reader slots in the environment */
 		@JniField(cast = "uint32_t")
@@ -1084,18 +1087,20 @@ public class JNI {
 		public long mi_bootid_current_x;
 		@JniField(accessor="mi_bootid.current.y", cast = "uint64_t")
 		public long mi_bootid_current_y;
-		@JniField(accessor="mi_bootid.meta0.x", cast = "uint64_t")
+
+		@JniField(accessor="mi_bootid.meta[0].x", cast = "uint64_t")
 		public long mi_bootid_meta0_x;
-		@JniField(accessor="mi_bootid.meta0.y", cast = "uint64_t")
+		@JniField(accessor="mi_bootid.meta[0].y", cast = "uint64_t")
 		public long mi_bootid_meta0_y;
-		@JniField(accessor="mi_bootid.meta1.x", cast = "uint64_t")
+		@JniField(accessor="mi_bootid.meta[1].x", cast = "uint64_t")
 		public long mi_bootid_meta1_x;
-		@JniField(accessor="mi_bootid.meta1.y", cast = "uint64_t")
+		@JniField(accessor="mi_bootid.meta[1].y", cast = "uint64_t")
 		public long mi_bootid_meta1_y;
-		@JniField(accessor="mi_bootid.meta2.x", cast = "uint64_t")
+		@JniField(accessor="mi_bootid.meta[2].x", cast = "uint64_t")
 		public long mi_bootid_meta2_x;
-		@JniField(accessor="mi_bootid.meta2.y", cast = "uint64_t")
+		@JniField(accessor="mi_bootid.meta[2].y", cast = "uint64_t")
 		public long mi_bootid_meta2_y;
+
 		@JniField(cast = "uint64_t")
 		public long mi_unsync_volume;
 		@JniField(cast = "uint64_t")
@@ -1153,18 +1158,21 @@ public class JNI {
 					", mi_meta1_sign=" + mi_meta1_sign +
 					", mi_meta2_txnid=" + mi_meta2_txnid +
 					", mi_meta2_sign=" + mi_meta2_sign +
+
 					", mi_maxreaders=" + mi_maxreaders +
 					", mi_numreaders=" + mi_numreaders +
 					", mi_dxb_pagesize=" + mi_dxb_pagesize +
 					", mi_sys_pagesize=" + mi_sys_pagesize +
 					", mi_bootid_current_x=" + mi_bootid_current_x +
 					", mi_bootid_current_y=" + mi_bootid_current_y +
+
 					", mi_bootid_meta0_x=" + mi_bootid_meta0_x +
 					", mi_bootid_meta0_y=" + mi_bootid_meta0_y +
 					", mi_bootid_meta1_x=" + mi_bootid_meta1_x +
 					", mi_bootid_meta1_y=" + mi_bootid_meta1_y +
 					", mi_bootid_meta2_x=" + mi_bootid_meta2_x +
 					", mi_bootid_meta2_y=" + mi_bootid_meta2_y +
+
 					", mi_unsync_volume=" + mi_unsync_volume +
 					", mi_autosync_threshold=" + mi_autosync_threshold +
 					", mi_since_sync_seconds16dot16=" + mi_since_sync_seconds16dot16 +
@@ -1612,9 +1620,32 @@ public class JNI {
 	public static final native int mdbx_txn_renew(
 			@JniArg(cast = "MDBX_txn *") long txn);
 
+	/**
+	 * \brief Unbind or closes all cursors of a given transaction.
+	 * \ingroup c_cursors
+	 *
+	 * Unbinds either closes all cursors associated (opened or renewed) with
+	 * a given transaction in a bulk with minimal overhead.
+	 *
+	 * \see mdbx_cursor_unbind()
+	 * \see mdbx_cursor_close()
+	 *
+	 * \param [in] txn      A transaction handle returned by \ref mdbx_txn_begin().
+	 * \param [in] unbind   If non-zero, unbinds cursors and leaves ones reusable.
+	 *                      Otherwise close and dispose cursors.
+	 *
+	 * \returns A negative error value on failure or the number of closed cursors
+	 *          on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
+	 *                               by current thread.
+	 * \retval MDBX_BAD_TXN          Given transaction is invalid or has
+	 *                               a child/nested transaction transaction.
+	 */
 	@JniMethod
 	public static final native int mdbx_txn_release_all_cursors(
-			@JniArg(cast = "MDBX_txn *") long txn);
+			@JniArg(cast = "MDBX_txn *") long txn,
+			@JniArg(cast = "int") int unbind
+	);
 
 	/**
 	 * Return information about the MDBX transaction.
