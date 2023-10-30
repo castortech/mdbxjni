@@ -38,7 +38,7 @@ int mdbx_put_multiple(MDBX_txn *txn, MDBX_dbi dbi, const MDBX_val *key, MDBX_val
 }
 
 char* map_printf(char *buf, int size, const char * format, void *args) {
-	static char buffer[1024];
+	static char buffer[8096];
 	int buflen = vsprintf(buffer,format, args);
 	buffer[buflen] = '\0';
 	strncpy(buf, buffer, size);
