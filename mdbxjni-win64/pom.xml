@@ -125,7 +125,7 @@
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>
-									<directory>${basedir}/../../libmdbx/${directorySuffix}</directory>
+									<directory>${basedir}/../../libmdbx/bin/${directorySuffix}</directory>
 <!--									<filtering>false</filtering>-->
 									<includes>
 										<include>mdbx.dll</include>
