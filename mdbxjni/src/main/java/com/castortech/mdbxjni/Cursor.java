@@ -47,6 +47,8 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		this.env = env;
 		this.tx = tx;
 		this.db = db;
+		if (log.isTraceEnabled())
+			log.trace("Opened cursor {}", this); //$NON-NLS-1$
 	}
 
 	/**
@@ -60,6 +62,9 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	@Override
 	public void close() {
 		if (self != 0) {
+			if (log.isTraceEnabled())
+				log.trace("Calling cursor close for {}", this); //$NON-NLS-1$
+
 			if (env.usePooledCursors()) {
 				try {
 					env.getCursorPool().release(this);

@@ -456,7 +456,11 @@ public class Database extends NativeObject implements Closeable {
 				Value value2 = new Value(0L, valueCnt);
 
 				try {
-					return put(tx, new Value(keyBuffer), value1, value2, flags);
+					long now = System.currentTimeMillis();
+					byte[] rc = put(tx, new Value(keyBuffer), value1, value2, flags);
+					if (log.isDebugEnabled())
+						log.debug("Db put:{}, ms:{}", key, System.currentTimeMillis() - now);
+					return rc;
 				}
 				finally {
 					valueBuffer.delete();
