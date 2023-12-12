@@ -40,7 +40,7 @@ import static com.castortech.mdbxjni.Constants.*;
 @SuppressWarnings("nls")
 public class DatabaseRenameTest {
 	static {
-		Setup.setLibraryPaths();
+		Setup.setLibraryPaths(Setup.RELEASE_MODE);
 	}
 
 	private Env env;
@@ -94,14 +94,16 @@ public class DatabaseRenameTest {
 
 	@Test
 	public void testRenameDb() throws Exception {
-		testMainDb();
+		testMainDb2();
 	}
 
 	private void testMainDb() {
 		Database db = env.openDatabase("foo");
 		db.put(bytes("foo"), bytes("bar"));
+		db.close();
 
 		db = env.openDatabase("bar");
+		db.close();
 
 		listDbs("Original list");
 
@@ -109,11 +111,11 @@ public class DatabaseRenameTest {
 		openEnv();
 
 		try (Transaction tx = env.createWriteTransaction()) {
-			byte[] dbData = env.getMainDb().get(tx, bytes("foo"));
-			env.getMainDb().put(tx, bytes("foobar"), dbData, 0);
+			Database fooDb = env.openDatabase(tx, "foo", 0);
+			fooDb.rename(tx, "foobar");
 		}
 
-		listDbs("After adding foobar");
+		listDbs("After renaming foo to foobar");
 		after();
 		openEnv();
 
@@ -125,11 +127,47 @@ public class DatabaseRenameTest {
 		after();
 		openEnv();
 
+		listDbs("After re-open");
 
-		db = env.openDatabase("foo");
-		db.drop(true);
+		db = env.openDatabase("foobar");
+		data = db.get(bytes("foo"));
+		val = string(data);
+		System.out.println("found:" + val);
 
-		listDbs("After deleted foo");
+		after();
+		openEnv();
+
+
+//		byte[] data = bytes("bar");
+//		try (Transaction tx = env.createWriteTransaction()) {
+//			env.getMainDb().delete(tx, data);
+//		}
+	}
+
+	private void testMainDb2() {
+		Database db = env.openDatabase("foo");
+		System.out.println("Adding record foo -> bar to foo db");
+		db.put(bytes("foo"), bytes("bar"));
+		db.close();
+
+		db = env.openDatabase("bar");
+		db.close();
+
+		listDbs("Original DB list");
+
+		try (Transaction tx = env.createWriteTransaction()) {
+			Database fooDb = env.openDatabase(tx, "foo", 0);
+			fooDb.rename(tx, "foobar");
+		}
+
+		listDbs("After renaming DB foo to foobar");
+
+		db = env.openDatabase("foobar");
+
+		System.out.println("Retrieving foo record from foobar db");
+		byte[] data = db.get(bytes("foo"));
+		String val = string(data);
+		System.out.println("found:" + val);
 
 		after();
 		openEnv();
@@ -140,16 +178,6 @@ public class DatabaseRenameTest {
 		data = db.get(bytes("foo"));
 		val = string(data);
 		System.out.println("found:" + val);
-
-
-		after();
-		openEnv();
-
-
-//		byte[] data = bytes("bar");
-//		try (Transaction tx = env.createWriteTransaction()) {
-//			env.getMainDb().delete(tx, data);
-//		}
 	}
 
 	private void listDbs(String label) {

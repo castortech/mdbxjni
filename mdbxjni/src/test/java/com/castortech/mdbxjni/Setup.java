@@ -3,10 +3,10 @@ package com.castortech.mdbxjni;
 import java.io.File;
 
 public class Setup {
-	private static final String MODE = "Release"; //$NON-NLS-1$
-//	private static final String MODE = "Debug"; //$NON-NLS-1$
+	public static final String RELEASE_MODE = "Release"; //$NON-NLS-1$
+	public static final String DEBUG_MODE = "Debug"; //$NON-NLS-1$
 
-	private static final String MODE_LC = MODE.toLowerCase();
+	private static final String DEFAULT_MODE = DEBUG_MODE;
 
 	private static String OS = System.getProperty("os.name").toLowerCase(); //$NON-NLS-1$
 
@@ -19,12 +19,17 @@ public class Setup {
 	}
 
 	public static void setLibraryPaths() {
-		setJniLibraryPath();
-		setDbLibraryPath();
+		setLibraryPaths(DEFAULT_MODE);
+	}
+
+	public static void setLibraryPaths(String mode) {
+		setJniLibraryPath(mode);
+		setDbLibraryPath(mode);
 	}
 
 	@SuppressWarnings("nls")
-	public static void setJniLibraryPath() {
+	public static void setJniLibraryPath(String mode) {
+		String modeLC = mode.toLowerCase();
 		File path;
 		String libPath = System.getProperty("jni.lib.dir");
 
@@ -38,10 +43,10 @@ public class Setup {
 
 			if (isWindows()) {
 				if (!inTarget) {
-					path = new File(path, "../mdbxjni-win64/target/native-build/target/x64-" + MODE_LC + "/lib");
+					path = new File(path, "../mdbxjni-win64/target/native-build/target/x64-" + modeLC + "/lib");
 				}
 				else {
-					path = new File(path, "/native-build/target/x64-" + MODE_LC + "/lib");
+					path = new File(path, "/native-build/target/x64-" + modeLC + "/lib");
 				}
 			}
 			else if (isMac()) {
@@ -71,7 +76,7 @@ public class Setup {
 	}
 
 	@SuppressWarnings("nls")
-	public static void setDbLibraryPath() {
+	public static void setDbLibraryPath(String mode) {
 		File path;
 		String libPath = System.getProperty("mdbx.lib.dir");
 
@@ -84,10 +89,10 @@ public class Setup {
 
 			if (isWindows()) {
 				if (!inTarget) {
-					path = new File(path, "../../libmdbx/bin/" + MODE);
+					path = new File(path, "../../libmdbx/bin/" + mode);
 				}
 				else {
-					path = new File(path, "../../../libmdbx/bin/" + MODE);
+					path = new File(path, "../../../libmdbx/bin/" + mode);
 				}
 			}
 			//TODO: Adjust for specific platforms
