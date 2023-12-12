@@ -287,7 +287,7 @@ public class Database extends NativeObject implements Closeable {
 		if (rc == MDBX_NOTFOUND) {
 			return null;
 		}
-		checkErrorCode(env, rc);
+		checkErrorCode(env, tx, rc);
 		return value.toByteArray();
 	}
 
@@ -301,7 +301,7 @@ public class Database extends NativeObject implements Closeable {
 		if (rc == MDBX_NOTFOUND) {
 			return null;
 		}
-		checkErrorCode(env, rc);
+		checkErrorCode(env, tx, rc);
 		return new EntryCount(key.toByteArray(), value.toByteArray(), valCnt[0]);
 	}
 
@@ -313,7 +313,7 @@ public class Database extends NativeObject implements Closeable {
 		if (rc == MDBX_NOTFOUND) {
 			return null;
 		}
-		checkErrorCode(env, rc);
+		checkErrorCode(env, tx, rc);
 		return new Entry(key.toByteArray(), value.toByteArray());
 	}
 
@@ -458,8 +458,8 @@ public class Database extends NativeObject implements Closeable {
 				try {
 					long now = System.currentTimeMillis();
 					byte[] rc = put(tx, new Value(keyBuffer), value1, value2, flags);
-					if (log.isDebugEnabled())
-						log.debug("Db put:{}, ms:{}", key, System.currentTimeMillis() - now);
+//					if (log.isDebugEnabled())
+//						log.debug("Db put:{}, ms:{}", key, System.currentTimeMillis() - now);
 					return rc;
 				}
 				finally {
@@ -791,7 +791,7 @@ public class Database extends NativeObject implements Closeable {
 		if (rc == MDBX_NOTFOUND) {
 			return false;
 		}
-		checkErrorCode(env, rc);
+		checkErrorCode(env, tx, rc);
 		deleteSecondaries(tx, keySlice, valueSlices);
 
 		return true;
@@ -834,7 +834,7 @@ public class Database extends NativeObject implements Closeable {
 			long[] cursor = new long[1];
 			if (log.isTraceEnabled())
 				log.trace("Calling cursor open for {}", this); //$NON-NLS-1$
-			checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+			checkErrorCode(env, tx, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
 			return new Cursor(env, cursor[0], tx, this);
 		}
 		catch (Exception e) {
@@ -854,7 +854,7 @@ public class Database extends NativeObject implements Closeable {
 			long[] cursor = new long[1];
 			if (log.isTraceEnabled())
 				log.trace("Calling sec cursor open for {}", this); //$NON-NLS-1$
-			checkErrorCode(env, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+			checkErrorCode(env, tx, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
 			return new SecondaryCursor(env, cursor[0], tx, this);
 		}
 		catch (Exception e) {
@@ -877,7 +877,7 @@ public class Database extends NativeObject implements Closeable {
 		long[] flags = new long[1];
 		if (log.isTraceEnabled())
 			log.trace("Calling db flags for {}", this); //$NON-NLS-1$
-		checkErrorCode(env, mdbx_dbi_flags(tx.pointer(), pointer(), flags));
+		checkErrorCode(env, tx, mdbx_dbi_flags(tx.pointer(), pointer(), flags));
 		return (int)flags[0];
 	}
 
@@ -886,7 +886,7 @@ public class Database extends NativeObject implements Closeable {
 		long[] state = new long[1];
 		if (log.isTraceEnabled())
 			log.trace("Calling db flags ex for {}", this); //$NON-NLS-1$
-		checkErrorCode(env, mdbx_dbi_flags_ex(tx.pointer(), pointer(), flags, state));
+		checkErrorCode(env, tx, mdbx_dbi_flags_ex(tx.pointer(), pointer(), flags, state));
 		return new FlagState((int)flags[0], (int)state[0]);
 	}
 
@@ -894,7 +894,7 @@ public class Database extends NativeObject implements Closeable {
 		long[] mask = new long[1];
 		if (log.isTraceEnabled())
 			log.trace("Calling db dupsort for {}", this); //$NON-NLS-1$
-		checkErrorCode(env, mdbx_dbi_dupsort_depthmask(tx.pointer(), pointer(), mask));
+		checkErrorCode(env, tx, mdbx_dbi_dupsort_depthmask(tx.pointer(), pointer(), mask));
 		return (int)mask[0];
 	}
 
@@ -902,7 +902,24 @@ public class Database extends NativeObject implements Closeable {
 		long[] res = new long[1];
 		if (log.isTraceEnabled())
 			log.trace("Calling db sequence for {}", this); //$NON-NLS-1$
-		checkErrorCode(env, mdbx_dbi_sequence(tx.pointer(), pointer(), res, increment));
+		checkErrorCode(env, tx, mdbx_dbi_sequence(tx.pointer(), pointer(), res, increment));
+		return (int)res[0];
+	}
+
+	public int rename(Transaction tx, String name) {
+		long[] res = new long[1];
+		checkErrorCode(env, tx, mdbx_dbi_rename(tx.pointer(), pointer(), name));
+		return (int)res[0];
+	}
+
+	@SuppressWarnings("nls")
+	public int rename2(Transaction tx, byte[] name) {
+		checkArgNotNull(tx, "tx");
+		checkArgNotNull(name, "name");
+
+		NativeBuffer nameBuffer = NativeBuffer.create(name);
+		long[] res = new long[1];
+		checkErrorCode(env, tx, mdbx_dbi_rename2(tx.pointer(), pointer(), new Value(nameBuffer)));
 		return (int)res[0];
 	}
 

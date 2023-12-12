@@ -56,6 +56,13 @@ public class Transaction extends NativeObject implements Closeable {
 	}
 
 	/**
+	 * @return true if the transaction is read only
+	 */
+	public boolean isReadOnly() {
+		return readOnly;
+	}
+
+	/**
 	 * Transaction are associated with a specific thread and will throw an MDBX_THREAD_MISMATCH if used with the
 	 * wrong thread. This method provides visibility into the creating thread.
 	 *
@@ -92,7 +99,7 @@ public class Transaction extends NativeObject implements Closeable {
 	}
 
 	public int releaseCursors() {
-		return mdbx_txn_release_all_cursors(pointer());
+		return mdbx_txn_release_all_cursors(pointer(), 0);
 	}
 
 	/**
@@ -229,7 +236,7 @@ public class Transaction extends NativeObject implements Closeable {
 
 	@Override
 	public void close() {
-		if (readOnly)
+		if (isReadOnly())
 			abort();
 		commit();
 	}

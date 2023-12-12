@@ -40,6 +40,7 @@ public class MDBXException extends RuntimeException {
 		EINTR(JNI.MDBX_EINTR, "Cancelled"),
 		ENOFILE(JNI.MDBX_ENOFILE, "File not found"),
 		EREMOTE(JNI.MDBX_EREMOTE, "Remote storage media error"),
+		EDEADLK(JNI.MDBX_EDEADLK, "Possible Deadlock"),
 		RESULT_FALSE(JNI.MDBX_RESULT_FALSE, "Alias for Successful result"),
 		RESULT_TRUE(JNI.MDBX_RESULT_TRUE, "Successful result with special meaning or a flag"),
 		KEYEXIST(JNI.MDBX_KEYEXIST, "key/data pair already exists"),
@@ -73,6 +74,9 @@ public class MDBXException extends RuntimeException {
 		TOO_LARGE(JNI.MDBX_TOO_LARGE, "Database is too large for current system, e.g. could NOT be mapped into RAM."),
 		THREAD_MISMATCH(JNI.MDBX_THREAD_MISMATCH, "A thread has attempted to use a not owned object, e.g. a transaction that started by another thread."),
 		TXN_OVERLAPPING(JNI.MDBX_TXN_OVERLAPPING, "Overlapping read and write transactions for the current thread"),
+		BACKLOG_DEPLETED(JNI.MDBX_BACKLOG_DEPLETED, "Internal error returned if there is not enough free pages available when updating GC. Used as a debugging aid. From the user's point of view, semantically is equivalent to MDBX_PROBLEM."),
+		DUPLICATED_CLK(JNI.MDBX_DUPLICATED_CLK, "Alternative/Duplicate LCK-file is exists and should be removed manually"),
+		DANGLING_DBI(JNI.MDBX_DANGLING_DBI, "Some cursors and/or other resources should be closed before subDb or corresponding DBI-handle could be (re)used"),
 		LAST_ADDED_ERRCODE(JNI.MDBX_LAST_ADDED_ERRCODE, "The last added error code"),
 		;
 

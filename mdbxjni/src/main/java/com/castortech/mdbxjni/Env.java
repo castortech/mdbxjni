@@ -80,13 +80,13 @@ public class Env extends NativeObject implements Closeable {
 		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
 	}
 
-//	public static BuildInfo buildInfo() {
-//		MDBX_build_info rc = new MDBX_build_info();
-//
-//		NativeBuffer buffer = NativeBuffer.create(JNI.SIZEOF_BUILDINFO);
-//		get_mdbx_build_info(buffer.pointer(), JNI.SIZEOF_BUILDINFO);
-//		return new BuildInfo(rc);
-//	}
+	public static BuildInfo buildInfo() {
+		MDBX_build_info rc = new MDBX_build_info();
+
+		NativeBuffer buffer = NativeBuffer.create(JNI.SIZEOF_BUILDINFO);
+//		mdbx_build();
+		return new BuildInfo(rc);
+	}
 
 
 //	printf("mdbx_copy version %d.%d.%d.%d\n"
@@ -345,8 +345,8 @@ public class Env extends NativeObject implements Closeable {
 			mainDb = new Database(this, 1L, MAIN_DB);
 		}
 
-		if (config.isUsePooledCursors()) {
 			CursorPoolConfig poolConfig = new CursorPoolConfig();
+			if (config.isUsePooledCursors()) {
 			poolConfig.setTimeBetweenEvictionRuns(config.getPooledCursorTimeBetweenEvictionRuns());
 			poolConfig.setMaxIdlePerKey(config.getPooledCursorMaxIdle());
 			poolConfig.setSoftMinEvictableIdleTime(config.getPooledCursorMinEvictableIdleTime());
@@ -856,7 +856,7 @@ public class Env extends NativeObject implements Closeable {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		// checkArgNotNull(name, "name");
 		long[] dbi = new long[1];
-		checkErrorCode(this, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
+		checkErrorCode(this, tx, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
 		return new Database(this, dbi[0], name);
 	}
 
@@ -960,7 +960,7 @@ public class Env extends NativeObject implements Closeable {
 			dataComparator = dataComp;
 		}
 
-		checkErrorCode(this, mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
+		checkErrorCode(this, tx, mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
 		return new Database(this, dbi[0], name);
 	}
 
@@ -1016,7 +1016,7 @@ public class Env extends NativeObject implements Closeable {
 		checkArgNotNull(primary, "primary"); //$NON-NLS-1$
 		// checkArgNotNull(name, "name");
 		long[] dbi = new long[1];
-		checkErrorCode(this, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
+		checkErrorCode(this, tx, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
 		SecondaryDbConfig config = new SecondaryDbConfig();
 		SecondaryDatabase secDb = new SecondaryDatabase(this, primary, dbi[0], name, config);
 
@@ -1050,7 +1050,7 @@ public class Env extends NativeObject implements Closeable {
 
 		int flags = setFlags(config);
 		long[] dbi = new long[1];
-		checkErrorCode(this, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
+		checkErrorCode(this, tx, mdbx_dbi_open(tx.pointer(), name, flags, dbi));
 		SecondaryDatabase secDb = new SecondaryDatabase(this, primary, dbi[0], name, config);
 
 		if (associateDbs(tx, primary, secDb)) {

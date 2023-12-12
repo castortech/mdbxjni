@@ -142,7 +142,7 @@ public class JNIIntern {
 		public long mc_dbx;
 		/** The mt_dbistate for this database */
 		@JniField(cast = "uint8_t *")
-		public long mc_dbistate;
+		public long mc_dbi_state;
 		/** number of pushed pages */
 		@JniField(cast = "uint8_t")
 		public short mc_snum;

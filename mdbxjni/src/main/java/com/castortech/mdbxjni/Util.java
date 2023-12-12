@@ -68,7 +68,7 @@ class Util {
 		if (rc != JNI.MDBX_SUCCESS && rc != JNI.MDBX_RESULT_TRUE) {
 			String msg = string(mdbx_strerror(rc));
 			if (env != null) {
-				log.info("MDBX Exception. Msg:{}, Env:{}", msg, env.info().toString());
+				log.info("MDBX Exception. Msg:{}, Env:{}", msg, env.info(txn).toString());
 			}
 			throw new MDBXException(msg, rc);
 		}
