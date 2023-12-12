@@ -69,6 +69,8 @@ char* map_printf(char *buf, int size, const char * format, void *args);
 
 int ptr_2_cursor(MDBX_cursor * ptr, MDBX_cursor * cursor, size_t bytes);
 
+int get_mdbx_build_info(void *arg, size_t bytes);
+
 #ifdef __cplusplus
 } /* extern "C" */
 #endif

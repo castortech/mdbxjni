@@ -50,10 +50,22 @@ int ptr_2_cursor(MDBX_cursor * ptr, MDBX_cursor * cursor, size_t bytes) {
 	return 0;
 }
 
-/*
 int get_mdbx_build_info(void *arg, size_t bytes) {
-	mdbx_build.target;
-	memcpy(&mdbx_build, arg, bytes);
+/*
+printf("mdbx_copy version %d.%d.%d.%d\n"
+       " - source: %s %s, commit %s, tree %s\n"
+       " - build: %s for %s by %s\n"
+       " - flags: %s\n"
+       " - options: %s\n",
+       mdbx_version.major, mdbx_version.minor, mdbx_version.release,
+       mdbx_version.revision, mdbx_version.git.describe,
+       mdbx_version.git.datetime, mdbx_version.git.commit,
+       mdbx_version.git.tree, mdbx_build.datetime,
+       mdbx_build.target, mdbx_build.compiler, mdbx_build.flags,
+       mdbx_build.options);
+//	const char * datetime = mdbx_build.datetime;
+	const struct __declspec(dllimport) MDBX_build_info my_build = mdbx_build; 
+//	memcpy(mdbx_build.datetime, arg, bytes);
+*/
 	return MDBX_SUCCESS;
 }
-*/
