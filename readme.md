@@ -23,7 +23,7 @@ Just add the following jar to your java project:
 ### Using as a Maven Dependency
 
 You just need to add the following dependency and repository to your Maven `pom.xml`.
-
+```xml
     <dependencies>
       <dependency>
         <groupId>com.castortech.mdbxjni</groupId>
@@ -39,19 +39,19 @@ You just need to add the following dependency and repository to your Maven `pom.
           <url>http://repo.fusesource.com/nexus/content/groups/public-snapshots</url>
         </repository>
     </repositories>
-
+```
 ## API Usage:
 
 The [Javadocs](http://mdbxjni.fusesource.org/maven/99-master-SNAPSHOT/apidocs/org/fusesource/lmdbjni/package-summary.html) 
 don't have too many details yet.  Please send patches to improve them!
 
 Recommended Package imports:
-
+```java
     import com.castortech.mdbxjni.*;
     import static com.castortech.mdbxjni.Constants.*;
-
+```
 Opening and closing the database.
-
+```java
     Env env = new Env();
     try {
       env.open("/tmp/mydb");
@@ -63,15 +63,15 @@ Opening and closing the database.
       // Make sure you close the env to avoid resource leaks.
       env.close();
     }
-
+```
 Putting, Getting, and Deleting key/values.
-
+```java 
     db.put(bytes("Tampa"), bytes("rocks"));
     String value = string(db.get(bytes("Tampa")));
     db.delete(bytes("Tampa"));
-
+```
 Performing Atomic/Transacted Updates:
-
+```java
     Transaction tx = env.createTransaction();
     boolean ok = false;
     try {
@@ -87,9 +87,9 @@ Performing Atomic/Transacted Updates:
         tx.abort();
       }
     }
-
+```
 Working against a Snapshot view of the Database:
-
+```java
     // create a read-only transaction...
     Transaction tx = env.createTransaction(true);
     try {
@@ -103,9 +103,9 @@ Working against a Snapshot view of the Database:
       // Make sure you commit the transaction to avoid resource leaks.
       tx.commit();
     }
-
+```
 Iterating key/values:
-
+```java
     Transaction tx = env.createTransaction(true);
     try {
       Cursor cursor = db.openCursor(tx);
@@ -124,12 +124,13 @@ Iterating key/values:
       // Make sure you commit the transaction to avoid resource leaks.
       tx.commit();
     }
-
+```
 Using a memory pool to make native memory allocations more efficient:
-
+```java
     Env.pushMemoryPool(1024 * 512);
     try {
         // .. work with the DB in here, 
     } finally {
         Env.popMemoryPool();
     }
+```
