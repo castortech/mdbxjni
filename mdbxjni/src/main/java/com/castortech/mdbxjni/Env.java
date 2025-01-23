@@ -46,6 +46,14 @@ import static com.castortech.mdbxjni.Util.*;
 public class Env extends NativeObject implements Closeable {
 	private static final Logger log = LoggerFactory.getLogger(Env.class);
 
+	public static final boolean IS_WINDOWS = isWindows();
+
+	@SuppressWarnings("nls")
+	static private boolean isWindows() {
+		String name = System.getProperty("os.name").toLowerCase().trim();
+		return name.startsWith("win");
+	}
+
 	private static final String MAIN_DB = "MAIN_DB"; //$NON-NLS-1$
 
 	private Callback keyCmpCallback = null;
@@ -78,6 +86,14 @@ public class Env extends NativeObject implements Closeable {
 
 	public static String version() {
 		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
+	}
+
+	public static VersionInfo versionInfo() {
+		MDBX_version_info rc = new MDBX_version_info();
+
+		NativeBuffer buffer = NativeBuffer.create(JNI.SIZEOF_VERSIONINFO);
+//		mdbx_build();
+		return new VersionInfo(rc);
 	}
 
 	public static BuildInfo buildInfo() {
@@ -240,7 +256,14 @@ public class Env extends NativeObject implements Closeable {
 	 *            ignored on Windows.
 	 */
 	public void open(String path, int flags, int mode) {
-		int rc = mdbx_env_open(pointer(), path, flags, mode);
+		int rc;
+		if (IS_WINDOWS) {
+			rc = mdbx_env_openW(pointer(), path, flags, mode);
+		}
+		else {
+			rc = mdbx_env_open(pointer(), path, flags, mode);
+		}
+
 		if (rc != 0) {
 			close();
 		}
@@ -278,8 +301,8 @@ public class Env extends NativeObject implements Closeable {
 			flags |= EnvFlags.WRITEMAP;
 		}
 
-		if (config.isNoTLS()) {
-			flags |= EnvFlags.NOTLS;
+		if (config.isNoStickyThreads()) {
+			flags |= EnvFlags.NOSTICKYTHREADS;
 		}
 
 		if (config.isNoReadAhead()) {
@@ -337,7 +360,14 @@ public class Env extends NativeObject implements Closeable {
 		setGeometry(config.getMapLower(), config.getMapSize(), config.getMapUpper(), config.getMapGrowth(),
 				config.getMapShrink(), config.getPageSize());
 
-		int rc = mdbx_env_open(pointer(), path, flags, config.getMode());
+		int rc;
+		if (IS_WINDOWS) {
+			rc = mdbx_env_openW(pointer(), path, flags, config.getMode());
+		}
+		else {
+			rc = mdbx_env_open(pointer(), path, flags, config.getMode());
+		}
+
 		if (rc != 0) {
 			close();
 		}
@@ -345,8 +375,8 @@ public class Env extends NativeObject implements Closeable {
 			mainDb = new Database(this, 1L, MAIN_DB);
 		}
 
-			CursorPoolConfig poolConfig = new CursorPoolConfig();
-			if (config.isUsePooledCursors()) {
+		CursorPoolConfig poolConfig = new CursorPoolConfig();
+		if (config.isUsePooledCursors()) {
 			poolConfig.setTimeBetweenEvictionRuns(config.getPooledCursorTimeBetweenEvictionRuns());
 			poolConfig.setMaxIdlePerKey(config.getPooledCursorMaxIdle());
 			poolConfig.setSoftMinEvictableIdleTime(config.getPooledCursorMinEvictableIdleTime());
@@ -1153,6 +1183,7 @@ public class Env extends NativeObject implements Closeable {
 		int rc = mdbx_setup_debug(logLevel.getValue(), debugFlags, logDebugAddr);
 		return new DebugState(rc);
 	}
+
 
 	/**
 	 * Method callback for MDBX issued log entries

@@ -27,19 +27,25 @@ public class EnvOptions {
 	//====================================================//
 	// Environment Options
 	//====================================================//
-	public static final int OPT_MAX_DBS           = MDBX_opt_max_db               ;
-	public static final int OPT_MAX_READERS       = MDBX_opt_max_readers          ;
-	public static final int OPT_SYNC_BYTES        = MDBX_opt_sync_bytes           ;
-	public static final int OPT_SYNC_PERIOD       = MDBX_opt_sync_period          ;
-	public static final int OPT_RP_ARG_LIMIT      = MDBX_opt_rp_augment_limit     ;
-	public static final int OPT_LOOSE_LIMIT       = MDBX_opt_loose_limit          ;
-	public static final int OPT_DB_RESERVE_LIMIT  = MDBX_opt_dp_reserve_limit     ;
-	public static final int OPT_TXN_DP_LIMIT      = MDBX_opt_txn_dp_limit         ;
-	public static final int OPT_TXN_DP_INITIAL    = MDBX_opt_txn_dp_initial       ;
-	public static final int OPT_SPILL_MAX_DENOM   = MDBX_opt_spill_max_denominator;
-	public static final int OPT_SPILL_MIN_DENOM   = MDBX_opt_spill_min_denominator;
-	public static final int OPT_SPILL_P4C_DENOM   = MDBX_opt_spill_parent4child_denominator;
-	public static final int OPT_MERGE_THRESH_PERC = MDBX_opt_merge_threshold_16dot16_percent;
-	public static final int OPT_WRTIE_THRU_THRESH = MDBX_opt_writethrough_threshold;
-	public static final int OPT_PREFAULT_WRITE_ENABLE = MDBX_opt_prefault_write_enable;
+	public static final int OPT_MAX_DBS                      = MDBX_opt_max_db                         ;
+	public static final int OPT_MAX_READERS                  = MDBX_opt_max_readers                    ;
+	public static final int OPT_SYNC_BYTES                   = MDBX_opt_sync_bytes                     ;
+	public static final int OPT_SYNC_PERIOD                  = MDBX_opt_sync_period                    ;
+	public static final int OPT_RP_ARG_LIMIT                 = MDBX_opt_rp_augment_limit               ;
+	public static final int OPT_LOOSE_LIMIT                  = MDBX_opt_loose_limit                    ;
+	public static final int OPT_DB_RESERVE_LIMIT             = MDBX_opt_dp_reserve_limit               ;
+	public static final int OPT_TXN_DP_LIMIT                 = MDBX_opt_txn_dp_limit                   ;
+	public static final int OPT_TXN_DP_INITIAL               = MDBX_opt_txn_dp_initial                 ;
+	public static final int OPT_SPILL_MAX_DENOM              = MDBX_opt_spill_max_denominator          ;
+	public static final int OPT_SPILL_MIN_DENOM              = MDBX_opt_spill_min_denominator          ;
+	public static final int OPT_SPILL_P4C_DENOM              = MDBX_opt_spill_parent4child_denominator ;
+	public static final int OPT_MERGE_THRESH_PERC            = MDBX_opt_merge_threshold_16dot16_percent;
+	public static final int OPT_WRTIE_THRU_THRESH            = MDBX_opt_writethrough_threshold         ;
+	public static final int OPT_PREFAULT_WRITE_ENABLE        = MDBX_opt_prefault_write_enable          ;
+	public static final int OPT_GC_TIME_LIMIT                = MDBX_opt_gc_time_limit                  ;
+	public static final int OPT_PREFER_WAF_INSTEADOF_BALANCE = MDBX_opt_prefer_waf_insteadof_balance   ;
+	public static final int OPT_SUBPAGE_LIMIT                = MDBX_opt_subpage_limit                  ;
+	public static final int OPT_SUBPAGE_ROOM_THRESHOLD       = MDBX_opt_subpage_room_threshold         ;
+	public static final int OPT_SUBPAGE_RESERVE_PREREQ       = MDBX_opt_subpage_reserve_prereq         ;
+	public static final int OPT_SUBPAGE_RESERVE_LIMIT        = MDBX_opt_subpage_reserve_limit          ;
 }

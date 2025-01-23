@@ -36,10 +36,19 @@ import java.util.Optional;
 @SuppressWarnings("nls")
 public class ReLayoutDbs {
 	private static String path;
+	private static long mapMax = 12000L * 1024 * 1024;
 
 	static {
 		Setup.setLibraryPaths(Setup.RELEASE_MODE);
 		Optional.ofNullable(System.getProperty("db.path")).ifPresent(val -> path = val);
+
+		try {
+			Optional.ofNullable(System.getProperty("map.max"))
+					.ifPresent(val -> mapMax = Long.parseLong(val));
+		}
+		catch (Exception e) {
+			System.err.println("Exception resolving map max, using default");// TODO: handle exception
+		}
 	}
 
 	private Env env;
@@ -63,7 +72,7 @@ public class ReLayoutDbs {
 //
 		envConfig.setMapSize(4000L * 1024 * 1024);	//4gb
 		envConfig.setMapGrowth(1000L * 1024 * 1024);	//1gb
-		envConfig.setMapUpper(12000L * 1024 * 1024); //12gb
+		envConfig.setMapUpper(mapMax); //12gb or set value via map.max
 
 		env = new Env();
 		env.setMaxDbs(100);

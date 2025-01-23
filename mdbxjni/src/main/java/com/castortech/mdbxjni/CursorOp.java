@@ -114,14 +114,52 @@ public enum CursorOp {
 
 	/** Position at first key-value pair greater than or equal to specified,
    * return both key and data, and the return code depends on a exact match.
+   *
+   * For non DUPSORT-ed collections this work the same to \ref MDBX_SET_RANGE,
+   * but returns \ref MDBX_SUCCESS if key found exactly or
+   * \ref MDBX_RESULT_TRUE if greater key was found.
+   *
+   * For DUPSORT-ed a data value is taken into account for duplicates,
+   * i.e. for a pairs/tuples of a key and an each data value of duplicates.
+   * Returns \ref MDBX_SUCCESS if key-value pair found exactly or
+   * \ref MDBX_RESULT_TRUE if the next pair was returned.
    */
 	SET_LOWERBOUND(MDBX_SET_LOWERBOUND),
 
 	/** Positions cursor at first key-value pair greater than specified,
    * return both key and data, and the return code depends on whether a
    * upper-bound was found.
+   *
+   * For non DUPSORT-ed collections this work like \ref MDBX_SET_RANGE,
+   * but returns \ref MDBX_SUCCESS if the greater key was found or
+   * \ref MDBX_NOTFOUND otherwise.
+   *
+   * For DUPSORT-ed a data value is taken into account for duplicates,
+   * i.e. for a pairs/tuples of a key and an each data value of duplicates.
+   * Returns \ref MDBX_SUCCESS if the greater pair was returned or
+   * \ref MDBX_NOTFOUND otherwise.
    */
 	SET_UPPERBOUND(MDBX_SET_UPPERBOUND),
+
+	/* Doubtless cursor positioning at a specified key. */
+	TO_KEY_LESSER_THAN(MDBX_TO_KEY_LESSER_THAN),
+	TO_KEY_LESSER_OR_EQUAL(MDBX_TO_KEY_LESSER_OR_EQUAL),
+	TO_KEY_EQUAL(MDBX_TO_KEY_EQUAL),
+	TO_KEY_GREATER_OR_EQUAL(MDBX_TO_KEY_GREATER_OR_EQUAL),
+	TO_KEY_GREATER_THAN(MDBX_TO_KEY_GREATER_THAN),
+
+	/* Doubtless cursor positioning at a specified key-value pair for dupsort/multi-value hives. */
+	TO_EXACT_KEY_VALUE_LESSER_THAN(MDBX_TO_EXACT_KEY_VALUE_LESSER_THAN),
+	TO_EXACT_KEY_VALUE_LESSER_OR_EQUAL(MDBX_TO_EXACT_KEY_VALUE_LESSER_OR_EQUAL),
+	TO_EXACT_KEY_VALUE_EQUAL(MDBX_TO_EXACT_KEY_VALUE_EQUAL),
+	TO_EXACT_KEY_VALUE_GREATER_OR_EQUAL(MDBX_TO_EXACT_KEY_VALUE_GREATER_OR_EQUAL),
+	TO_EXACT_KEY_VALUE_GREATER_THAN(MDBX_TO_EXACT_KEY_VALUE_GREATER_THAN),
+
+	TO_PAIR_LESSER_THAN(MDBX_TO_PAIR_LESSER_THAN),
+	TO_PAIR_LESSER_OR_EQUAL(MDBX_TO_PAIR_LESSER_OR_EQUAL),
+	TO_PAIR_EQUAL(MDBX_TO_PAIR_EQUAL),
+	TO_PAIR_GREATER_OR_EQUAL(MDBX_TO_PAIR_GREATER_OR_EQUAL),
+	TO_PAIR_GREATER_THAN(MDBX_TO_PAIR_GREATER_THAN),
 	;
 
 	private final int value;

@@ -106,7 +106,12 @@ public enum MdbxLogLevel {
 	public static void log(int value, Logger logger, String format, Object... params) {
 		MdbxLogLevel mdbxLogLevel = MdbxLogLevel.getByValue(value);
 		if (LogLevel.isEnabledFor(logger, mdbxLogLevel.level)) {
-			LogLevel.log(logger, mdbxLogLevel.level, format, params);
+			if (mdbxLogLevel == FATAL) {
+				LogLevel.log(logger, mdbxLogLevel.level, format, params, new Throwable());
+			}
+			else {
+				LogLevel.log(logger, mdbxLogLevel.level, format, params);
+			}
 		}
 	}
 

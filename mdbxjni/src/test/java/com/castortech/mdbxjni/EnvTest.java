@@ -254,13 +254,13 @@ public class EnvTest {
 		try (Transaction tx = env.createWriteTransaction(); Cursor cursor = env.getMainDb().openCursor(tx)) {
 			LinkedList<String> keys = new LinkedList<>();
 			MDBX_cursor mdbx_cursor = cursor.internCursor();
-			CursorState cursorState = new CursorState(mdbx_cursor.mc_flags);
+			CursorState cursorState = new CursorState(mdbx_cursor.flags);
 
 			while (true) {
 				byte[] key = new byte[1];
 				Entry entry = cursor.get(NEXT_NODUP, key, null);
 				mdbx_cursor = cursor.internCursor();
-				cursorState = new CursorState(mdbx_cursor.mc_flags);
+				cursorState = new CursorState(mdbx_cursor.flags);
 				if (entry == null) {
 					break;
 				}

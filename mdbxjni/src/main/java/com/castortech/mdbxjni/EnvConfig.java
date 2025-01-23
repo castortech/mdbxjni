@@ -194,7 +194,7 @@ public class EnvConfig implements Cloneable {
 		this.mapAsync = mapAsync;
 	}
 
-	public boolean isNoTLS() {
+	public boolean isNoStickyThreads() {
 		return noTLS;
 	}
 

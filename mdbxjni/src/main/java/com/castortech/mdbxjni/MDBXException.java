@@ -77,6 +77,8 @@ public class MDBXException extends RuntimeException {
 		BACKLOG_DEPLETED(JNI.MDBX_BACKLOG_DEPLETED, "Internal error returned if there is not enough free pages available when updating GC. Used as a debugging aid. From the user's point of view, semantically is equivalent to MDBX_PROBLEM."),
 		DUPLICATED_CLK(JNI.MDBX_DUPLICATED_CLK, "Alternative/Duplicate LCK-file is exists and should be removed manually"),
 		DANGLING_DBI(JNI.MDBX_DANGLING_DBI, "Some cursors and/or other resources should be closed before subDb or corresponding DBI-handle could be (re)used"),
+		OUSTED(JNI.MDBX_OUSTED, "The parked read transaction was outed for the sake of recycling old MVCC snapshots"),
+		MVCC_RETARDED(JNI.MDBX_MVCC_RETARDED, "MVCC snapshot used by read transaction is outdated and could not be copied since corresponding meta-pages was overwritten"),
 		LAST_ADDED_ERRCODE(JNI.MDBX_LAST_ADDED_ERRCODE, "The last added error code"),
 		;
 

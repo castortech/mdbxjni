@@ -17,8 +17,6 @@
  */
 package com.castortech.mdbxjni;
 
-import static com.castortech.mdbxjni.JNIIntern.*;
-
 /**
  * Cursor state flags.
  *
@@ -28,23 +26,23 @@ public enum CursorStateFlags {
 	/** None */
 	NONE(0),
 
-	/** cursor has been initialized and is valid */
-	INITIALIZED(C_INITIALIZED),
-
-	/** No more data */
-	EOF(C_EOF),
-
-	/** Cursor is a sub-cursor */
-	SUB(C_SUB),
-
-	/** last op was a cursor_del */
-	DEL(C_DEL),
-
-	/** Un-track cursor when closing */
-	UNTRACK(C_UNTRACK),
-
-	/** Preparing for a GC update is in progress, so you can take pages from GC even for FREE_DBI */
-	GCU(C_GCU),
+//	/** cursor has been initialized and is valid */
+//	INITIALIZED(C_INITIALIZED),
+//
+//	/** No more data */
+//	EOF(C_EOF),
+//
+//	/** Cursor is a sub-cursor */
+//	SUB(C_SUB),
+//
+//	/** last op was a cursor_del */
+//	DEL(C_DEL),
+//
+//	/** Un-track cursor when closing */
+//	UNTRACK(C_UNTRACK),
+//
+//	/** Preparing for a GC update is in progress, so you can take pages from GC even for FREE_DBI */
+//	GCU(C_GCU),
 	;
 
 	private final int value;

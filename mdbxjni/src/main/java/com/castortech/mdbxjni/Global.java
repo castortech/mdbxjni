@@ -25,8 +25,16 @@ public class Global {
 		return mdbx_limits_txnsize_max(pageSize);
 	}
 
+	public long getMinKeySize(int flags) {
+		return mdbx_limits_keysize_min(flags);
+	}
+
 	public long getMaxKeySize(long pageSize, int flags) {
 		return mdbx_limits_keysize_max(pageSize, flags);
+	}
+
+	public long getMinValSize(int flags) {
+		return mdbx_limits_valsize_min(flags);
 	}
 
 	public long getMaxValSize(long pageSize, int flags) {
