@@ -170,7 +170,7 @@ public class EnvConfig implements Cloneable {
 
 	/**
 	 * @deprecated
-	 * This method has been renamed to {@link EnvConfig#isSafeNoSync().
+	 * This method has been renamed to {@link EnvConfig#isSafeNoSync()}
 	 */
 	@Deprecated
 	public boolean isNoSync() {
@@ -179,7 +179,7 @@ public class EnvConfig implements Cloneable {
 
 	/**
 	 * @deprecated
-	 * This method has been renamed to {@link EnvConfig#setSafeNoSync(boolean).
+	 * This method has been renamed to {@link EnvConfig#setSafeNoSync(boolean)}
 	 */
 	@Deprecated
 	public void setNoSync(boolean noSync) {
@@ -194,11 +194,27 @@ public class EnvConfig implements Cloneable {
 		this.mapAsync = mapAsync;
 	}
 
+	/**
+	 * Use {#isNoStickyThreads()} instead
+	 */
+	@Deprecated
+	public boolean isNoTLS() {
+		return noTLS;
+	}
+
+	/**
+	 * Use {{@link #setNoStickyThreads(boolean)}} instead
+	 */
+	@Deprecated
+	public void setNoTLS(boolean noTLS) {
+		this.noTLS = noTLS;
+	}
+
 	public boolean isNoStickyThreads() {
 		return noTLS;
 	}
 
-	public void setNoTLS(boolean noTLS) {
+	public void setNoStickyThreads(boolean noTLS) {
 		this.noTLS = noTLS;
 	}
 

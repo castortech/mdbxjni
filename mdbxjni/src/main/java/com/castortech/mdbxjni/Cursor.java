@@ -106,8 +106,8 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 * </p>
 	 *
 	 * <p>
-	 * <b>Note</b> In contrast to LMDB, the MDBX allow any cursor to be re-used by using mdbx_cursor_renew(), to avoid
-	 * unnecessary malloc/free overhead until it freed by mdbx_cursor_close().
+	 * <b>Note</b> In contrast to LMDB, the MDBX allow any cursor to be re-used by using mdbx_cursor_renew(), to
+	 * avoid unnecessary malloc/free overhead until it freed by mdbx_cursor_close().
 	 * </p>
 	 *
 	 * @param tx

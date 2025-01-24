@@ -24,31 +24,32 @@
 	<version>99-master-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
-	<name>${project.artifactId}</name>
+	<name>${project.groupId}:${project.artifactId}</name>
 	<description>mdbxjni is a jni library for accessing mdbx.</description>
+	<url>https://github.com/castortech/mdbxjni</url>
+	<inceptionYear>2009</inceptionYear>
 
 	<properties>
-		<forge-project-id>mdbxjni</forge-project-id>
-		<forge-project-id-uc>MDBXJNI</forge-project-id-uc>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hawtjni-version>1.19-SNAPSHOT</hawtjni-version>
-		<java-version>11</java-version>
+		<java-version>17</java-version>
 		<guava-version>[30.0-jre,)</guava-version>
 		<slf4j-version>1.7.36</slf4j-version>
 		<junit-version>4.13.2</junit-version>
 		<mvn-compiler-version>3.13.0</mvn-compiler-version>
 		<mvn-bundle-version>6.0.0</mvn-bundle-version>
-		<mvn-clean-version>3.2.0</mvn-clean-version>
 		<mvn-jar-version>3.4.2</mvn-jar-version>
+		<mvn-clean-version>3.4.0</mvn-clean-version>
+		<mvn-plugin-version>3.15.1</mvn-plugin-version>
+		<mvn-site-version>3.21.0</mvn-site-version>
+		<mvn-source-version>3.3.1</mvn-source-version>
+		<mvn-javadoc-version>3.11.2</mvn-javadoc-version>
 		<surefire-version>2.22.2</surefire-version>
 	</properties>
 
 	<modules>
 		<module>mdbxjni</module>
 	</modules>
-
-	<url>http://${forge-project-id}.fusesource.org</url>
-	<inceptionYear>2009</inceptionYear>
 
 	<issueManagement>
 		<system>github</system>
@@ -103,7 +104,7 @@
 					<target>${java-version}</target>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
@@ -124,7 +125,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-site-plugin</artifactId>
-				<version>3.12.1</version>
+				<version>${mvn-site-version}</version>
 				<configuration>
 				</configuration>
 			</plugin>
@@ -132,15 +133,15 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>${mvn-javadoc-version}</version>
 
-				<dependencies>
-					<dependency>
-						<groupId>org.fusesource.mvnplugins</groupId>
-						<artifactId>fuse-javadoc-skin</artifactId>
-						<version>1.45</version>
-					</dependency>
-				</dependencies>
+<!--				<dependencies>-->
+<!--					<dependency>-->
+<!--						<groupId>org.fusesource.mvnplugins</groupId>-->
+<!--						<artifactId>fuse-javadoc-skin</artifactId>-->
+<!--						<version>1.45</version>-->
+<!--					</dependency>-->
+<!--				</dependencies>-->
 
 				<configuration>
 					<docfilessubdirs>true</docfilessubdirs>
@@ -155,7 +156,7 @@
 					<doctitle>${project.name} API Reference (${project.version})</doctitle>
 					<windowtitle>${project.name} API Reference (${project.version})</windowtitle>
 					<links>
-						<link>https://docs.oracle.com/javase/8/docs/api</link>
+						<link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
 					</links>
 					<encoding>UTF-8</encoding>
 					<locale>en_US</locale>
@@ -168,10 +169,10 @@
 
 	<reporting>
 		<plugins>
-		 <plugin>
+			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>${mvn-javadoc-version}</version>
 				<configuration>
 					<docfilessubdirs>true</docfilessubdirs>
 					<useStandardDocletOptions>true</useStandardDocletOptions>
@@ -182,11 +183,11 @@
 					<author>true</author>
 					<keywords>true</keywords>
 					<old>true</old>
-	
+
 					<doctitle>${project.name} API Reference (${project.version})</doctitle>
 					<windowtitle>${project.name} API Reference (${project.version})</windowtitle>
 					<links>
-						<link>https://docs.oracle.com/javase/8/docs/api</link>
+						<link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
 					</links>
 					<encoding>UTF-8</encoding>
 					<locale>en_US</locale>
@@ -206,12 +207,12 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>${mvn-javadoc-version}</version>
 				<configuration>
 					<excludePackageNames>*.internal</excludePackageNames>
 					<linksource>true</linksource>
 					<links>
-						<link>https://docs.oracle.com/javase/8/docs/api</link>
+						<link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
 					</links>
 				</configuration>
 			</plugin>
@@ -245,7 +246,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-plugin-plugin</artifactId>
-				<version>3.15.1</version>
+				<version>${mvn-plugin-version}</version>
 			</plugin>
 		</plugins>
 	</reporting>

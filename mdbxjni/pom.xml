@@ -29,8 +29,9 @@
 	<version>99-master-SNAPSHOT</version>
 	<packaging>jar</packaging>
 
-	<name>${project.artifactId}</name>
+	<name>${project.groupId}:${project.artifactId}</name>
 	<description>mdbxjni is a jni library for accessing mdbx.</description>
+	<url>https://github.com/castortech/mdbxjni</url>
 
 	<properties>
 		<skipAutogen>false</skipAutogen>
@@ -201,13 +202,27 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-source-plugin</artifactId>
-				<version>3.2.1</version>
+				<version>3.3.1</version>
 				<executions>
 					<execution>
 						<id>attach-sources</id>
 						<phase>package</phase>
 						<goals>
 							<goal>jar-no-fork</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>${mvn-javadoc-version}</version>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
 						</goals>
 					</execution>
 				</executions>

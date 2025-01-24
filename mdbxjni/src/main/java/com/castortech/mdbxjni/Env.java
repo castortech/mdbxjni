@@ -139,121 +139,7 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * <p>
-	 * Open the environment.
-	 * </p>
-	 *
-	 * If this function fails, #mdb_env_close() must be called to discard the
-	 * #MDB_env handle.
-	 *
-	 * @param path
-	 *            The directory in which the database files reside. This directory
-	 *            must already exist and be writable.
-	 * @param flags
-	 *            Special options for this environment. This parameter must be set
-	 *            to 0 or by bitwise OR'ing together one or more of the values
-	 *            described here. Flags set by mdb_env_set_flags() are also used.
-	 *            <ul>
-	 *            <li>{@link com.castortech.mdbxjni.Constants#FIXEDMAP} use a fixed
-	 *            address for the mmap region. This flag must be specified when
-	 *            creating the environment, and is stored persistently in the
-	 *            environment. If successful, the memory map will always reside at
-	 *            the same virtual address and pointers used to reference data items
-	 *            in the database will be constant across multiple invocations. This
-	 *            option may not always work, depending on how the operating system
-	 *            has allocated memory to shared libraries and other uses. The
-	 *            feature is highly experimental.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NOSUBDIR} By default,
-	 *            MDBX creates its environment in a directory whose pathname is
-	 *            given in \b path, and creates its data and lock files under that
-	 *            directory. With this option, \b path is used as-is for the
-	 *            database main data file. The database lock file is the \b path
-	 *            with "-lock" appended.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#RDONLY} Open the
-	 *            environment in read-only mode. No write operations will be
-	 *            allowed. MDBX will still modify the lock file - except on
-	 *            read-only file systems, where MDBX does not use locks.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#WRITEMAP} Use a
-	 *            writeable memory map unless MDB_RDONLY is set. This is faster and
-	 *            uses fewer mallocs, but loses protection from application bugs
-	 *            like wild pointer writes and other bad updates into the database.
-	 *            Incompatible with nested transactions. Processes with and without
-	 *            MDB_WRITEMAP on the same environment do not cooperate well.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NOMETASYNC} Flush
-	 *            system buffers to disk only once per transaction, omit the
-	 *            metadata flush. Defer that until the system flushes files to disk,
-	 *            or next non-MDB_RDONLY commit or #mdb_env_sync(). This
-	 *            optimization maintains database integrity, but a system crash may
-	 *            undo the last committed transaction. I.e. it preserves the ACI
-	 *            (atomicity, consistency, isolation) but not D (durability)
-	 *            database property. This flag may be changed at any time using
-	 *            #mdb_env_set_flags().
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NOSYNC} Don't flush
-	 *            system buffers to disk when committing a transaction. This
-	 *            optimization means a system crash can corrupt the database or lose
-	 *            the last transactions if buffers are not yet flushed to disk. The
-	 *            risk is governed by how often the system flushes dirty buffers to
-	 *            disk and how often #mdb_env_sync() is called. However, if the
-	 *            filesystem preserves write order and the #MDB_WRITEMAP flag is not
-	 *            used, transactions exhibit ACI (atomicity, consistency, isolation)
-	 *            properties and only lose D (durability). I.e. database integrity
-	 *            is maintained, but a system crash may undo the final transactions.
-	 *            Note that (#MDB_NOSYNC | #MDB_WRITEMAP) leaves the system with no
-	 *            hint for when to write transactions to disk, unless
-	 *            #mdb_env_sync() is called. (#MDB_MAPASYNC | #MDB_WRITEMAP) may be
-	 *            preferable. This flag may be changed at any time using
-	 *            #mdb_env_set_flags().
-	 *            <li>{@link com.castortech.mdbxjni.Constants#MAPASYNC} When using
-	 *            #MDB_WRITEMAP, use asynchronous flushes to disk. As with
-	 *            #MDB_NOSYNC, a system crash can then corrupt the database or lose
-	 *            the last transactions. Calling #mdb_env_sync() ensures on-disk
-	 *            database integrity until next commit. This flag may be changed at
-	 *            any time using #mdb_env_set_flags().
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NOTLS} Don't use
-	 *            Thread-Local Storage. Tie reader locktable slots to #MDB_txn
-	 *            objects instead of to threads. I.e. #mdb_txn_reset() keeps the
-	 *            slot reserved for the #MDB_txn object. A thread may use parallel
-	 *            read-only transactions. A read-only transaction may span threads
-	 *            if the user synchronizes its use. Applications that multiplex many
-	 *            user threads over individual OS threads need this option. Such an
-	 *            application must also serialize the write transactions in an OS
-	 *            thread, since MDBX's write locking is unaware of the user threads.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NOLOCK} Don't do any
-	 *            locking. If concurrent access is anticipated, the caller must
-	 *            manage all concurrency itself. For proper operation the caller
-	 *            must enforce single-writer semantics, and must ensure that no
-	 *            readers are using old transactions while a writer is active. The
-	 *            simplest approach is to use an exclusive lock so that no readers
-	 *            may be active at all when a writer begins.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NORDAHEAD} Turn off
-	 *            readahead. Most operating systems perform readahead on read
-	 *            requests by default. This option turns it off if the OS supports
-	 *            it. Turning it off may help random read performance when the DB is
-	 *            larger than RAM and system RAM is full. The option is not
-	 *            implemented on Windows.
-	 *            <li>{@link com.castortech.mdbxjni.Constants#NOMEMINIT} Don't
-	 *            initialize malloc'd memory before writing to unused spaces in the
-	 *            data file. By default, memory for pages written to the data file
-	 *            is obtained using malloc. While these pages may be reused in
-	 *            subsequent transactions, freshly malloc'd pages will be
-	 *            initialized to zeroes before use. This avoids persisting leftover
-	 *            data from other code (that used the heap and subsequently freed
-	 *            the memory) into the data file. Note that many other system
-	 *            libraries may allocate and free memory from the heap for arbitrary
-	 *            uses. E.g., stdio may use the heap for file I/O buffers. This
-	 *            initialization step has a modest performance cost so some
-	 *            applications may want to disable it using this flag. This option
-	 *            can be a problem for applications which handle sensitive data like
-	 *            passwords, and it makes memory checkers like Valgrind noisy. This
-	 *            flag is not needed with #MDB_WRITEMAP, which writes directly to
-	 *            the mmap instead of using malloc for pages. The initialization is
-	 *            also skipped if #MDB_RESERVE is used; the caller is expected to
-	 *            overwrite all of the memory that was reserved in that case. This
-	 *            flag may be changed at any time using #mdb_env_set_flags().
-	 *            </ul>
-	 * @param mode
-	 *            The UNIX permissions to set on created files. This parameter is
-	 *            ignored on Windows.
+	 * @see JNI#mdbx_env_open(long, String, int, int)
 	 */
 	public void open(String path, int flags, int mode) {
 		int rc;
@@ -438,15 +324,7 @@ public class Env extends NativeObject implements Closeable {
 	 * Data is always written to disk when #mdb_txn_commit() is called, but the
 	 * operating system may keep it buffered. MDBX always flushes the OS buffers
 	 * upon commit as well, unless the environment was opened with
-	 * {@link com.castortech.mdbxjni.Constants#NOSYNC} or in part
-	 * {@link com.castortech.mdbxjni.Constants#NOMETASYNC}
-	 *
-	 * @param force
-	 *            force a synchronous flush. Otherwise if the environment has the
-	 *            {@link com.castortech.mdbxjni.Constants#NOSYNC} flag set the
-	 *            flushes will be omitted, and with
-	 *            {@link com.castortech.mdbxjni.Constants#MAPASYNC} they will be
-	 *            asynchronous.
+	 * {@link EnvFlags#SAFENOSYNC} or in part {@link EnvFlags#NOMETASYNC}
 	 */
 	public void sync() {
 		checkErrorCode(this, mdbx_env_sync(pointer()));
@@ -455,6 +333,9 @@ public class Env extends NativeObject implements Closeable {
 	/**
 	 * Kept for backward compatibility with older versions
 	 * @param force
+	 *            force a synchronous flush. Otherwise if the environment has the
+	 *            {@link EnvFlags#SAFENOSYNC} flag set the flushes will be omitted, and with
+	 *            {@link EnvFlags#MAPASYNC} they will be asynchronous.
 	 */
 	public void sync(boolean force) {
 		checkErrorCode(this, mdbx_env_sync_ex(pointer(), force ? 1 : 0, 0));
@@ -469,38 +350,147 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * <p>
-	 * Set the size of the memory map to use for this environment.
-	 * </p>
-	 *
-	 * The size should be a multiple of the OS page size. The default is 10485760
-	 * bytes. The size of the memory map is also the maximum size of the database.
-	 * The value should be chosen as large as possible, to accommodate future growth
-	 * of the database. This function should be called after #mdb_env_create() and
-	 * before #mdb_env_open(). It may be called at later times if no transactions
-	 * are active in this process. Note that the library does not check for this
-	 * condition, the caller must ensure it explicitly.
-	 *
-	 * The new size takes effect immediately for the current process but will not be
-	 * persisted to any others until a write transaction has been committed by the
-	 * current process. Also, only mapsize increases are persisted into the
-	 * environment.
-	 *
-	 * If the mapsize is increased by another process, and data has grown beyond the
-	 * range of the current mapsize, #mdb_txn_begin() will return
-	 * {@link com.castortech.mdbxjni.MDBXException.Status#MAP_RESIZED}. This function may
-	 * be called with a size of zero to adopt the new size.
-	 *
-	 * Any attempt to set a size smaller than the space already consumed by the
-	 * environment will be silently changed to the current size of the used space.
-	 *
-	 * @param size
-	 *            The size in bytes
-	 */
+	 * \deprecated Please use \ref mdbx_env_set_geometry() instead.
+   */
+	@Deprecated
 	public void setMapSize(long size) {
 		checkErrorCode(this, mdbx_env_set_mapsize(pointer(), size));
 	}
 
+	/**
+	 * \brief Set all size-related parameters of environment, including page size and the min/max size of the
+	 * memory map. \ingroup c_settings
+	 *
+	 * In contrast to LMDB, the MDBX provide automatic size management of an database according the given
+	 * parameters, including shrinking and resizing on the fly. From user point of view all of these just
+	 * working. Nevertheless, it is reasonable to know some details in order to make optimal decisions when
+	 * choosing parameters.
+	 *
+	 * \see mdbx_env_info_ex()
+	 *
+	 * Both \ref mdbx_env_set_geometry() and legacy \ref mdbx_env_set_mapsize() are inapplicable to read-only
+	 * opened environment.
+	 *
+	 * Both \ref mdbx_env_set_geometry() and legacy \ref mdbx_env_set_mapsize() could be called either before or
+	 * after \ref mdbx_env_open(), either within the write transaction running by current thread or not:
+	 *
+	 * - In case \ref mdbx_env_set_geometry() or legacy \ref mdbx_env_set_mapsize() was called BEFORE \ref
+	 * mdbx_env_open(), i.e. for closed environment, then the specified parameters will be used for new database
+	 * creation, or will be applied during opening if database exists and no other process using it.
+	 *
+	 * If the database is already exist, opened with \ref MDBX_EXCLUSIVE or not used by any other process, and
+	 * parameters specified by \ref mdbx_env_set_geometry() are incompatible (i.e. for instance, different page
+	 * size) then \ref mdbx_env_open() will return \ref MDBX_INCOMPATIBLE error.
+	 *
+	 * In another way, if database will opened read-only or will used by other process during calling \ref
+	 * mdbx_env_open() that specified parameters will silently discarded (open the database with \ref
+	 * MDBX_EXCLUSIVE flag to avoid this).
+	 *
+	 * - In case \ref mdbx_env_set_geometry() or legacy \ref mdbx_env_set_mapsize() was called after \ref
+	 * mdbx_env_open() WITHIN the write transaction running by current thread, then specified parameters will be
+	 * applied as a part of write transaction, i.e. will not be completely visible to any others processes until
+	 * the current write transaction has been committed by the current process. However, if transaction will be
+	 * aborted, then the database file will be reverted to the previous size not immediately, but when a next
+	 * transaction will be committed or when the database will be opened next time.
+	 *
+	 * - In case \ref mdbx_env_set_geometry() or legacy \ref mdbx_env_set_mapsize() was called after \ref
+	 * mdbx_env_open() but OUTSIDE a write transaction, then MDBX will execute internal pseudo-transaction to
+	 * apply new parameters (but only if anything has been changed), and changes be visible to any others
+	 * processes immediately after successful completion of function.
+	 *
+	 * Essentially a concept of "automatic size management" is simple and useful: - There are the lower and
+	 * upper bounds of the database file size; - There is the growth step by which the database file will be
+	 * increased, in case of lack of space; - There is the threshold for unused space, beyond which the database
+	 * file will be shrunk; - The size of the memory map is also the maximum size of the database; - MDBX will
+	 * automatically manage both the size of the database and the size of memory map, according to the given
+	 * parameters.
+	 *
+	 * So, there some considerations about choosing these parameters: - The lower bound allows you to prevent
+	 * database shrinking below certain reasonable size to avoid unnecessary resizing costs. - The upper bound
+	 * allows you to prevent database growth above certain reasonable size. Besides, the upper bound defines the
+	 * linear address space reservation in each process that opens the database. Therefore changing the upper
+	 * bound is costly and may be required reopening environment in case of \ref MDBX_UNABLE_EXTEND_MAPSIZE
+	 * errors, and so on. Therefore, this value should be chosen reasonable large, to accommodate future growth
+	 * of the database. - The growth step must be greater than zero to allow the database to grow, but also
+	 * reasonable not too small, since increasing the size by little steps will result a large overhead. - The
+	 * shrink threshold must be greater than zero to allow the database to shrink but also reasonable not too
+	 * small (to avoid extra overhead) and not less than growth step to avoid up-and-down flouncing. - The
+	 * current size (i.e. `size_now` argument) is an auxiliary parameter for simulation legacy \ref
+	 * mdbx_env_set_mapsize() and as workaround Windows issues (see below).
+	 *
+	 * Unfortunately, Windows has is a several issue with resizing of memory-mapped file: - Windows unable
+	 * shrinking a memory-mapped file (i.e memory-mapped section) in any way except unmapping file entirely and
+	 * then map again. Moreover, it is impossible in any way when a memory-mapped file is used more than one
+	 * process. - Windows does not provide the usual API to augment a memory-mapped file (i.e. a memory-mapped
+	 * partition), but only by using "Native API" in an undocumented way.
+	 *
+	 * MDBX bypasses all Windows issues, but at a cost: - Ability to resize database on the fly requires an
+	 * additional lock and release `SlimReadWriteLock` during each read-only transaction. - During resize all
+	 * in-process threads should be paused and then resumed. - Shrinking of database file is performed only when
+	 * it used by single process, i.e. when a database closes by the last process or opened by the first. =
+	 * Therefore, the size_now argument may be useful to set database size by the first process which open a
+	 * database, and thus avoid expensive remapping further.
+	 *
+	 * For create a new database with particular parameters, including the page size, \ref
+	 * mdbx_env_set_geometry() should be called after \ref mdbx_env_create() and before \ref mdbx_env_open().
+	 * Once the database is created, the page size cannot be changed. If you do not specify all or some of the
+	 * parameters, the corresponding default values will be used. For instance, the default for database size is
+	 * 10485760 bytes.
+	 *
+	 * If the mapsize is increased by another process, MDBX silently and transparently adopt these changes at
+	 * next transaction start. However, \ref mdbx_txn_begin() will return \ref MDBX_UNABLE_EXTEND_MAPSIZE if new
+	 * mapping size could not be applied for current process (for instance if address space is busy). Therefore,
+	 * in the case of \ref MDBX_UNABLE_EXTEND_MAPSIZE error you need close and reopen the environment to resolve
+	 * error.
+	 *
+	 * \note Actual values may be different than your have specified because of rounding to specified database
+	 * page size, the system page size and/or the size of the system virtual memory management unit. You can get
+	 * actual values by \ref mdbx_env_info_ex() or see by using the tool `mdbx_chk` with the `-v` option.
+	 *
+	 * Legacy \ref mdbx_env_set_mapsize() correspond to calling \ref mdbx_env_set_geometry() with the arguments
+	 * `size_lower`, `size_now`, `size_upper` equal to the `size` and `-1` (i.e. default) for all other
+	 * parameters.
+	 *
+	 * \param [in] env An environment handle returned by \ref mdbx_env_create()
+	 *
+	 * \param [in] size_lower The lower bound of database size in bytes. Zero value means "minimal acceptable",
+	 * and negative means "keep current or use default".
+	 *
+	 * \param [in] size_now The size in bytes to setup the database size for now. Zero value means "minimal
+	 * acceptable", and negative means "keep current or use default". So, it is recommended always pass -1 in
+	 * this argument except some special cases.
+	 *
+	 * \param [in] size_upper The upper bound of database size in bytes. Zero value means "minimal acceptable",
+	 * and negative means "keep current or use default". It is recommended to avoid change upper bound while
+	 * database is used by other processes or threaded (i.e. just pass -1 in this argument except absolutely
+	 * necessary). Otherwise you must be ready for \ref MDBX_UNABLE_EXTEND_MAPSIZE error(s), unexpected pauses
+	 * during remapping and/or system errors like "address busy", and so on. In other words, there is no way to
+	 * handle a growth of the upper bound robustly because there may be a lack of appropriate system resources
+	 * (which are extremely volatile in a multi-process multi-threaded environment).
+	 *
+	 * \param [in] growth_step The growth step in bytes, must be greater than zero to allow the database to
+	 * grow. Negative value means "keep current or use default".
+	 *
+	 * \param [in] shrink_threshold The shrink threshold in bytes, must be greater than zero to allow the
+	 * database to shrink and greater than growth_step to avoid shrinking right after grow. Negative value means
+	 * "keep current or use default". Default is 2*growth_step.
+	 *
+	 * \param [in] pagesize The database page size for new database creation or -1 otherwise. Once the database
+	 * is created, the page size cannot be changed. Must be power of 2 in the range between \ref
+	 * MDBX_MIN_PAGESIZE and \ref MDBX_MAX_PAGESIZE. Zero value means "minimal acceptable", and negative means
+	 * "keep current or use default".
+	 *
+	 * \returns A non-zero error value on failure and 0 on success, some possible errors are: \retval
+	 * MDBX_EINVAL An invalid parameter was specified, or the environment has an active write transaction.
+	 * \retval MDBX_EPERM Two specific cases for Windows: 1) Shrinking was disabled before via geometry settings
+	 * and now it enabled, but there are reading threads that don't use the additional `SRWL` (which is required
+	 * to avoid Windows issues). 2) Temporary close memory mapped is required to change geometry, but there read
+	 * transaction(s) is running and no corresponding thread(s) could be suspended since the \ref
+	 * MDBX_NOSTICKYTHREADS mode is used. \retval MDBX_EACCESS The environment opened in read-only. \retval
+	 * MDBX_MAP_FULL Specified size smaller than the space already consumed by the environment. \retval
+	 * MDBX_TOO_LARGE Specified size is too large, i.e. too many pages for given size, or a 32-bit process
+	 * requests too much bytes for the 32-bit address space.
+	 */
 	public void setGeometry(long lower, long now, long upper, long growthStep, long shrinkThreshold,
 			long pageSize) {
 		checkErrorCode(this, mdbx_env_set_geometry(pointer(), lower, now, upper, growthStep, shrinkThreshold,
@@ -558,7 +548,7 @@ public class Env extends NativeObject implements Closeable {
 	 * readers in the the environment. The default is 126. Starting a read-only
 	 * transaction normally ties a lock table slot to the current thread until the
 	 * environment closes or the thread exits. If
-	 * {@link com.castortech.mdbxjni.Constants#NOTLS} is in use, #mdb_txn_begin()
+	 * {@link EnvFlags#NOSTICKYTHREADS} is in use, #mdb_txn_begin()
 	 * instead ties the slot to the MDB_txn object until it or the #MDB_env object
 	 * is destroyed. This function may only be called after #mdb_env_create() and
 	 * before #mdb_env_open().
@@ -770,14 +760,16 @@ public class Env extends NativeObject implements Closeable {
 	 * <p>
 	 * Create a transaction for use with the environment.
 	 * </p>
-	 * <p/>
+	 * <p>
 	 * The transaction handle may be discarded using #mdb_txn_abort() or
 	 * #mdb_txn_commit().
-	 *
+	 * </p>
+	 * <p>
 	 * A transaction and its cursors must only be used by a single thread, and a
 	 * thread may only have a single transaction at a time. If MDB_NOTLS is in use,
 	 * this does not apply to read-only transactions. Cursors may not span
 	 * transactions.
+	 * </p>
 	 *
 	 * @param parent
 	 *            If this parameter is non-NULL, the new transaction will be a
@@ -796,11 +788,10 @@ public class Env extends NativeObject implements Closeable {
 	 *            than mdb_txn_commit and mdb_txn_abort while it has active child
 	 *            transactions.
 	 * @return transaction handle
-	 * @note A transaction and its cursors must only be used by a single thread, and
-	 *       a thread may only have a single transaction at a time. If
-	 *       {@link com.castortech.mdbxjni.Constants#NOTLS} is in use, this does not
-	 *       apply to read-only transactions.
-	 * @note Cursors may not span transactions.
+	 * <b>Note</b> A transaction and its cursors must only be used by a single thread, and
+	 *       a thread may only have a single transaction at a time. If {@link EnvFlags#NOSTICKYTHREADS} is in
+	 *       use, this does not apply to read-only transactions.
+	 * <b>Note</b> Cursors may not span transactions.
 	 */
 	public Transaction createTransaction(Transaction parent, boolean readOnly) {
 		long[] txpointer = new long[1];
@@ -820,7 +811,7 @@ public class Env extends NativeObject implements Closeable {
 	 * <p>
 	 * Open a database in the environment.
 	 * </p>
-	 * <p/>
+	 * <p>
 	 * A database handle denotes the name and parameters of a database,
 	 * independently of whether such a database exists. The database handle may be
 	 * discarded by calling #mdb_dbi_close(). The old database handle is returned if
@@ -832,7 +823,7 @@ public class Env extends NativeObject implements Closeable {
 	 * This function must not be called from multiple concurrent transactions. A
 	 * transaction that uses this function must finish (either commit or abort)
 	 * before any other transaction may use this function.
-	 * <p/>
+	 * </p>
 	 * To use named databases (with name != NULL), #mdb_env_set_maxdbs() must be
 	 * called before opening the environment. Database names are kept as keys in the
 	 * unnamed database.
@@ -876,6 +867,7 @@ public class Env extends NativeObject implements Closeable {
 	 *            <li>{@link com.castortech.mdbxjni.Constants#CREATE} Create the
 	 *            named database if it doesn't exist. This option is not allowed in
 	 *            a read-only transaction or a read-only environment.
+	 *            </ul>
 	 * @return A database handle.
 	 */
 	public Database openDatabase(Transaction tx, String name, int flags) {

@@ -2058,11 +2058,29 @@ public class JNI {
 			@JniArg(cast = "char *") long buf,
 			@JniArg(cast = "size_t") long buflen);
 
-//	@JniMethod
-//	public static final native int mdbx_env_set_hsr(
-//			@JniArg(cast = "MDBX_env *") long env,
-//
-//			MDBX_hsr_func *hsr_callback)
+	/** \brief Sets a Handle-Slow-Readers callback to resolve database full/overflow
+	 * issue due to a reader(s) which prevents the old data from being recycled.
+	 * \ingroup c_err
+	 *
+	 * The callback will only be triggered when the database is full due to a
+	 * reader(s) prevents the old data from being recycled.
+	 *
+	 * \see MDBX_hsr_func
+	 * \see mdbx_env_get_hsr()
+	 * \see mdbx_txn_park()
+	 * \see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
+	 *
+	 * \param [in] env             An environment handle returned
+	 *                             by \ref mdbx_env_create().
+	 * \param [in] hsr_callback    A \ref MDBX_hsr_func function
+	 *                             or NULL to disable.
+	 *
+	 * \returns A non-zero error value on failure and 0 on success.
+	 * */
+	@JniMethod
+	public static final native int mdbx_env_set_hsr(
+			@JniArg(cast = "MDBX_env *") long env,
+			@JniArg(cast = "int(*)(void *, const MDBX_env *, const MDBX_txn *, mdbx_pid_t, mdbx_tid_t, uint64_t, unsigned, size_t, int)", flags = ArgFlag.POINTER_ARG) long hsr_callback);
 
 	//====================================================//
 	// ENV methods
@@ -2071,6 +2089,58 @@ public class JNI {
 	public static final native int mdbx_env_create(
 			@JniArg(cast = "MDBX_env **", flags={NO_IN}) long[] penv);
 
+	/**
+	 * \brief Open an environment instance. \ingroup c_opening
+	 *
+	 * Indifferently this function will fails or not, the \ref mdbx_env_close() must be called later to discard
+	 * the \ref MDBX_env handle and release associated resources.
+	 *
+	 * \note On Windows the \ref mdbx_env_openW() is recommended to use.
+	 *
+	 * \param [in] env An environment handle returned by \ref mdbx_env_create()
+	 *
+	 * \param [in] pathname The pathname for the database or the directory in which the database files reside.
+	 * In the case of directory it must already exist and be writable.
+	 *
+	 * \param [in] flags Specifies options for this environment. This parameter must be bitwise OR'ing together
+	 * any constants described above in the \ref env_flags and \ref sync_modes sections.
+	 *
+	 * Flags set by mdbx_env_set_flags() are also used: - \ref MDBX_ENV_DEFAULTS, \ref MDBX_NOSUBDIR, \ref
+	 * MDBX_RDONLY, \ref MDBX_EXCLUSIVE, \ref MDBX_WRITEMAP, \ref MDBX_NOSTICKYTHREADS, \ref MDBX_NORDAHEAD,
+	 * \ref MDBX_NOMEMINIT, \ref MDBX_COALESCE, \ref MDBX_LIFORECLAIM. See \ref env_flags section.
+	 *
+	 * - \ref MDBX_SYNC_DURABLE, \ref MDBX_NOMETASYNC, \ref MDBX_SAFE_NOSYNC, \ref MDBX_UTTERLY_NOSYNC. See \ref
+	 * sync_modes section.
+	 *
+	 * \note `MDB_NOLOCK` flag don't supported by MDBX, try use \ref MDBX_EXCLUSIVE as a replacement.
+	 *
+	 * \note MDBX don't allow to mix processes with different \ref MDBX_SAFE_NOSYNC flags on the same
+	 * environment. In such case \ref MDBX_INCOMPATIBLE will be returned.
+	 *
+	 * If the database is already exist and parameters specified early by \ref mdbx_env_set_geometry() are
+	 * incompatible (i.e. for instance, different page size) then \ref mdbx_env_open() will return \ref
+	 * MDBX_INCOMPATIBLE error.
+	 *
+	 * \param [in] mode The UNIX permissions to set on created files. Zero value means to open existing, but do
+	 * not create.
+	 *
+	 * \return A non-zero error value on failure and 0 on success, some possible errors are: \retval
+	 * MDBX_VERSION_MISMATCH The version of the MDBX library doesn't match the version that created the database
+	 * environment. \retval MDBX_INVALID The environment file headers are corrupted. \retval MDBX_ENOENT The
+	 * directory specified by the path parameter doesn't exist. \retval MDBX_EACCES The user didn't have
+	 * permission to access the environment files. \retval MDBX_BUSY The \ref MDBX_EXCLUSIVE flag was specified
+	 * and the environment is in use by another process, or the current process tries to open environment more
+	 * than once. \retval MDBX_INCOMPATIBLE Environment is already opened by another process, but with different
+	 * set of \ref MDBX_SAFE_NOSYNC, \ref MDBX_UTTERLY_NOSYNC flags. Or if the database is already exist and
+	 * parameters specified early by \ref mdbx_env_set_geometry() are incompatible (i.e. different pagesize,
+	 * etc).
+	 *
+	 * \retval MDBX_WANNA_RECOVERY The \ref MDBX_RDONLY flag was specified but read-write access is required to
+	 * rollback inconsistent state after a system crash.
+	 *
+	 * \retval MDBX_TOO_LARGE Database is too large for this process, i.e. 32-bit process tries to open >4Gb
+	 * database.
+	 */
 	@JniMethod
 	public static final native int mdbx_env_open(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
@@ -2081,20 +2151,18 @@ public class JNI {
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_openW(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const wchar_t *") String pathname,
+			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
 			@JniArg(cast = "unsigned") int flags,
 			@JniArg(cast = "mdbx_mode_t") int mode);
 
 	/**
-	 * Open an environment instance using specific meta-page
-	 * for checking and recovery.
+	 * Open an environment instance using specific meta-page for checking and recovery.
 	 *
 	 * This function mostly of internal API for `mdbx_chk` utility and subject to
 	 * change at any time. Do not use this function to avoid shooting your own
 	 * leg(s).
 	 *
-	 * \note On Windows the \ref mdbx_env_open_for_recoveryW() is recommended
-	 * to use.
+	 * \note On Windows the \ref mdbx_env_open_for_recoveryW() is recommended to use.
 	 */
 	@JniMethod
 	public static final native int mdbx_env_open_for_recovery(
@@ -2130,23 +2198,23 @@ public class JNI {
 	 * way can be useful for adjusting the options for working with the database before opening it, as well as
 	 * in file manager scripts and other auxiliary utilities.
 	 *
-	 * @todo Add the ability to set a callback to the API for revising the options for working with the database
+	 * <b>Todo</b> Add the ability to set a callback to the API for revising the options for working with the database
 	 * during its opening (while holding locks).
 	 *
-	 * @param [in]
-	 *          pathname Path to the directory or file of the database.
-	 * @param [out]
-	 *          info Pointer to the \ref MDBX_envinfo structure for getting information.
-	 * @param [in]
-	 *          bytes The current size of the \ref MDBX_envinfo structure, this value is used to ensure
-	 *          compatibility with the ABI.
+	 * @param pathname [in]
+	 *        Path to the directory or file of the database.
+	 * @param info [out]
+	 *        Pointer to the \ref MDBX_envinfo structure for getting information.
+	 * @param bytes [in]
+	 *        The current size of the \ref MDBX_envinfo structure, this value is used to ensure
+	 *        compatibility with the ABI.
 	 *
-	 * @note Only some fields of the \ref MDBX_envinfo structure are filled, the values of which can be obtained
+	 * <b>Note</b> Only some fields of the \ref MDBX_envinfo structure are filled, the values of which can be obtained
 	 *       without mapping the DB files into memory and without capturing locks: DB page size, DB geometry,
 	 *       size of allocated space (number of the last allocated page), number of the last transaction and
 	 *       boot-id.
 	 *
-	 * @warning The information obtained is a snapshot for the duration of the function execution and can be
+	 * <b>warning</b> The information obtained is a snapshot for the duration of the function execution and can be
 	 *          changed at any time by the process working with the DB. In particular, there are no obstacles to
 	 *          another process deleting the DB and creating it again with a different page size and/or changing
 	 *          any other parameters.
@@ -2189,7 +2257,7 @@ public class JNI {
 
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_deleteW(
-			@JniArg(cast = "const wchar_t *") String pathname,
+			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
 			@JniArg(cast = "unsigned") int mode);
 
 	@JniMethod
@@ -2201,7 +2269,7 @@ public class JNI {
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_copyW(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const wchar_t *") String dest,
+			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String dest,
 			@JniArg(cast = "MDBX_copy_flags_t") int flags);
 
 	/**
@@ -2238,7 +2306,7 @@ public class JNI {
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_txn_copy2pathnameW(
 			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "const wchar_t *") String dest,
+			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String dest,
 			@JniArg(cast = "MDBX_copy_flags_t") int flags);
 
 	@JniMethod
@@ -2657,16 +2725,16 @@ public class JNI {
 	 * A parked transaction without "unparking" can be aborted, reset or restarted at any time via \ref
 	 * mdbx_txn_abort(), \ref mdbx_txn_reset() and \ref mdbx_txn_renew(), respectively.
 	 *
-	 * @param [in]
-	 *          txn Read transaction started by \ref mdbx_txn_begin().
-	 * @param [in]
-	 *          autounpark Allows you to enable automatic unparking/recovery of a transaction when calling API
+	 * @param txn [in]
+	 *          Read transaction started by \ref mdbx_txn_begin().
+	 * @param autounpark [in]
+	 *          Allows you to enable automatic unparking/recovery of a transaction when calling API
 	 *          functions that involve reading data.
 	 * @return Non-zero error code value, or 0 on success.
 	 *
-	 * @see mdbx_txn_unpark()
-	 * @see mdbx_txn_flags()
-	 * @see mdbx_env_set_hsr()
+	 * @see #mdbx_txn_unpark(long, int)
+	 * @see #mdbx_txn_flags(long)
+	 * @see #mdbx_env_set_hsr(long, long)
 	 * @see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
 	 */
 	@JniMethod
@@ -2682,11 +2750,11 @@ public class JNI {
 	 * similarly to \ref mdbx_txn_renew(), or the transaction is reset and the error code \ref MDBX_OUSTED is
 	 * returned.
 	 *
-	 * @param [in]
-	 *          txn A read transaction started by \ref mdbx_txn_begin() and then parked by \ref mdbx_txn_park.
+	 * @param txn [in]
+	 *          A read transaction started by \ref mdbx_txn_begin() and then parked by \ref mdbx_txn_park.
 	 *
-	 * @param [in]
-	 *          restart_if_ousted Allows an immediate restart of the transaction if it was ousted.
+	 * @param restart_if_ousted [in]
+	 *          Allows an immediate restart of the transaction if it was ousted.
 	 *
 	 * @return A non-zero error code, or 0 on success. Some specific result codes:
 	 *
@@ -2702,8 +2770,8 @@ public class JNI {
 	 *
 	 * \retval MDBX_BAD_TXN The transaction has already committed, or was not started.
 	 *
-	 * @see mdbx_txn_park()
-	 * @see mdbx_txn_flags()
+	 * @see #mdbx_txn_park(long, int)
+	 * @see #mdbx_txn_flags(long)
 	 * @see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
 	 */
 	@JniMethod
@@ -2717,8 +2785,8 @@ public class JNI {
 	 * Unbinds either closes all cursors associated (opened or renewed) with
 	 * a given transaction in a bulk with minimal overhead.
 	 *
-	 * @param [in] txn      A transaction handle returned by \ref mdbx_txn_begin().
-	 * @param [in] unbind   If non-zero, unbinds cursors and leaves ones reusable.
+	 * @param txn [in]      A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param unbind [in]   If non-zero, unbinds cursors and leaves ones reusable.
 	 *                      Otherwise close and dispose cursors.
 	 *
 	 * @return A negative error value on failure or the number of closed cursors
@@ -2728,8 +2796,8 @@ public class JNI {
 	 * \retval MDBX_BAD_TXN          Given transaction is invalid or has
 	 *                               a child/nested transaction transaction.
 	 *
-	 * @see mdbx_cursor_unbind()
-	 * @see mdbx_cursor_close()
+	 * @see #mdbx_cursor_unbind(long)
+	 * @see #mdbx_cursor_close(long)
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_release_all_cursors(
@@ -2864,12 +2932,12 @@ public class JNI {
 	 *
 	 * Rename a user-defined subDB associated with the passed DBI handle.
 	 *
-	 * @param [in,out]
-	 *          txn A write transaction started by \ref mdbx_txn_begin().
-	 * @param [in]
-	 *          dbi A table handle (named user subDB) opened by \ref mdbx_dbi_open().
-	 * @param [in]
-	 *          name A new name to rename.
+	 * @param txn [in,out]
+	 *          A write transaction started by \ref mdbx_txn_begin().
+	 * @param dbi [in]
+	 *          A table handle (named user subDB) opened by \ref mdbx_dbi_open().
+	 * @param name [in]
+	 *          A new name to rename.
 	 *
 	 * @return A non-zero error code value, or 0 on success.
 	 */
@@ -2885,7 +2953,7 @@ public class JNI {
 			@JniArg(cast = "uint32_t") long dbi,
 			@JniArg(cast = "MDBX_val *", flags={NO_IN}) MDBX_val name);
 
-	/**
+	/*
 	 * Callback function for enumerating user-defined named tables.
 	 *
 	 * @param [in]
@@ -2910,7 +2978,7 @@ public class JNI {
 //	typedef int(MDBX_table_enum_func)(void *ctx, const MDBX_txn *txn, const MDBX_val *name, MDBX_db_flags_t flags,
 //      const struct MDBX_stat *stat, MDBX_dbi dbi) MDBX_CXX17_NOEXCEPT;
 
-/**
+/*
  * Enumerates user-defined named tables.
  *
  * Enumerates user-defined named tables, calling the user-specified visitor function for each named table.
@@ -3090,15 +3158,15 @@ public class JNI {
 	 * eliminates ambiguity which helps to avoid errors such as: use-after-free, double-free, i.e. memory
 	 * corruption and segfaults.
 	 *
-	 * @param [in]
-	 *          cursor A cursor handle returned by \ref mdbx_cursor_open().
+	 * @param cursor [in]
+	 *          A cursor handle returned by \ref mdbx_cursor_open().
 	 *
 	 *          \returns A non-zero error value on failure and 0 on success.
 	 *
-	 * @see mdbx_cursor_renew()
-	 * @see mdbx_cursor_bind()
-	 * @see mdbx_cursor_close()
-	 * @see mdbx_cursor_reset()
+	 * @see #mdbx_cursor_renew(long, long)
+	 * @see #mdbx_cursor_bind(long, long, long)
+	 * @see #mdbx_cursor_close(long)
+	 * @see #mdbx_cursor_reset(long)
 	 */
 	@JniMethod
 	public static final native int mdbx_cursor_unbind(
@@ -3111,8 +3179,8 @@ public class JNI {
 	 * operations, retrieving, or modifying data until it is set to a position independent of the current one.
 	 * This allows the application to prevent further operations without first positioning the cursor.
 	 *
-	 * @param [in]
-	 *          cursor A pointer to the cursor.
+	 * @param cursor [in]
+	 *          A pointer to the cursor.
 	 *
 	 * @return The result of the scan operation, or an error code.
 	 */
@@ -3133,17 +3201,17 @@ public class JNI {
 	 * transactions, or with different tables, or one of them is not initialized, the result of the comparison
 	 * is undefined (the behavior may be changed in future versions).
 	 *
-	 * @param [in]
-	 *          left Left cursor for comparing positions.
-	 * @param [in]
-	 *          right Right cursor for comparing positions.
-	 * @param [in]
-	 *          ignore_multival Boolean flag that affects the result only when comparing cursors for tables with
+	 * @param left [in]
+	 *          Left cursor for comparing positions.
+	 * @param right [in]
+	 *          Right cursor for comparing positions.
+	 * @param ignore_multival [in]
+	 *          Boolean flag that affects the result only when comparing cursors for tables with
 	 *          multi-values, i.e. with the \ref MDBX_DUPSORT flag. If `true`, cursor positions are compared
 	 *          only by keys, without taking into account positioning among multi-values. Otherwise, if `false`,
 	 *          if the positions by keys match, the positions by multi-values ​​are also compared.
 	 *
-	 *          \retval A signed value in the semantics of the `<=>` operator (less than zero, zero, or greater
+	 *          \retval A signed value in the semantics of the `&lt;=&gt;` operator (less than zero, zero, or greater
 	 *          than zero) as a result of comparing cursor positions.
 	 */
 	@JniMethod
@@ -3176,7 +3244,7 @@ public class JNI {
 	 * This function disables the control of the order of keys on pages when reading database pages for this
 	 * cursor, and thus allows reading data in the absence/unavailability of the used comparison functions.
 	 *
-	 * @see avoid_custom_comparators
+	 * check avoid_custom_comparators
 	 *
 	 * @return The result of the scanning operation, or an error code.
 	 */
@@ -3216,13 +3284,12 @@ public class JNI {
 //	@JniMethod
 //	public static final native int mdbx_cursor_ignor2d(
 //			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
-//	typedef int(MDBX_predicate_func)(void *context, MDBX_val *key, MDBX_val *value,
-//	                                 void *arg) MDBX_CXX17_NOEXCEPT;
+//	typedef int(MDBX_predicate_func)(void *context, MDBX_val *key, MDBX_val *value, void *arg) MDBX_CXX17_NOEXCEPT;
 
 /**
  * Scans a table using the predicate passed in, with reduced overhead.
  *
- * Implements functionality similar to the `std::find_if<>()` pattern using a cursor and a user-supplied
+ * Implements functionality similar to the `std::find_if&lt;&gt;()` pattern using a cursor and a user-supplied
  * predicate function, while saving on the associated overhead, including not performing some of the checks
  * inside the record iteration loop and potentially reducing the number of DSO cross-border calls.
  *
@@ -3234,40 +3301,40 @@ public class JNI {
  * MDBX_RESULT_TRUE, signaling the need to stop further scanning; - the evaluation function will return a
  * value different from \ref MDBX_RESULT_FALSE and \ref MDBX_RESULT_TRUE, signaling an error.
  *
- * @param [in,out]
- *          cursor A cursor to perform a scan operation, associated with an active transaction and a DBI
+ * @param cursor [in,out]
+ *          A cursor to perform a scan operation, associated with an active transaction and a DBI
  *          handle to the table. For example, a cursor created by \ref mdbx_cursor_open().
- * @param [in]
- *          predicate A predicate function for evaluating iterable key-value pairs, see \ref
+ * @param predicate [in]
+ *          A predicate function for evaluating iterable key-value pairs, see \ref
  *          MDBX_predicate_func for details.
- * @param [in,out]
- *          context A pointer to a context with the information needed to evaluate , which is entirely
+ * @param context [in,out]
+ *          A pointer to a context with the information needed to evaluate , which is entirely
  *          prepared and controlled by you.
- * @param [in]
- *          start_op A start operation for positioning the cursor, see \ref MDBX_cursor_op for details. To
+ * @param start_op [in]
+ *          A start operation for positioning the cursor, see \ref MDBX_cursor_op for details. To
  *          scan without changing the starting position of the cursor, use \ref MDBX_GET_CURRENT. Valid values
  *          ​​are \ref MDBX_FIRST, \ref MDBX_FIRST_DUP, \ref MDBX_LAST, \ref MDBX_LAST_DUP, \ref
  *          MDBX_GET_CURRENT, and \ref MDBX_GET_MULTIPLE.
- * @param [in]
- *          turn_op The cursor positioning operation for moving to the next element. Valid values ​​are \ref
+ * @param turn_op [in]
+ *          The cursor positioning operation for moving to the next element. Valid values ​​are \ref
  *          MDBX_NEXT, \ref MDBX_NEXT_DUP, \ref MDBX_NEXT_NODUP, \ref MDBX_PREV, \ref MDBX_PREV_DUP, \ref
  *          MDBX_PREV_NODUP, and \ref MDBX_NEXT_MULTIPLE and \ref MDBX_PREV_MULTIPLE.
- * @param [in,out]
- *          arg An additional argument to the predictive function, which is entirely prepared and controlled
+ * @param arg [in,out]
+ *          An additional argument to the predictive function, which is entirely prepared and controlled
  *          by you.
  *
  *          \note When using \ref MDBX_GET_MULTIPLE, \ref MDBX_NEXT_MULTIPLE or \ref MDBX_PREV_MULTIPLE, be
  *          careful about the batch specifics of passing values ​​through predictive function parameters.
  *
- * @returns The result of the scan operation, or an error code. *
- * @retval MDBX_RESULT_TRUE if a key-value pair for which the predictive function returned \ref
+ * @return The result of the scan operation, or an error code. *
+ * retval MDBX_RESULT_TRUE if a key-value pair for which the predictive function returned \ref
  *         MDBX_RESULT_TRUE is found.
- * @retval MDBX_RESULT_FALSE if a matching key-value pair is NOT found, the search has reached the end of the
+ * retval MDBX_RESULT_FALSE if a matching key-value pair is NOT found, the search has reached the end of the
  *         data or there is no data to search.
- * @retval ELSE any value other than \ref MDBX_RESULT_TRUE and \ref MDBX_RESULT_FALSE is a course positioning
+ * retval ELSE any value other than \ref MDBX_RESULT_TRUE and \ref MDBX_RESULT_FALSE is a course positioning
  *         error code, or a user-defined search stop code or error condition. *
- * @see MDBX_predicate_func
- * @see mdbx_cursor_scan_from
+ * see MDBX_predicate_func
+ * @see #mdbx_cursor_scan_from(long, long, long, int, MDBX_val, MDBX_val, int, long)
  */
 	@JniMethod
 	public static final native int mdbx_cursor_scan(
@@ -3293,41 +3360,41 @@ public class JNI {
  * <ul>
  * 	<li>the end of data is reached;</li>
  * 	<li>an error occurs while positioning the cursor;</li>
- * 	<li>the evaluation function returns \ref MDBX_RESULT_TRUE, signaling that further scanning should be
+ * 	<li>the evaluation function returns {@link #MDBX_RESULT_TRUE}, signaling that further scanning should be
  * 	stopped;</li>
- * 	<li>the evaluation function will return a value different from \ref MDBX_RESULT_FALSE and \ref
- * 	MDBX_RESULT_TRUE indicating an error.</li>
+ * 	<li>the evaluation function will return a value different from \ref MDBX_RESULT_FALSE and
+ * {@link #MDBX_RESULT_TRUE} indicating an error.</li>
  * </ul>
  *
- * @param [in,out]
- *          cursor The cursor to perform the scan operation, associated with the active transaction and the
- *          DBI handle of the table. For example, a cursor created by \ref mdbx_cursor_open().
- * @param [in]
- *          predicate A predicate function for evaluating iterable key-value pairs, see \ref
- *          MDBX_predicate_func for details.
- * @param [in,out]
- *          context A pointer to a context with the information needed for the evaluation, which is completely
+ * @param cursor [in,out]
+ *          The cursor to perform the scan operation, associated with the active transaction and the
+ *          DBI handle of the table. For example, a cursor created by {@link #mdbx_cursor_open(long, long, long[])}.
+ * @param predicate [in]
+ *          A predicate function for evaluating iterable key-value pairs, see MDBX_predicate_func
+ *          for details.
+ * @param context [in,out]
+ *          A pointer to a context with the information needed for the evaluation, which is completely
  *          prepared and controlled by you.
- * @param [in]
- *          from_op The operation of positioning the cursor to the starting position, see \ref MDBX_cursor_op
- *          for details. Valid values ​​\ref MDBX_GET_BOTH, * \ref MDBX_GET_BOTH_RANGE, \ref MDBX_SET_KEY, *
- *          \ref MDBX_SET_LOWERBOUND, \ref MDBX_SET_UPPERBOUND, * \ref MDBX_TO_KEY_LESSER_THAN, * \ref
+ * @param from_op [in]
+ *          The operation of positioning the cursor to the starting position, see MDBX_cursor_op
+ *          for details. Valid values ​​{@link JNI#MDBX_GET_BOTH}, * \ref MDBX_GET_BOTH_RANGE, \ref MDBX_SET_KEY, *
+ *          {@link JNI#MDBX_SET_LOWERBOUND}, \ref MDBX_SET_UPPERBOUND, * \ref MDBX_TO_KEY_LESSER_THAN, * \ref
  *          MDBX_TO_KEY_LESSER_OR_E QUAL, * \ref MDBX_TO_KEY_EQUAL, * \ref MDBX_TO_KEY_GREATER_OR_EQUAL, *
  *          \ref MDBX_TO_KEY_GREATER_THAN, * \ref MDBX_TO_EXACT_KEY_VALUE_LESSER_THAN, * \ref
  *          MDBX_TO_EXACT_KEY_VALUE_LESSER_OR_EQUAL, *\ref MDBX_TO_EXACT_KEY_VALUE_EQUAL, \ref
  *          MDBX_TO_EXACT_KEY_VALUE_GREATER_OR_EQUAL, \ref MDBX_TO_EXACT_KEY_VALUE_GREATER_THAN, \ref
- *          MDBX_TO_PAIR_LESSER_THAN, \ref MDBX_TO_PAIR_LESSER_OR_EQUAL, \ref MDBX_TO_PAIR_EQUAL, \ref
- *          MDBX_TO_PAIR_GREATER_OR_EQUAL, \ref MDBX_TO_PAIR_GREATER_THAN, and \ref MDBX_GET_MULTIPLE.
- * @param [in,out]
- *          from_key Pointer to the key used for both the initial positioning and subsequent iterations of the
+ *          MDBX_TO_PAIR_LESSER_THAN, {@link JNI#MDBX_TO_PAIR_LESSER_OR_EQUAL}, {@link JNI#MDBX_TO_PAIR_EQUAL}, \ref
+ *          MDBX_TO_PAIR_GREATER_OR_EQUAL, {@link JNI#MDBX_TO_PAIR_GREATER_THAN}, and {@link JNI#MDBX_GET_MULTIPLE}
+ * @param from_key [in,out]
+ *          Pointer to the key used for both the initial positioning and subsequent iterations of the
  *          transition. * @param [in,out] from_value Pointer to the value used for both the initial
- *          positioning and subsequent iterations of the transition.
- * @param [in]
- *          turn_op Operation of positioning the cursor for the transition to the next element. Allowed values
+ *          positioning and subsequent iterations of the transition
+ * @param turn_op [in]
+ *          Operation of positioning the cursor for the transition to the next element. Allowed values
  *          \ref MDBX_NEXT, \ref MDBX_NEXT_DUP, \ref MDBX_NEXT_NODUP, \ref MDBX_PREV, \ref MDBX_PREV_DUP, \ref
  *          MDBX_PREV_NODUP, and \ref MDBX_NEXT_MULTIPLE and \ref MDBX_PREV_MULTIPLE.
- * @param [in,out]
- *          arg An additional argument to the predicate function, which is entirely prepared and controlled by
+ * @param arg [in,out]
+ *          An additional argument to the predicate function, which is entirely prepared and controlled by
  *          you.
  *
  *          \note When using \ref MDBX_GET_MULTIPLE, \ref MDBX_NEXT_MULTIPLE or \ref MDBX_PREV_MULTIPLE, be
@@ -3336,14 +3403,14 @@ public class JNI {
  *
  * @return The result of the scan operation, or an error code.
  *
- * @retval MDBX_RESULT_TRUE if a key-value pair for which the predictive function returned \ref
+ * retval MDBX_RESULT_TRUE if a key-value pair for which the predictive function returned \ref
  *         MDBX_RESULT_TRUE was found.
- * @retval MDBX_RESULT_FALSE if a matching key-value pair was NOT found, the search reached the end of data,
+ * retval MDBX_RESULT_FALSE if a matching key-value pair was NOT found, the search reached the end of data,
  *         or there was no data to search.
- * @retval ELSE any value other than \ref MDBX_RESULT_TRUE and \ref MDBX_RESULT_FALSE is a course positioning
+ * retval ELSE any value other than \ref MDBX_RESULT_TRUE and \ref MDBX_RESULT_FALSE is a course positioning
  *         error code, or a user-defined search stop code or an error condition. *
- * @see MDBX_predicate_func
- * @see mdbx_cursor_scan
+ * see #MDBX_predicate_func
+ * @see #mdbx_cursor_scan(long, long, long, int, int, long)
  */
 	@JniMethod
 	public static final native int mdbx_cursor_scan_from(
@@ -3439,12 +3506,12 @@ public class JNI {
 	/**
 	 * Determines whether the cursor is pointed to the first key-value pair or not.
 	 *
-	 * @param [in]
-	 *          cursor A cursor handle returned by \ref mdbx_cursor_open().
+	 * @param cursor [in]
+	 *          A cursor handle returned by \ref mdbx_cursor_open().
 	 *
 	 * @return A MDBX_RESULT_TRUE or MDBX_RESULT_FALSE value, otherwise the error code.
-	 * @retval MDBX_RESULT_TRUE Cursor positioned to the first key-value pair
-	 * @retval MDBX_RESULT_FALSE Cursor NOT positioned to the first key-value pair \retval Otherwise the error
+	 * retval MDBX_RESULT_TRUE Cursor positioned to the first key-value pair
+	 * retval MDBX_RESULT_FALSE Cursor NOT positioned to the first key-value pair \retval Otherwise the error
 	 *         code
 	 */
 	@JniMethod
@@ -3454,12 +3521,12 @@ public class JNI {
 	/**
 	 * Determines whether the cursor is on the first or only multi-value matching the key.
 	 *
-	 * @param [in]
-	 *          cursor The cursor created by \ref mdbx_cursor_open().
+	 * @param cursor [in]
+	 *          The cursor created by \ref mdbx_cursor_open().
 	 * @return The value of \ref MDBX_RESULT_TRUE, or \ref MDBX_RESULT_FALSE, otherwise an error code.
-	 * @retval MDBX_RESULT_TRUE the cursor is positioned on the first or only multi-value matching the key.
-	 * @retval MDBX_RESULT_FALSE the cursor is NOT positioned on the first or only multi-value matching the key.
-	 * @retval OTHERWISE the error code.
+	 * retval MDBX_RESULT_TRUE the cursor is positioned on the first or only multi-value matching the key.
+	 * retval MDBX_RESULT_FALSE the cursor is NOT positioned on the first or only multi-value matching the key.
+	 * retval OTHERWISE the error code.
 	 */
 	@JniMethod
 	public static final native int mdbx_cursor_on_first_dup(
@@ -3468,12 +3535,12 @@ public class JNI {
 	/**
 	 * Determines whether the cursor is on the last or only multi-value matching the key.
 	 *
-	 * @param [in]
-	 *          cursor The cursor created by \ref mdbx_cursor_open(). \returns The value of \ref
+	 * @param cursor [in]
+	 *          The cursor created by \ref mdbx_cursor_open(). \returns The value of \ref
 	 *          MDBX_RESULT_TRUE, or \ref MDBX_RESULT_FALSE, otherwise an error code.
-	 * @retval MDBX_RESULT_TRUE the cursor is positioned on the last or only multi-value matching the key.
-	 * @retval MDBX_RESULT_FALSE the cursor is NOT positioned on the last or only multi-value matching the key.
-	 * @retval OTHERWISE the error code.
+	 * retval MDBX_RESULT_TRUE the cursor is positioned on the last or only multi-value matching the key.
+	 * retval MDBX_RESULT_FALSE the cursor is NOT positioned on the last or only multi-value matching the key.
+	 * retval OTHERWISE the error code.
 	 */
 	@JniMethod
 	public static final native int mdbx_cursor_on_last_dup(

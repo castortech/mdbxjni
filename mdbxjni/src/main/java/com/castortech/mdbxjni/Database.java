@@ -372,7 +372,7 @@ public class Database extends NativeObject implements Closeable {
 	 *            opened with {@link com.castortech.mdbxjni.Constants#DUPSORT}. The
 	 *            function will return #MDB_KEYEXIST if the key/data pair already
 	 *            appears in the database.
-	 *            <li{@link com.castortech.mdbxjni.Constants#NOOVERWRITE} - enter
+	 *            <li>{@link com.castortech.mdbxjni.Constants#NOOVERWRITE} - enter
 	 *            the new key/data pair only if the key does not already appear in
 	 *            the database. The function will return
 	 *            {@link com.castortech.mdbxjni.MDBXException.Status#KEYEXIST} if the key

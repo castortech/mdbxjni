@@ -108,10 +108,10 @@ public class Transaction extends NativeObject implements Closeable {
 	 * </p>
 	 *
 	 * The transaction handle is freed. It and its cursors must not be used again after this call, except with
-	 * #mdb_cursor_renew().
+	 * #mdb_cursor_renew()
 	 *
-	 * @note Earlier documentation incorrectly said all cursors would be freed. Only write-transactions free
-	 *       cursors.
+	 * <b>Note</b> Earlier documentation incorrectly said all cursors would be freed. Only write-transactions
+	 * free cursors.
 	 *
 	 */
 	public void commit() {
@@ -162,13 +162,13 @@ public class Transaction extends NativeObject implements Closeable {
 	 *
 	 * Abort the transaction like #mdb_txn_abort(), but keep the transaction handle. #mdb_txn_renew() may reuse
 	 * the handle. This saves allocation overhead if the process will start a new read-only transaction soon,
-	 * and also locking overhead if {@link com.castortech.mdbxjni.Constants#NOTLS} is in use. The reader table
-	 * lock is released, but the table slot stays tied to its thread or #MDB_txn. Use mdb_txn_abort() to discard
-	 * a reset handle, and to free its lock table slot if {@link com.castortech.mdbxjni.Constants#NOTLS} is in
-	 * use. Cursors opened within the transaction must not be used again after this call, except with
-	 * #mdb_cursor_renew(). Reader locks generally don't interfere with writers, but they keep old versions of
-	 * database pages allocated. Thus they prevent the old pages from being reused when writers commit new data,
-	 * and so under heavy load the database size may grow much more rapidly than otherwise.
+	 * and also locking overhead if {@link EnvFlags#NOSTICKYTHREADS} is in use. The reader table lock is
+	 * released, but the table slot stays tied to its thread or #MDB_txn. Use mdb_txn_abort() to discard a reset
+	 * handle, and to free its lock table slot if {@link EnvFlags#NOSTICKYTHREADS} is in use. Cursors opened
+	 * within the transaction must not be used again after this call, except with #mdb_cursor_renew(). Reader
+	 * locks generally don't interfere with writers, but they keep old versions of database pages allocated.
+	 * Thus they prevent the old pages from being reused when writers commit new data, and so under heavy load
+	 * the database size may grow much more rapidly than otherwise.
 	 */
 	public void reset() {
 		checkAllocated();
@@ -183,8 +183,8 @@ public class Transaction extends NativeObject implements Closeable {
 	 * The transaction handle is freed. It and its cursors must not be used again after this call, except with
 	 * #mdb_cursor_renew().
 	 *
-	 * @note Earlier documentation incorrectly said all cursors would be freed. Only write-transactions free
-	 *       cursors.
+	 * <b>Note</b> Earlier documentation incorrectly said all cursors would be freed. Only write-transactions
+	 * free cursors.
 	 */
 	public void abort() {
 		if (self != 0) {

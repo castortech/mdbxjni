@@ -159,14 +159,14 @@ public class UnsignedInt64 extends Number implements Comparable<Object> {
 	/**
 	 * Compares this UnsignedInt64 with the specified UnsignedInt64. This method is provided in preference to
 	 * individual methods for each of the six boolean comparison operators (&lt;, ==, &gt;, &gt;=, !=, &lt;=).
-	 * The suggested idiom for performing these comparisons is: <tt>(x.compareTo(y)</tt> &lt;<i>op</i>&gt;
-	 * <tt>0)</tt>, where &lt;<i>op</i>&gt; is one of the six comparison operators.
+	 * The suggested idiom for performing these comparisons is: <code>(x.compareTo(y)</code> &lt;<i>op</i>&gt;
+	 * <code>0)</code>, where &lt;<i>op</i>&gt; is one of the six comparison operators.
 	 *
 	 * @param val
 	 *          Object to which this UnsignedInt64 is to be compared. Throws a ClassCastException if the input
 	 *          object is not an UnsignedInt64.
-	 * @return -1, 0 or 1 as this UnsignedInt64 is numerically less than, equal to, or greater than <tt>val</tt>
-	 *         .
+	 * @return -1, 0 or 1 as this UnsignedInt64 is numerically less than, equal to, or greater than
+	 *          <code>val</code>.
 	 */
 	@Override
 	public int compareTo(Object val) {
