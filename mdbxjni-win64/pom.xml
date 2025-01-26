@@ -24,9 +24,7 @@
 		<version>0.13.3-SNAPSHOT</version>
 	</parent>
 
-	<groupId>com.castortech.mdbxjni</groupId>
 	<artifactId>mdbxjni-win64</artifactId>
-	<version>0.13.3-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>The mdbxjni Windows 64 bit native libraries</description>
@@ -35,7 +33,7 @@
 		<dependency>
 			<groupId>com.castortech.mdbxjni</groupId>
 			<artifactId>mdbxjni</artifactId>
-			<version>0.13.3-SNAPSHOT</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.fluttercode.datafactory</groupId>

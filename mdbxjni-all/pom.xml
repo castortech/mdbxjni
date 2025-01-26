@@ -24,9 +24,7 @@
 		<version>0.13.3-SNAPSHOT</version>
 	</parent>
 
-	<groupId>com.castortech.mdbxjni</groupId>
 	<artifactId>mdbxjni-all</artifactId>
-	<version>0.13.3-SNAPSHOT</version>
 	<packaging>bundle</packaging>
 
 	<name>${project.artifactId}</name>
@@ -36,22 +34,22 @@
 		<dependency>
 			<groupId>com.castortech.mdbxjni</groupId>
 			<artifactId>mdbxjni</artifactId>
-			<version>0.13.3-SNAPSHOT</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.castortech.mdbxjni</groupId>
 			<artifactId>mdbxjni-osx64</artifactId>
-			<version>0.13.3-SNAPSHOT</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.castortech.mdbxjni</groupId>
 			<artifactId>mdbxjni-linux64</artifactId>
-			<version>0.13.3-SNAPSHOT</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.castortech.mdbxjni</groupId>
 			<artifactId>mdbxjni-win64</artifactId>
-			<version>0.13.3-SNAPSHOT</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 	</dependencies>
 
@@ -60,7 +58,6 @@
 			<plugin>
 				<groupId>org.apache.felix</groupId>
 				<artifactId>maven-bundle-plugin</artifactId>
-				<version>${mvn-bundle-version}</version>
 				<extensions>true</extensions>
 				<inherited>true</inherited>
 				<configuration>

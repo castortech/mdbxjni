@@ -32,19 +32,21 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hawtjni-version>1.20-SNAPSHOT</hawtjni-version>
-		<java-version>17</java-version>
 		<guava-version>[30.0-jre,)</guava-version>
 		<slf4j-version>1.7.36</slf4j-version>
 		<junit-version>4.13.2</junit-version>
-		<mvn-compiler-version>3.13.0</mvn-compiler-version>
 		<mvn-bundle-version>6.0.0</mvn-bundle-version>
-		<mvn-jar-version>3.4.2</mvn-jar-version>
 		<mvn-clean-version>3.4.0</mvn-clean-version>
+		<mvn-compiler-version>3.13.0</mvn-compiler-version>
+		<mvn-javadoc-version>3.11.2</mvn-javadoc-version>
+		<mvn-jar-version>3.4.2</mvn-jar-version>
 		<mvn-plugin-version>3.15.1</mvn-plugin-version>
+		<mvn-shade-version>3.6.0</mvn-shade-version>
 		<mvn-site-version>3.21.0</mvn-site-version>
 		<mvn-source-version>3.3.1</mvn-source-version>
-		<mvn-javadoc-version>3.11.2</mvn-javadoc-version>
-		<surefire-version>2.22.2</surefire-version>
+		<mvn-surefire-version>3.0.0-M4</mvn-surefire-version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 	</properties>
 
 	<modules>
@@ -57,6 +59,11 @@
 	</issueManagement>
 
 	<licenses>
+		<license>
+			<name>Eclipse Public License - v 1.0</name>
+			<url>http://www.eclipse.org/legal/epl-v10.html</url>
+			<distribution>repo</distribution>
+		</license>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
 			<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
@@ -88,6 +95,60 @@
 	</dependencies>
 
 	<build>
+		<defaultGoal>install</defaultGoal>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${mvn-compiler-version}</version>
+					<configuration>
+						<source>${maven.compiler.source}</source>
+						<target>${maven.compiler.target}</target>
+						<forceJavacCompilerUse>true</forceJavacCompilerUse>
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${mvn-surefire-version}</version>
+					<configuration>
+						<failIfNoTests>false</failIfNoTests>
+						<forkNode implementation="org.apache.maven.plugin.surefire.extensions.SurefireForkNodeFactory" />
+					</configuration>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${mvn-javadoc-version}</version>
+					<configuration>
+						<source>${maven.compiler.source}</source>
+						<encoding>${project.build.sourceEncoding}</encoding>
+						<excludePackageNames>*.internal</excludePackageNames>
+					</configuration>
+				</plugin>
+				<plugin>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${mvn-jar-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>3.0.0-M1</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${mvn-source-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.felix</groupId>
+					<artifactId>maven-bundle-plugin</artifactId>
+					<version>${mvn-bundle-version}</version>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 		<plugins>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -108,7 +169,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
-				<version>${surefire-version}</version>
 				<configuration>
 					<redirectTestOutputToFile>true</redirectTestOutputToFile>
 					<forkMode>once</forkMode>

@@ -24,9 +24,7 @@
 		<version>0.13.3-SNAPSHOT</version>
 	</parent>
 
-	<groupId>com.castortech.mdbxjni</groupId>
 	<artifactId>mdbxjni-linux64</artifactId>
-	<version>0.13.3-SNAPSHOT</version>
 
 	<name>${project.artifactId}</name>
 	<description>The mdbxjni linux 64 bit native libraries</description>
@@ -35,7 +33,7 @@
 		<dependency>
 			<groupId>com.castortech.mdbxjni</groupId>
 			<artifactId>mdbxjni</artifactId>
-			<version>0.13.3-SNAPSHOT</version>
+			<version>${project.parent.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.fluttercode.datafactory</groupId>
@@ -107,7 +105,7 @@
 									<filtering>false</filtering>
 									<includes>
 										<include>libmdbx.so</include>
-									</includes>	
+									</includes>
 								</resource>
 							</resources>
 						</configuration>
