@@ -74,7 +74,7 @@ public class UnsignedInt8 extends Number {
 		if ((a < MIN_VALUE) || (a > MAX_VALUE)) {
 			throw new NumberFormatException();
 		}
-		value = new Short(a);
+		value =  Short.valueOf(a);
 	}
 
 	/**
@@ -94,12 +94,12 @@ public class UnsignedInt8 extends Number {
 	 *
 	 */
 	public UnsignedInt8(String a) throws NumberFormatException {
-		Short temp = new Short(a);
+		Short temp = Short.valueOf(a);
 		short shortValue = temp.shortValue();
 		if ((shortValue < MIN_VALUE) || (shortValue > MAX_VALUE)) {
 			throw new NumberFormatException();
 		}
-		value = new Short(shortValue);
+		value =  Short.valueOf(shortValue);
 	}
 
 	/**

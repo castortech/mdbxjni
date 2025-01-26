@@ -66,7 +66,7 @@ public class UnsignedInt32 extends Number {
 			throw new NumberFormatException();
 		}
 
-		value = new Long(a);
+		value = Long.valueOf(a);
 	}
 
 	public static boolean IsLittleEndian = false;
@@ -87,7 +87,7 @@ public class UnsignedInt32 extends Number {
 			throw new NumberFormatException();
 		}
 
-		value = new Long(a);
+		value = Long.valueOf(a);
 	}
 
 	/**
@@ -99,7 +99,7 @@ public class UnsignedInt32 extends Number {
 			throw new NumberFormatException();
 		}
 
-		value = new Long(a);
+		value = Long.valueOf(a);
 	}
 
 	/**
@@ -107,14 +107,14 @@ public class UnsignedInt32 extends Number {
 	 * are considered.
 	 */
 	public UnsignedInt32(String a) throws NumberFormatException {
-		Long temp = new Long(a);
+		Long temp = Long.valueOf(a);
 		long longValue = temp.longValue();
 
 		if ((longValue < MIN_VALUE) || (longValue > MAX_VALUE)) {
 			throw new NumberFormatException();
 		}
 
-		value = new Long(longValue);
+		value = Long.valueOf(longValue);
 	}
 
 	/**

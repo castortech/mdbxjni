@@ -68,7 +68,7 @@ public class UnsignedInt16 extends Number {
 		if ((a < MIN_VALUE) || (a > MAX_VALUE)) {
 			throw new NumberFormatException();
 		}
-		value = new Integer(a);
+		value = Integer.valueOf(a);
 	}
 
 	/**
@@ -91,7 +91,7 @@ public class UnsignedInt16 extends Number {
 		if ((a < MIN_VALUE) || (a > MAX_VALUE)) {
 			throw new NumberFormatException();
 		}
-		value = new Integer(a);
+		value = Integer.valueOf(a);
 	}
 
 	/**
@@ -103,12 +103,12 @@ public class UnsignedInt16 extends Number {
 	 *
 	 */
 	public UnsignedInt16(String a) throws NumberFormatException {
-		Integer temp = new Integer(a);
+		Integer temp = Integer.valueOf(a);
 		int iValue = temp.intValue();
 		if ((iValue < MIN_VALUE) || (iValue > MAX_VALUE)) {
 			throw new NumberFormatException();
 		}
-		value = new Integer(iValue);
+		value = Integer.valueOf(iValue);
 	}
 
 	/**
