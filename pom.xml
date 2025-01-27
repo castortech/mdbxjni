@@ -33,7 +33,7 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hawtjni-version>1.21-SNAPSHOT</hawtjni-version>
 		<guava-version>[30.0-jre,)</guava-version>
-		<slf4j-version>1.7.36</slf4j-version>
+		<slf4j-version>2.0.16</slf4j-version>
 		<junit-version>4.13.2</junit-version>
 		<mvn-bundle-version>6.0.0</mvn-bundle-version>
 		<mvn-clean-version>3.4.0</mvn-clean-version>
