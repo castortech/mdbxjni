@@ -41,6 +41,7 @@
 		<mvn-javadoc-version>3.11.2</mvn-javadoc-version>
 		<mvn-jar-version>3.4.2</mvn-jar-version>
 		<mvn-plugin-version>3.15.1</mvn-plugin-version>
+		<mvn-resources-version>3.3.1</mvn-resources-version>
 		<mvn-shade-version>3.6.0</mvn-shade-version>
 		<mvn-site-version>3.21.0</mvn-site-version>
 		<mvn-source-version>3.3.1</mvn-source-version>
@@ -142,6 +143,11 @@
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
 					<version>${mvn-bundle-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${mvn-resources-version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
