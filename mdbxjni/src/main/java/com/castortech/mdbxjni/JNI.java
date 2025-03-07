@@ -2174,7 +2174,7 @@ public class JNI {
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_open_for_recoveryW(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const char *") String pathname,
+			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
 			@JniArg(cast = "unsigned") int target_meta,
 			@JniArg(cast = "int") int writeable);  //bool
 
@@ -2229,7 +2229,7 @@ public class JNI {
 
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_preopen_snapinfoW(
-			@JniArg(cast = "const char *") String pathname,
+			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
 			@JniArg(cast = "MDBX_envinfo *", flags = {NO_IN}) MDBX_envinfo info,
 			@JniArg(cast = "size_t") long bytes);
 
@@ -3218,7 +3218,7 @@ public class JNI {
 	public static final native int mdbx_cursor_compare(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long left,
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long right,
-			@JniArg(cast = "bool") boolean ignore_multival);
+			@JniArg(cast = "int") int ignore_multival);  //bool
 
 	@JniMethod
 	public static final native int mdbx_cursor_get(
@@ -3338,7 +3338,7 @@ public class JNI {
  */
 	@JniMethod
 	public static final native int mdbx_cursor_scan(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
+			@JniArg(cast = "MDBX_cursor *") long cursor,
 			@JniArg(cast = "int(*)(void *, const MDBX_val *, const MDBX_val *, void *)", flags = ArgFlag.POINTER_ARG) long predicate,
 			@JniArg(cast="void *") long context,
 			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int start_op,
@@ -3414,7 +3414,7 @@ public class JNI {
  */
 	@JniMethod
 	public static final native int mdbx_cursor_scan_from(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
+			@JniArg(cast = "MDBX_cursor *") long cursor,
 			@JniArg(cast = "int(*)(void *, const MDBX_val *, const MDBX_val *, void *)", flags = ArgFlag.POINTER_ARG) long predicate,
 			@JniArg(cast="void *") long context,
 			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int from_op,
@@ -3748,10 +3748,10 @@ public class JNI {
 	public static final native int mdbx_estimate_range(
 			@JniArg(cast = "const MDBX_txn *", flags = {NO_OUT}) long txn,
 			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "const MDBX_val *") MDBX_val begin_key,
-			@JniArg(cast = "const MDBX_val *") MDBX_val begin_data,
-			@JniArg(cast = "const MDBX_val *") MDBX_val end_key,
-			@JniArg(cast = "const MDBX_val *") MDBX_val end_data,
+			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val begin_key,
+			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val begin_data,
+			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val end_key,
+			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val end_data,
 			@JniArg(cast = "ptrdiff_t *") long[] distance_items);
 
 	//====================================================//
