@@ -129,7 +129,7 @@ public class JNIIntern {
 		public short checking;
 		/** The mt_dbistate for this database */
 		@JniField(cast = "uint8_t *")
-		public long dbi_state;
+		public short dbi_state;
 		/** The transaction that owns this cursor */
 		@JniField(cast = "MDBX_txn *")
 		public long txn;
@@ -142,7 +142,7 @@ public class JNIIntern {
 		@JniField(cast = "subcur_t *")
 		public long subcur;
 		/** stack of pushed pages */
-		@JniField(cast = "MDBX_page *[32]")
+		@JniField(cast = "page_t *[32]")
 		public long[] pg;
 		/** stack of page indices */
 		@JniField(cast = "uint16_t[32]")  //coded as indx_t
@@ -157,48 +157,6 @@ public class JNIIntern {
 
 	@JniField(accessor="sizeof(struct MDBX_cursor)", flags={CONSTANT})
 	public static int SIZEOF_CURSOR;
-
-	//====================================================//
-	// XCursor
-	//====================================================//
-	/** Context for sorted-dup records.
-	 * We could have gone to a fully recursive design, with arbitrarily
-	 * deep nesting of sub-databases. But for now we only handle these
-	 * levels - main DB, optional sub-DB, sorted-duplicate DB. */
-//	@JniClass(flags = {STRUCT, TYPEDEF})
-//	public static class MDBX_xcursor {
-//		/** A sub-cursor for traversing the Dup DB */
-//		@JniField(cast = "MDBX_cursor")
-//		public MDBX_cursor mx_cursor;
-//		/** The database record for this Dup DB */
-//		@JniField(cast = "MDBX_db")
-//		public MDBX_db mx_db;
-//		/** The auxiliary DB record for this Dup DB */
-//		@JniField(cast = "MDBX_db")
-//		public MDBX_dbx mx_dbx;
-//	}
-
-	// ====================================================//
-	// Cursor State Flags (MDBX_cursor_op)
-	// ====================================================//
-	/** cursor has been initialized and is valid */
-//	@JniField(flags = { CONSTANT })
-//	public static int C_INITIALIZED;
-//	/** No more data */
-//	@JniField(flags = { CONSTANT })
-//	public static int C_EOF;
-//	/** Cursor is a sub-cursor */
-//	@JniField(flags = { CONSTANT })
-//	public static int C_SUB;
-//	/** last op was a cursor_del */
-//	@JniField(flags = { CONSTANT })
-//	public static int C_DEL;
-//	/** Un-track cursor when closing */
-//	@JniField(flags = { CONSTANT })
-//	public static int C_UNTRACK;
-//	/** Preparing for a GC update is in progress, so you can take pages from GC even for FREE_DBI */
-//	@JniField(flags = { CONSTANT })
-//	public static int C_GCU;
 
 	@JniMethod
 	public static final native int ptr_2_cursor(
