@@ -1623,6 +1623,8 @@ public class JNI {
 	public static int MDBX_TO_PAIR_GREATER_OR_EQUAL;
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_TO_PAIR_GREATER_THAN;
+	@JniField(flags = { CONSTANT })
+	public static int MDBX_SEEK_AND_GET_MULTIPLE;
 
 	// ====================================================//
 	// Return Codes (no enum)
