@@ -832,9 +832,9 @@ public class Database extends NativeObject implements Closeable {
 			}
 
 			long[] cursor = new long[1];
-			if (log.isTraceEnabled())
-				log.trace("Calling cursor open for {}", this); //$NON-NLS-1$
 			checkErrorCode(env, tx, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+			if (log.isTraceEnabled())
+				log.trace("Called cursor open for {}, pointer:{}", this, cursor[0]); //$NON-NLS-1$
 			return new Cursor(env, cursor[0], tx, this);
 		}
 		catch (Exception e) {
@@ -852,9 +852,9 @@ public class Database extends NativeObject implements Closeable {
 			}
 
 			long[] cursor = new long[1];
-			if (log.isTraceEnabled())
-				log.trace("Calling sec cursor open for {}", this); //$NON-NLS-1$
 			checkErrorCode(env, tx, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
+			if (log.isTraceEnabled())
+				log.trace("Called sec cursor open for {}, pointer:{}", this, cursor[0]); //$NON-NLS-1$
 			return new SecondaryCursor(env, cursor[0], tx, this);
 		}
 		catch (Exception e) {
