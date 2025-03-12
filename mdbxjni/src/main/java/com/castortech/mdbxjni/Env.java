@@ -1193,6 +1193,10 @@ public class Env extends NativeObject implements Closeable {
 		String msg = Util.string(buffer.self);
 		buffer.delete();
 
+		if (msg != null && msg.contains("MDBX_NOTFOUND")) { //$NON-NLS-1$
+			return 0;
+		}
+
 		MdbxLogLevel.log((int)level, log, "Function:{}, line:{}, msg:{}", fctnName, line, msg); //$NON-NLS-1$
 		return 0;
 	}
