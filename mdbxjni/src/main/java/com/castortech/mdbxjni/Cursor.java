@@ -488,6 +488,8 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		sb.append(getClass().getSimpleName());
 		sb.append("[Id:");
 		sb.append(System.identityHashCode(this));
+		sb.append(", pointer:");
+		sb.append(pointerHex());
 		sb.append(", db:");
 		sb.append(getDatabase());
 		sb.append(", txn:");

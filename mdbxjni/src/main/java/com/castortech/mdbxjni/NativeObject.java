@@ -48,4 +48,8 @@ class NativeObject {
 			throw new MDBXException("Native object has been freed."); //$NON-NLS-1$
 		}
 	}
+
+	public String pointerHex() {
+		return Long.toHexString(self & 0xFFFFFFFFFFFFFFFFL);
+	}
 }
