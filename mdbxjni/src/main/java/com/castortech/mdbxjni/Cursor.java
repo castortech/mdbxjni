@@ -63,14 +63,14 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	public void close() {
 		if (self != 0) {
 			if (log.isTraceEnabled())
-				log.trace("Calling cursor close for {}, pointer:{}", this, pointer()); //$NON-NLS-1$
+				log.trace("Calling cursor close for {}", this); //$NON-NLS-1$
 
 			if (env.usePooledCursors()) {
 				try {
 					env.getCursorPool().release(this);
 				}
 				catch (Exception e) {
-					log.error("Failed to release cursor {}, pointer:{}", this, pointer(), e); //$NON-NLS-1$
+					log.error("Failed to release cursor {}", this, e); //$NON-NLS-1$
 				}
 			}
 			else {
