@@ -66,6 +66,50 @@
 				<activeByDefault>true</activeByDefault>
 			</activation>
 		</profile>
+<!--		<profile>-->
+<!--			<id>asan</id>-->
+<!--			<properties>-->
+<!--				<asan.enabled>true</asan.enabled>-->
+<!--				<asan.library.path>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Tools\MSVC\14.42.34433\bin\Hostx64\x64</asan.library.path>-->
+<!--				<asan.runtime.path>C:\Program Files\Microsoft Visual Studio\2022\Community\VC\Redist\MSVC\14.42.34433\debug_nonredist\x64\Microsoft.VC143.DebugCRT</asan.runtime.path>-->
+<!--			</properties>-->
+<!--			<build>-->
+<!--				<plugins>-->
+<!--					<plugin>-->
+<!--						<groupId>org.apache.maven.plugins</groupId>-->
+<!--						<artifactId>maven-resources-plugin</artifactId>-->
+<!--						<executions>-->
+<!--							<execution>-->
+<!--								<id>copy-asan-dlls</id>-->
+<!--								<phase>prepare-package</phase>-->
+<!--								<goals>-->
+<!--									<goal>copy-resources</goal>-->
+<!--								</goals>-->
+<!--								<configuration>-->
+<!--									<outputDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/windows64</outputDirectory>-->
+<!--									<overwrite>true</overwrite>-->
+<!--									<resources>-->
+<!--										<resource>-->
+<!--											<directory>${asan.library.path}</directory>-->
+<!--											<includes>-->
+<!--												<include>clang_rt.asan_dynamic-x86_64.dll</include>-->
+<!--											</includes>-->
+<!--										</resource>-->
+<!--										<resource>-->
+<!--											<directory>${asan.runtime.path}</directory>-->
+<!--											<includes>-->
+<!--												<include>vcruntime140d.dll</include>-->
+<!--												<include>vcruntime140_1d.dll</include>-->
+<!--											</includes>-->
+<!--										</resource>-->
+<!--									</resources>-->
+<!--								</configuration>-->
+<!--							</execution>-->
+<!--						</executions>-->
+<!--					</plugin>-->
+<!--				</plugins>-->
+<!--			</build>-->
+<!--		</profile>-->
 	</profiles>
 
 	<build>
@@ -110,7 +154,6 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
-				<version>3.3.1</version>
 				<executions>
 					<execution>
 						<id>copy-dll</id>

@@ -70,7 +70,7 @@ public class Cursor extends NativeObject implements AutoCloseable {
 					env.getCursorPool().release(this);
 				}
 				catch (Exception e) {
-					log.error("Failed to release cursor", e); //$NON-NLS-1$
+					log.error("Failed to release cursor {}", this, e); //$NON-NLS-1$
 				}
 			}
 			else {
@@ -488,6 +488,8 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		sb.append(getClass().getSimpleName());
 		sb.append("[Id:");
 		sb.append(System.identityHashCode(this));
+		sb.append(", pointer:");
+		sb.append(pointerHex());
 		sb.append(", db:");
 		sb.append(getDatabase());
 		sb.append(", txn:");

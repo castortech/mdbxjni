@@ -103,6 +103,15 @@ public enum MdbxLogLevel {
 		throw new IllegalStateException("Invalid Log level:" + value); //$NON-NLS-1$
 	}
 
+	public static MdbxLogLevel getByName(String name) {
+		for (MdbxLogLevel value : values()) {
+			if (value.name().equalsIgnoreCase(name)) {
+				return value;
+			}
+		}
+		return null;
+	}
+
 	public static void log(int value, Logger logger, String format, Object... params) {
 		MdbxLogLevel mdbxLogLevel = MdbxLogLevel.getByValue(value);
 		if (LogLevel.isEnabledFor(logger, mdbxLogLevel.level)) {

@@ -832,10 +832,12 @@ public class Database extends NativeObject implements Closeable {
 			}
 
 			long[] cursor = new long[1];
-			if (log.isTraceEnabled())
-				log.trace("Calling cursor open for {}", this); //$NON-NLS-1$
 			checkErrorCode(env, tx, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
-			return new Cursor(env, cursor[0], tx, this);
+			Cursor c = new Cursor(env, cursor[0], tx, this);
+			if (log.isTraceEnabled())
+				log.trace("Called cursor open for {}, cursor:{}", this, c); //$NON-NLS-1$
+
+			return c;
 		}
 		catch (Exception e) {
 			String msg = "Failed opening cursor for " + this; //$NON-NLS-1$
@@ -852,10 +854,13 @@ public class Database extends NativeObject implements Closeable {
 			}
 
 			long[] cursor = new long[1];
-			if (log.isTraceEnabled())
-				log.trace("Calling sec cursor open for {}", this); //$NON-NLS-1$
 			checkErrorCode(env, tx, mdbx_cursor_open(tx.pointer(), pointer(), cursor));
-			return new SecondaryCursor(env, cursor[0], tx, this);
+			if (log.isTraceEnabled())
+				log.trace("Called sec cursor open for {}, pointer:{}", this, cursor[0]); //$NON-NLS-1$
+			SecondaryCursor sc = new SecondaryCursor(env, cursor[0], tx, this);
+			if (log.isTraceEnabled())
+				log.trace("Called sec cursor open for {}, secCursor:{}", this, sc); //$NON-NLS-1$
+			return sc;
 		}
 		catch (Exception e) {
 			String msg = "Failed opening secondary cursor for " + this; //$NON-NLS-1$
@@ -957,6 +962,6 @@ public class Database extends NativeObject implements Closeable {
 	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
-		return "Database [id=" + pointer() + ", name=" + name + "]";
+		return "Database [id=" + pointerHex() + ", name=" + name + "]";
 	}
 }

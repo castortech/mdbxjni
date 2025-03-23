@@ -33,14 +33,15 @@
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<hawtjni-version>1.21-SNAPSHOT</hawtjni-version>
 		<guava-version>[30.0-jre,)</guava-version>
-		<slf4j-version>2.0.16</slf4j-version>
+		<slf4j-version>2.0.17</slf4j-version>
 		<junit-version>4.13.2</junit-version>
 		<mvn-bundle-version>6.0.0</mvn-bundle-version>
 		<mvn-clean-version>3.4.1</mvn-clean-version>
-		<mvn-compiler-version>3.13.0</mvn-compiler-version>
+		<mvn-compiler-version>3.14.0</mvn-compiler-version>
 		<mvn-javadoc-version>3.11.2</mvn-javadoc-version>
 		<mvn-jar-version>3.4.2</mvn-jar-version>
 		<mvn-plugin-version>3.15.1</mvn-plugin-version>
+		<mvn-resources-version>3.3.1</mvn-resources-version>
 		<mvn-shade-version>3.6.0</mvn-shade-version>
 		<mvn-site-version>3.21.0</mvn-site-version>
 		<mvn-source-version>3.3.1</mvn-source-version>
@@ -142,6 +143,11 @@
 					<groupId>org.apache.felix</groupId>
 					<artifactId>maven-bundle-plugin</artifactId>
 					<version>${mvn-bundle-version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${mvn-resources-version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -270,7 +276,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>3.8.0</version>
+				<version>3.9.0</version>
 				<reportSets>
 					<reportSet>
 						<reports>
