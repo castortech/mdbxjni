@@ -40,6 +40,10 @@ class Util {
 
 	private Util() { }
 
+	/**
+	 * Provide access to standard C errno functoin
+	 * @return error number
+	 */
 	public static int errno() {
 		return errno();
 	}

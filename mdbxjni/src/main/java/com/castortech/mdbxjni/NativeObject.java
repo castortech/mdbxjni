@@ -25,8 +25,12 @@ package com.castortech.mdbxjni;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 class NativeObject {
+	/** self pointer to native object */
 	protected long self;
 
+	/**
+	 * @param self pointer to native object
+	 */
 	protected NativeObject(long self) {
 		this.self = self;
 		if (self == 0) {
@@ -34,21 +38,36 @@ class NativeObject {
 		}
 	}
 
+	/**
+	 * Pointer for native object
+	 * @return pointer
+	 */
 	long pointer() {
 		checkAllocated();
 		return self;
 	}
 
+	/**
+	 * Is pointer allocated ?
+	 * @return true if allocated
+	 */
 	public boolean isAllocated() {
 		return self != 0;
 	}
 
+	/**
+	 * Check if pointer is allocated and throws an MDXException if not.
+	 */
 	protected void checkAllocated() {
 		if (!isAllocated()) {
 			throw new MDBXException("Native object has been freed."); //$NON-NLS-1$
 		}
 	}
 
+	/**
+	 * Converts native object pointer to hex
+	 * @return pointer in hex string format
+	 */
 	public String pointerHex() {
 		return Long.toHexString(self & 0xFFFFFFFFFFFFFFFFL);
 	}

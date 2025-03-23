@@ -14,6 +14,11 @@ import com.castortech.mdbxjni.Env;
 import com.castortech.mdbxjni.SecondaryCursor;
 import com.castortech.mdbxjni.Transaction;
 
+/**
+ * Cursor pool implementation
+ *
+ * @author Alain Picard
+ */
 public class CursorPoolImpl implements CursorPool, Closeable {
 	private static final Logger log = LoggerFactory.getLogger(CursorPoolImpl.class);
 
@@ -21,6 +26,11 @@ public class CursorPoolImpl implements CursorPool, Closeable {
 	private KeyedObjectPool<CursorKey, Cursor> pool;
 	private CursorPoolConfig poolConfig;
 
+	/**
+	 * Constructor
+	 * @param poolConfig pool configuration
+	 * @param env environment
+	 */
 	public CursorPoolImpl(CursorPoolConfig poolConfig, Env env) {
 		KeyedPooledObjectFactory<CursorKey, Cursor> factory = new CursorPoolFactory(env);
 		pool = new GenericKeyedObjectPool	<>(factory, poolConfig);
@@ -28,6 +38,9 @@ public class CursorPoolImpl implements CursorPool, Closeable {
 		this.poolConfig = poolConfig;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Cursor borrow(CursorKey key) throws Exception {
 		Cursor cursor = pool.borrowObject(key);
@@ -37,6 +50,9 @@ public class CursorPoolImpl implements CursorPool, Closeable {
 		return cursor;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public SecondaryCursor borrowSecondary(CursorKey key) throws Exception {
 		if (log.isDebugEnabled()) {
@@ -45,6 +61,9 @@ public class CursorPoolImpl implements CursorPool, Closeable {
 		return (SecondaryCursor)pool.borrowObject(key);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void release(Cursor cursor) throws Exception {
 		if (cursor != null) {
@@ -56,12 +75,18 @@ public class CursorPoolImpl implements CursorPool, Closeable {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void closeTransaction(Transaction txn) throws Exception {
 		pool.clear(new CursorKey(env, false, txn));
 		pool.clear(new CursorKey(env, true, txn));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void close() {
 		int attempts = poolConfig.getCloseMaxWaitSeconds();
@@ -82,6 +107,9 @@ public class CursorPoolImpl implements CursorPool, Closeable {
 		pool.close();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String getStats() {
 		try {

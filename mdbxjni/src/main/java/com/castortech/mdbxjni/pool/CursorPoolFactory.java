@@ -12,15 +12,27 @@ import com.castortech.mdbxjni.Env;
 import com.castortech.mdbxjni.SecondaryDatabase;
 import com.castortech.mdbxjni.Transaction;
 
+/**
+ * Cursor pool factory
+ *
+ * @author Alain Picard
+ */
 public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, Cursor> {
 	private static final Logger log = LoggerFactory.getLogger(CursorPoolFactory.class);
 
 	private Env env;
 
+	/**
+	 * Constructor
+	 * @param env Environment
+	 */
 	public CursorPoolFactory(Env env) {
 		this.env = env;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Cursor create(CursorKey key) throws Exception {
 		Cursor cursor;
@@ -44,6 +56,9 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		return cursor;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PooledObject<Cursor> wrap(Cursor cursor) {
 		if (log.isTraceEnabled()) {
@@ -52,11 +67,17 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		return new DefaultPooledObject<>(cursor);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean validateObject(CursorKey key, PooledObject<Cursor> p) {
 		return p.getObject() != null;  //can be null if the txn was freed
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void activateObject(CursorKey key, PooledObject<Cursor> p) throws Exception {
 		if (log.isDebugEnabled()) {
@@ -68,6 +89,9 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void destroyObject(CursorKey key, PooledObject<Cursor> p) throws Exception {
 		if (key.getThreadId() != Thread.currentThread().getId()) {  //probably the evictor thread

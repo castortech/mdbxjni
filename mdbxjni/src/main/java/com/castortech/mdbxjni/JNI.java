@@ -35,8 +35,8 @@ import static org.fusesource.hawtjni.runtime.ArgFlag.*;
 @SuppressWarnings( {"java:S1444", "java:S3008", "java:S101", "java:S116", "java:S117", "squid:S00100" })
 @JniClass
 public class JNI {
-	public static final Library DB_LIB;
-	public static final Library JNI_LIB;
+	private static final Library DB_LIB;
+	private static final Library JNI_LIB;
 
 	static {
 		//Needed to avoid java.lang.UnsatisfiedLinkError: Can't find dependent libraries
@@ -60,17 +60,40 @@ public class JNI {
 	//
 	///////////////////////////////////////////////////////////////////////
 
+	/**
+	 * Provide access to standard C errno function
+	 * @return error number
+	 */
 	@JniMethod(flags={CONSTANT_GETTER})
 	public static final native int errno();
 
+	/**
+	 * Provide access to standard C strerror function
+	 * @param errnum error number
+	 * @return char* to the error message string
+	 */
 	@JniMethod(cast = "char *")
 	public static final native long strerror(int errnum);
 
+	/**
+	 * Provide access to standard C strlen function
+	 * @param s char* to the error message string
+	 * @return length of string error message
+	 */
 	public static final native int strlen(@JniArg(cast = "const char *")long s);
 
+	/**
+	 * Provide access to standard C malloc function
+	 * @param size size to allocate
+	 * @return void pointer
+	 */
 	@JniMethod(cast = "void *")
 	public static final native long malloc(@JniArg(cast = "size_t") long size);
 
+	/**
+	 * Provide access to standard C free function
+	 * @param self void pointer from previous malloc
+	 */
 	public static final native void free(@JniArg(cast = "void *") long self);
 
 	///////////////////////////////////////////////////////////////////////
@@ -1358,7 +1381,7 @@ public class JNI {
 	// ====================================================//
 	// Database Flags (MDBX_db_flags_t)
 	// ====================================================//
-	/** Default (flag == 0). */
+	/** Variable length unique keys with usual byte-by-byte string comparison. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_DB_DEFAULTS;
 
@@ -1529,22 +1552,57 @@ public class JNI {
 	// ====================================================//
 	// Write Flags (MDBX_put_flags_t)
 	// ====================================================//
+	/** Upsertion by default (without any other flags) */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_UPSERT;
+
+	/** For insertion: Don't write if the key already exists. */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_NOOVERWRITE;
+
+	/** Has effect only for \ref MDBX_DUPSORT tables.
+	 * For upsertion: don't write if the key-value pair already exist.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_NODUPDATA;
+
+	/** For upsertion: overwrite the current key/data pair.
+	 * MDBX allows this flag for \ref mdbx_put() for explicit overwrite/update
+	 * without insertion.
+	 * For deletion: remove only single entry at the current cursor position.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_CURRENT;
+
+	/**
+	 * Has effect only for \ref MDBX_DUPSORT tables. For deletion: remove all multi-values (aka duplicates) for
+	 * given key. For upsertion: replace all multi-values for given key with a new one.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_ALLDUPS;
+
+	/** For upsertion: Just reserve space for data, don't copy it.
+	 * Return a pointer to the reserved space.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_RESERVE;
+
+	/** Data is being appended.
+	 * Don't split full pages, continue on a new instead.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_APPEND;
+
+	/** Has effect only for \ref MDBX_DUPSORT tables.
+	 * Duplicate data is being appended.
+	 * Don't split full pages, continue on a new instead.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_APPENDDUP;
+
+	/** Only for \ref MDBX_DUPFIXED.
+	 * Store multiple data items in one call.
+	 */
 	@JniField(flags = { CONSTANT })
 	public static int MDBX_MULTIPLE;
 
@@ -2022,8 +2080,12 @@ public class JNI {
 //			@JniArg(cast = "const char *", flags={NO_OUT}) long fmt,
 //			@JniArg(cast = "const char *", flags={NO_OUT}) long args);
 
-	/** Setup global log-level, debug options and debug logger.
-	 * \returns The previously `debug_flags` in the 0-15 bits and `log_level` in the 16-31 bits.
+	/**
+	 * Setup global log-level, debug options and debug logger.
+	 * @param log_level log level
+	 * @param debug_flags debug flags
+	 * @param logger logger
+	 * @return The previously `debug_flags` in the 0-15 bits and `log_level` in the 16-31 bits.
 	 */
 	@JniMethod
 	public static final native int mdbx_setup_debug(
@@ -2032,6 +2094,15 @@ public class JNI {
 			@JniArg(cast = "void(*)(MDBX_log_level_t, const char *, int, const char *, va_list)",
 					flags = ArgFlag.POINTER_ARG) long logger);
 
+	/**
+	 * Setup global log-level, debug options and debug logger.
+	 * @param log_level log level
+	 * @param debug_flags debug flags
+	 * @param logger logger
+	 * @param logger_buffer logger buffer
+	 * @param logger_buffer_size buffer size
+	 * @return The previously `debug_flags` in the 0-15 bits and `log_level` in the 16-31 bits.
+	 */
 	@JniMethod
 	public static final native int mdbx_setup_debug_nofmt(
 			@JniArg(cast = "MDBX_log_level_t") int log_level,
@@ -2044,40 +2115,106 @@ public class JNI {
 	// ====================================================//
 	// Error methods
 	// ====================================================//
+	/**
+	 * Return a string describing a given error code.
+	 * \ingroup c_err
+	 *
+	 * This function is a superset of the ANSI C X3.159-1989 (ANSI C) `strerror()`
+	 * function. If the error code is greater than or equal to 0, then the string
+	 * returned by the system function `strerror()` is returned. If the error code
+	 * is less than 0, an error string corresponding to the MDBX library error is
+	 * returned. See errors for a list of MDBX-specific error codes.
+	 *
+	 * `mdbx_strerror()` is NOT thread-safe because may share common internal buffer
+	 * for system messages. The returned string must NOT be modified by the
+	 * application, but MAY be modified by a subsequent call to
+	 * \ref mdbx_strerror(), `strerror()` and other related functions.
+	 * \see mdbx_strerror_r()
+	 *
+	 * @param errnum  [in] The error code.
+	 *
+	 * @return "error message" The description of the error.
+	 */
 	@JniMethod(cast = "char *")
 	public static final native long mdbx_strerror(int errnum);
 
+	/**
+	 * Return a string describing a given error code.
+	 * \ingroup c_err
+	 *
+	 * This function is a superset of the ANSI C X3.159-1989 (ANSI C) `strerror()`
+	 * function. If the error code is greater than or equal to 0, then the string
+	 * returned by the system function `strerror()` is returned. If the error code
+	 * is less than 0, an error string corresponding to the MDBX library error is
+	 * returned. See errors for a list of MDBX-specific error codes.
+	 *
+	 * `mdbx_strerror_r()` is thread-safe since uses user-supplied buffer where
+	 * appropriate. The returned string must NOT be modified by the application,
+	 * since it may be pointer to internal constant string. However, there is no
+	 * restriction if the returned string points to the supplied buffer.
+	 * \see mdbx_strerror()
+	 *
+	 * mdbx_liberr2str() returns string describing only MDBX error numbers but NULL
+	 * for non-MDBX error codes. This function is thread-safe since return pointer
+	 * to constant non-localized strings.
+	 *
+	 * @param errnum  [in] The error code.
+	 * @param buf [in,out] Buffer to store the error message.
+	 * @param buflen [in] The size of buffer to store the message.
+	 *
+	 * @return "error message" The description of the error.
+	 */
 	@JniMethod(cast = "char *")
 	public static final native long mdbx_strerror_r(int errnum,
 			@JniArg(cast = "char *") long buf,
 			@JniArg(cast = "size_t") long buflen);
 
+	/**
+	 * Bit of Windows' madness. The similar to \ref mdbx_strerror() but returns Windows error-messages in the
+	 * OEM-encoding for console utilities.
+	 * \ingroup c_err
+	 *
+	 * @see JNI#mdbx_strerror_r_ANSI2OEM(int, long, long)
+	 *
+	 * @param errnum Error number
+	 * @return "error message" The description of the error.
+	 */
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)", cast = "char *")
 	public static final native long mdbx_strerror_ANSI2OEM(int errnum);
 
+	/**
+	 * Bit of Windows' madness. The similar to \ref mdbx_strerror_r() but returns Windows error-messages in the
+	 * OEM-encoding for console utilities.
+	 * \ingroup c_err
+	 * @see JNI#mdbx_strerror_r_ANSI2OEM(int, long, long)
+
+	 * @param errnum Error number
+	 * @param buf buffer
+	 * @param buflen buffer length
+	 * @return "error message" The description of the error.
+	 */
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)", cast = "char *")
 	public static final native long mdbx_strerror_r_ANSI2OEM(int errnum,
 			@JniArg(cast = "char *") long buf,
 			@JniArg(cast = "size_t") long buflen);
 
-	/** \brief Sets a Handle-Slow-Readers callback to resolve database full/overflow
+	/**
+	 * Sets a Handle-Slow-Readers callback to resolve database full/overflow
 	 * issue due to a reader(s) which prevents the old data from being recycled.
 	 * \ingroup c_err
 	 *
 	 * The callback will only be triggered when the database is full due to a
 	 * reader(s) prevents the old data from being recycled.
 	 *
-	 * \see MDBX_hsr_func
-	 * \see mdbx_env_get_hsr()
-	 * \see mdbx_txn_park()
-	 * \see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
+	 * see JNI#MDBX_hsr_func
+	 * see JNI#mdbx_env_get_hsr()
+	 * @see JNI#mdbx_txn_park(long, int)
+	 * @see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
 	 *
-	 * \param [in] env             An environment handle returned
-	 *                             by \ref mdbx_env_create().
-	 * \param [in] hsr_callback    A \ref MDBX_hsr_func function
-	 *                             or NULL to disable.
+	 * @param env             [in] An environment handle returned by \ref mdbx_env_create().
+	 * @param hsr_callback    [in] A \ref MDBX_hsr_func function or NULL to disable.
 	 *
-	 * \returns A non-zero error value on failure and 0 on success.
+	 * @return A non-zero error value on failure and 0 on success.
 	 * */
 	@JniMethod
 	public static final native int mdbx_env_set_hsr(
@@ -2092,19 +2229,19 @@ public class JNI {
 			@JniArg(cast = "MDBX_env **", flags={NO_IN}) long[] penv);
 
 	/**
-	 * \brief Open an environment instance. \ingroup c_opening
+	 * Open an environment instance. \ingroup c_opening
 	 *
 	 * Indifferently this function will fails or not, the \ref mdbx_env_close() must be called later to discard
 	 * the \ref MDBX_env handle and release associated resources.
 	 *
 	 * \note On Windows the \ref mdbx_env_openW() is recommended to use.
 	 *
-	 * \param [in] env An environment handle returned by \ref mdbx_env_create()
+	 * @param env [in] An environment handle returned by \ref mdbx_env_create()
 	 *
-	 * \param [in] pathname The pathname for the database or the directory in which the database files reside.
+	 * @param pathname [in] The pathname for the database or the directory in which the database files reside.
 	 * In the case of directory it must already exist and be writable.
 	 *
-	 * \param [in] flags Specifies options for this environment. This parameter must be bitwise OR'ing together
+	 * @param flags [in] Specifies options for this environment. This parameter must be bitwise OR'ing together
 	 * any constants described above in the \ref env_flags and \ref sync_modes sections.
 	 *
 	 * Flags set by mdbx_env_set_flags() are also used: - \ref MDBX_ENV_DEFAULTS, \ref MDBX_NOSUBDIR, \ref
@@ -2123,10 +2260,10 @@ public class JNI {
 	 * incompatible (i.e. for instance, different page size) then \ref mdbx_env_open() will return \ref
 	 * MDBX_INCOMPATIBLE error.
 	 *
-	 * \param [in] mode The UNIX permissions to set on created files. Zero value means to open existing, but do
+	 * @param mode [in] The UNIX permissions to set on created files. Zero value means to open existing, but do
 	 * not create.
 	 *
-	 * \return A non-zero error value on failure and 0 on success, some possible errors are: \retval
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are: \retval
 	 * MDBX_VERSION_MISMATCH The version of the MDBX library doesn't match the version that created the database
 	 * environment. \retval MDBX_INVALID The environment file headers are corrupted. \retval MDBX_ENOENT The
 	 * directory specified by the path parameter doesn't exist. \retval MDBX_EACCES The user didn't have
@@ -2150,6 +2287,17 @@ public class JNI {
 			@JniArg(cast = "unsigned") int flags,
 			@JniArg(cast = "mdbx_mode_t") int mode);
 
+	/**
+	 * Open environment version for Windows
+	 * \note Available only on Windows.
+	 * @see #mdbx_env_open(long, String, int, int)
+	 *
+	 * @param env environment
+	 * @param pathname path name
+	 * @param flags environment flags
+	 * @param mode mode
+	 * @return pointer to environment
+	 */
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_openW(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
@@ -2165,6 +2313,12 @@ public class JNI {
 	 * leg(s).
 	 *
 	 * \note On Windows the \ref mdbx_env_open_for_recoveryW() is recommended to use.
+
+	 * @param env environment
+	 * @param pathname path name
+	 * @param target_meta target meta
+	 * @param writeable writable boolean
+	 * @return pointer to environment
 	 */
 	@JniMethod
 	public static final native int mdbx_env_open_for_recovery(
@@ -2173,6 +2327,18 @@ public class JNI {
 			@JniArg(cast = "unsigned") int target_meta,
 			@JniArg(cast = "int") int writeable);  //bool
 
+	/**
+	 * \copydoc mdbx_env_open_for_recovery()
+	 * \ingroup c_extra
+	 * \note Available only on Windows.
+	 * @see #mdbx_env_open_for_recovery(long, String, int, int)
+	 *
+	 * @param env environment
+	 * @param pathname path name
+	 * @param target_meta target meta
+	 * @param writeable writable boolean
+	 * @return pointer to environment
+	 */
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_open_for_recoveryW(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
@@ -2185,12 +2351,15 @@ public class JNI {
 	 *
 	 * This function mostly of internal API for `mdbx_chk` utility and subject to change at any time. Do not use
 	 * this function to avoid shooting your own leg(s).
+
+	 * @param env environment
+	 * @param target_meta target meta
+	 * @return error code if any
 	 */
 	@JniMethod
 	public static final native int mdbx_env_turn_for_recovery(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
 			@JniArg(cast = "unsigned") int target_meta);
-
 
 	/**
 	 * Gets basic information about the database without opening it.
@@ -2236,20 +2405,20 @@ public class JNI {
 			@JniArg(cast = "size_t") long bytes);
 
 	/**
-	 * \brief Delete the environment's files in a proper and multiprocess-safe way.
+	 * Delete the environment's files in a proper and multiprocess-safe way.
 	 * \ingroup c_extra
 	 *
 	 * \note On Windows the \ref mdbx_env_deleteW() is recommended to use.
 	 *
-	 * \param [in] pathname  The pathname for the database or the directory in which the database files reside.
+	 * @param pathname  [in] The pathname for the database or the directory in which the database files reside.
 	 *
-	 * \param [in] mode      Specifies deletion mode for the environment. This parameter must be set to one of
-	 *                       the constants described above in the \ref MDBX_env_delete_mode_t section.
+	 * @param mode      [in] Specifies deletion mode for the environment. This parameter must be set to one of
+	 *                  the constants described above in the \ref MDBX_env_delete_mode_t section.
 	 *
 	 * \note The \ref MDBX_ENV_JUST_DELETE not supported on Windows since system is unable to delete a
 	 * memory-mapped file.
 	 *
-	 * \returns A non-zero error value on failure and 0 on success, some possible errors are:
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
 	 * \retval MDBX_RESULT_TRUE  No corresponding files or directories were found, so no deletion was performed.
 	 */
 	@JniMethod
@@ -2257,6 +2426,16 @@ public class JNI {
 			@JniArg(cast = "const char *") String pathname,
 			@JniArg(cast = "unsigned") int mode);
 
+	/**
+	 * 	 Delete the environment's files in a proper and multiprocess-safe way (Windows version)
+	 * \ingroup c_extra
+	 * \note Available only on Windows.
+	 * @see #mdbx_env_delete(String, int)
+	 *
+	 * @param pathname path name
+	 * @param mode mode
+	 * @return error code or 0 on success
+	 */
 	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
 	public static final native int mdbx_env_deleteW(
 			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
@@ -2284,10 +2463,11 @@ public class JNI {
 	 *
 	 * \note On Windows the mdbx_txn_copy2pathnameW() is recommended to use.
 	 *
-	 * \param [in] txn A transaction handle returned by \ref mdbx_txn_begin(). \param [in] dest The pathname of
-	 * a file in which the copy will reside. This file must not be already exist, but parent directory must be
-	 * writable. \param [in] flags Specifies options for this operation. This parameter must be bitwise OR'ing
-	 * together any of the constants described here:
+	 * @param txn [in] 	A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dest [in] The pathname of a file in which the copy will reside. This file must not be already
+	 * 									exist, but parent directory must be writable.
+	 * @param flags [in] Specifies options for this operation. This parameter must be bitwise OR'ing
+	 * 									 together any of the constants described here:
 	 *
 	 * - \ref MDBX_CP_DEFAULTS Perform copy as-is without compaction, etc.
 	 *
@@ -2297,7 +2477,7 @@ public class JNI {
 	 *
 	 * - \ref MDBX_CP_FORCE_DYNAMIC_SIZE Force to make resizable copy, i.e. dynamic size instead of fixed.
 	 *
-	 * \returns A non-zero error value on failure and 0 on success.
+	 * @return A non-zero error value on failure and 0 on success.
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_copy2pathname(
@@ -2329,11 +2509,12 @@ public class JNI {
 	 * \note Fails if the environment has suffered a page leak and the destination file descriptor is associated
 	 * with a pipe, socket, or FIFO.
 	 *
-	 * \param [in] txn A transaction handle returned by \ref mdbx_txn_begin(). \param [in] fd The file
-	 * descriptor to write the copy to. It must have already been opened for Write access. \param [in] flags
-	 * Special options for this operation. \see mdbx_env_copy()
+	 * @param txn [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param fd [in] The file descriptor to write the copy to. It must have already been opened for Write
+	 * 								access.
+	 * @param flags [in] Special options for this operation. \see mdbx_env_copy()
 	 *
-	 * \returns A non-zero error value on failure and 0 on success.
+	 * @return A non-zero error value on failure and 0 on success.
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_copy2fd(
@@ -2425,9 +2606,9 @@ public class JNI {
 	 * Calling \ref mdbx_env_resurrect_after_fork() without forking, not in a child process, or repeated calls
 	 * do not result in any actions or changes.
 	 *
-	 * \param [in,out] env The environment instance created by the \ref mdbx_env_create() function.
+	 * @param env [in,out] The environment instance created by the \ref mdbx_env_create() function.
 	 *
-	 * \returns A non-zero error code value, or 0 on success. Some possible errors are:
+	 * @return A non-zero error code value, or 0 on success. Some possible errors are:
 	 *
 	 * \retval MDBX_BUSY The parent process opened the DB in \ref MDBX_EXCLUSIVE mode.
 	 *
@@ -2530,12 +2711,25 @@ public class JNI {
 
 	/** \deprecated Please use \ref mdbx_env_get_maxkeysize_ex() and/or \ref mdbx_env_get_maxvalsize_ex()
 	 * \ingroup c_statinfo
+	 *
+	 * @param env    [in] An environment handle returned by \ref mdbx_env_create().
+	 *
+	 * @return The maximum size of a key can write, or -1 if something is wrong.
 	 */
 	@Deprecated
 	@JniMethod
 	public static final native int mdbx_env_get_maxkeysize(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
 
+	/**
+	 * Returns the maximum size of keys can put.
+	 * \ingroup c_statinfo
+	 *
+	 * @param env    [in] An environment handle returned by \ref mdbx_env_create().
+	 * @param flags  [in] Table options (\ref MDBX_DUPSORT, \ref MDBX_INTEGERKEY and so on). \see db_flags
+	 *
+	 * @return The maximum size of a key can write, or -1 if something is wrong.
+	 */
 	@JniMethod
 	public static final native int mdbx_env_get_maxkeysize_ex(
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
@@ -2546,14 +2740,14 @@ public class JNI {
 			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
 			@JniArg(cast = "unsigned") long flags);
 
-	/** \brief Returns maximal size of key-value pair to fit in a single page for specified table flags.
+	/**
+	 * Returns maximal size of key-value pair to fit in a single page for specified table flags.
 	 * \ingroup c_statinfo
 	 *
-	 * \param [in] env    An environment handle returned by \ref mdbx_env_create().
-	 * \param [in] flags  Table options (\ref MDBX_DUPSORT, \ref MDBX_INTEGERKEY and so on).
-	 * \see db_flags
+	 * @param env    [in] An environment handle returned by \ref mdbx_env_create().
+	 * @param flags  [in] Table options (\ref MDBX_DUPSORT, \ref MDBX_INTEGERKEY and so on). \see db_flags
 	 *
-	 * \returns The maximum size of a data can write, or -1 if something is wrong.
+	 * @return The maximum size of a data can write, or -1 if something is wrong.
 	 */
 	@JniMethod
 	public static final native int mdbx_env_get_pairsize4page_max(
@@ -2564,11 +2758,10 @@ public class JNI {
 	 * specified table flags.
 	 * \ingroup c_statinfo
 	 *
-	 * \param [in] env    An environment handle returned by \ref mdbx_env_create().
-	 * \param [in] flags  Table options (\ref MDBX_DUPSORT, \ref MDBX_INTEGERKEY and so on).
-	 * \see db_flags
+	 * @param env    [in] An environment handle returned by \ref mdbx_env_create().
+	 * @param flags  [in] Table options (\ref MDBX_DUPSORT, \ref MDBX_INTEGERKEY and so on). \see db_flags
 	 *
-	 * \returns The maximum size of a data can write, or -1 if something is wrong.
+	 * @return The maximum size of a data can write, or -1 if something is wrong.
 	 */
 	@JniMethod
 	public static final native int mdbx_env_get_valsize4page_max(
@@ -2614,14 +2807,13 @@ public class JNI {
 	 *
 	 * At least one of `env` or `txn` argument must be non-null.
 	 *
-	 * \param [in] env An environment handle returned by \ref mdbx_env_create(). \param [in] txn A transaction
-	 * handle returned by \ref mdbx_txn_begin(). \param [in] flags The \ref warmup_flags, bitwise OR'ed
-	 * together.
-	 *
-	 * \param [in] timeout_seconds_16dot16 Optional timeout which checking only during explicitly peeking
+	 * @param env [in] An environment handle returned by \ref mdbx_env_create().
+	 * @param txn [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param flags [in] The \ref warmup_flags, bitwise OR'ed together.
+	 * @param timeout_seconds_16dot16 [in] Optional timeout which checking only during explicitly peeking
 	 * database pages for loading ones if the \ref MDBX_warmup_force option was specified.
 	 *
-	 * \returns A non-zero error value on failure and 0 on success. Some possible errors are:
+	 * @return A non-zero error value on failure and 0 on success. Some possible errors are:
 	 *
 	 * \retval MDBX_ENOSYS The system does not support requested operation(s).
 	 *
@@ -2665,8 +2857,13 @@ public class JNI {
 	 * Function keeps the transaction handle and corresponding locks, but makes impossible to perform any
 	 * operations within a broken transaction. Broken transaction must then be aborted explicitly later.
 	 *
-	 * @param txn
-	 * @return
+	 * @param txn [in] A transaction handle returned by {@link #mdbx_txn_begin(long, long, long, long[])}.
+	 *
+	 * @return A non-zero error value on failure and 0 on success. *
+	 *
+	 * @see #mdbx_txn_abort(long)
+	 * @see #mdbx_txn_reset(long)
+	 * @see #mdbx_txn_commit(long)
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_break(
@@ -2781,11 +2978,39 @@ public class JNI {
 			@JniArg(cast = "MDBX_txn *") long txn,
 			@JniArg(cast = "int") int restart_if_ousted);  //Bool
 
-	/**
-	 * Unbind or closes all cursors of a given transaction.
+	/** Unbind or closes all cursors of a given transaction and of all its parent transactions if ones are.
+	 * \ingroup c_cursors
 	 *
-	 * Unbinds either closes all cursors associated (opened or renewed) with
-	 * a given transaction in a bulk with minimal overhead.
+	 * Unbinds either closes all cursors associated (opened, renewed or binded) with
+	 * the given transaction in a bulk with minimal overhead.
+	 *
+	 * @see JNI#mdbx_cursor_unbind(long)
+	 * @see JNI#mdbx_cursor_close(long)
+	 *
+	 * @param txn        [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param unbind     [in] If non-zero, unbinds cursors and leaves ones reusable.
+	 *                        Otherwise close and dispose cursors.
+	 * @param count  [in,out] An optional pointer to return the number of cursors processed by the requested
+	 * operation.
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
+	 *                               by current thread.
+	 * \retval MDBX_BAD_TXN          Given transaction is invalid or has
+	 *                               a child/nested transaction transaction.
+	 */
+	@JniMethod
+	public static final native int mdbx_txn_release_all_cursors_ex(
+			@JniArg(cast = "MDBX_txn *") long txn,
+			@JniArg(cast = "int") int unbind,  //Bool
+			@JniArg(cast = "size_t") long count
+	);
+
+	/**
+	 * Unbind or closes all cursors of a given transaction and of all its parent transactions if ones are.
+	 *
+	 * Unbinds either closes all cursors associated (opened or renewed) with the given transaction in a bulk
+	 * with minimal overhead.
 	 *
 	 * @param txn [in]      A transaction handle returned by \ref mdbx_txn_begin().
 	 * @param unbind [in]   If non-zero, unbinds cursors and leaves ones reusable.
@@ -2793,10 +3018,8 @@ public class JNI {
 	 *
 	 * @return A negative error value on failure or the number of closed cursors
 	 *          on success, some possible errors are:
-	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
-	 *                               by current thread.
-	 * \retval MDBX_BAD_TXN          Given transaction is invalid or has
-	 *                               a child/nested transaction transaction.
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_BAD_TXN          Given transaction is invalid or has a child/nested transaction transaction.
 	 *
 	 * @see #mdbx_cursor_unbind(long)
 	 * @see #mdbx_cursor_close(long)
@@ -2804,7 +3027,7 @@ public class JNI {
 	@JniMethod
 	public static final native int mdbx_txn_release_all_cursors(
 			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "int") int unbind
+			@JniArg(cast = "int") int unbind  //Bool
 	);
 
 	/**
@@ -2826,14 +3049,15 @@ public class JNI {
 			@JniArg(cast = "MDBX_txn_info *", flags = {NO_IN}) MDBX_txn_info info,
 			@JniArg(cast = "int") int scanRlt);  //_Bool
 
-	/** \brief Sets application information associated (a context pointer) with the transaction.
+	/**
+	 * Sets application information associated (a context pointer) with the transaction.
 	 * \ingroup c_transactions
-	 * \see mdbx_txn_get_userctx()
+	 * @see #mdbx_txn_get_userctx(long)
 	 *
-	 * \param [in] txn  An transaction handle returned by \ref mdbx_txn_begin_ex() or \ref mdbx_txn_begin().
-	 * \param [in] ctx  An arbitrary pointer for whatever the application needs.
+	 * @param txn  [in] An transaction handle returned by \ref mdbx_txn_begin_ex() or \ref mdbx_txn_begin().
+	 * @param ctx  [in] An arbitrary pointer for whatever the application needs.
 	 *
-	 * \returns A non-zero error value on failure and 0 on success.
+	 * @return A non-zero error value on failure and 0 on success.
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_set_userctx(
@@ -2841,12 +3065,12 @@ public class JNI {
 			@JniArg(cast = "void *") long ctx);
 
 	/**
-	 * \brief Returns an application information (a context pointer) associated with the transaction.
+	 * Returns an application information (a context pointer) associated with the transaction.
 	 * \ingroup c_transactions
-	 * \see mdbx_txn_set_userctx()
+	 * @see #mdbx_txn_set_userctx(long, long)
 	 *
-	 * \param [in] txn  An transaction handle returned by \ref mdbx_txn_begin_ex() or \ref mdbx_txn_begin().
-	 * \returns The pointer which was passed via the `context` parameter of `mdbx_txn_begin_ex()` or set by
+	 * @param txn  [in] An transaction handle returned by \ref mdbx_txn_begin_ex() or \ref mdbx_txn_begin().
+	 * @return The pointer which was passed via the `context` parameter of `mdbx_txn_begin_ex()` or set by
 	 *          \ref mdbx_txn_set_userctx(), or `NULL` if something wrong.
 	 */
 	@JniMethod(cast = "void *")
@@ -2856,7 +3080,10 @@ public class JNI {
 	/**
 	 * \brief Acquires write-transaction lock.
 	 * Provided for custom and/or complex locking scenarios.
-	 * \returns A non-zero error value on failure and 0 on success.
+	 *
+	 * @param env environment
+	 * @param dont_wait Don't wait boolean
+	 * @return A non-zero error value on failure and 0 on success.
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_lock(
@@ -2866,7 +3093,9 @@ public class JNI {
 	/**
 	 * \brief Releases write-transaction lock.
 	 * Provided for custom and/or complex locking scenarios.
-	 * \returns A non-zero error value on failure and 0 on success.
+	 *
+	 * @param env environment
+	 * @return A non-zero error value on failure and 0 on success.
 	 */
 	@JniMethod
 	public static final native int mdbx_txn_unlock(
@@ -2958,18 +3187,12 @@ public class JNI {
 	/*
 	 * Callback function for enumerating user-defined named tables.
 	 *
-	 * @param [in]
-	 *          ctx Pointer to context passed by the same parameter in \ref mdbx_enumerate_subdb().
-	 * @param [in]
-	 *          txn Transaction.
-	 * @param [in]
-	 *          name Table name.
-	 * @param [in]
-	 *          flags \ref MDBX_db_flags_t.
-	 * @param [in]
-	 *          stat Basic information \ref MDBX_stat about the table.
-	 * @param [in]
-	 *          dbi Non-zero DBI handle, if one was opened for this table. Or 0 if no such open handle was
+	 * @param ctx [in] Pointer to context passed by the same parameter in \ref mdbx_enumerate_subdb().
+	 * @param txn [in] Transaction.
+	 * @param name [in] Table name.
+	 * @param flags [in] \ref MDBX_db_flags_t.
+	 * @param stat [in] Basic information \ref MDBX_stat about the table.
+	 * @param dbi [in] Non-zero DBI handle, if one was opened for this table. Or 0 if no such open handle was
 	 *          found.
 	 *
 	 * @return Zero on success and enumeration continues; if another value is returned, it will be immediately
@@ -3004,6 +3227,35 @@ public class JNI {
 	//====================================================//
 	// CRUD methods
 	//====================================================//
+	/**
+	 * Get items from a table.
+	 * \ingroup c_crud
+	 *
+	 * This function retrieves key/data pairs from the table. The address and length of the data associated with
+	 * the specified key are returned in the structure to which data refers.
+	 * If the table supports duplicate keys (\ref MDBX_DUPSORT) then the first data item for the key will be
+	 * returned. Retrieval of other items requires the use of \ref mdbx_cursor_get().
+	 *
+	 * \note The memory pointed to by the returned values is owned by the table. The caller MUST not dispose of
+	 * the memory, and MUST not modify it in any way regardless in a read-only nor read-write transactions!
+	 * For case a table opened without the \ref MDBX_WRITEMAP modification attempts likely will cause a
+	 * `SIGSEGV`. However, when a table opened with the \ref MDBX_WRITEMAP or in case values returned inside
+	 * read-write transaction are located on a "dirty" (modified and pending to commit) pages, such modification
+	 * will silently accepted and likely will lead to DB and/or data corruption.
+	 *
+	 * \note Values returned from the table are valid only until a subsequent update operation, or the end of
+	 * the transaction.
+	 *
+	 * @param txn       [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi       [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param key       [in] The key to search for in the table.
+	 * @param data  [in,out] The data corresponding to the key.
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_NOTFOUND  The key was not in the table.
+	 * \retval MDBX_EINVAL    An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_get(
 			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3011,6 +3263,33 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
 			@JniArg(cast = "MDBX_val *") MDBX_val data);
 
+	/**
+	 * Get items from a table and optionally number of data items for a given key.
+	 *
+	 * \ingroup c_crud
+	 *
+	 * Briefly this function does the same as \ref mdbx_get() with a few
+	 * differences:
+	 *  1. If values_count is NOT NULL, then returns the count
+	 *     of multi-values/duplicates for a given key.
+	 *  2. Updates BOTH the key and the data for pointing to the actual key-value
+	 *     pair inside the table.
+	 *
+	 * @param txn           [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi           [in] A table handle returned by \ref mdbx_dbi_open().
+	 *
+	 * @param key       [in,out] The key to search for in the table.
+	 * @param data      [in,out] The data corresponding to the key.
+	 * @param values_count [out] The optional address to return number of values associated with given key:
+	 *                            = 0 - in case \ref MDBX_NOTFOUND error;
+	 *                            = 1 - exactly for tables WITHOUT \ref MDBX_DUPSORT;
+	 *                            >= 1 for tables WITH \ref MDBX_DUPSORT.
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_NOTFOUND  The key was not in the table.
+	 * \retval MDBX_EINVAL    An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_get_ex(
 			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3027,6 +3306,30 @@ public class JNI {
 //			@JniArg(cast = "MDBX_val *") MDBX_val data,
 //			@JniArg(cast = "uint_fast64_t *") long[] pattr);
 
+	/**
+	 * Get equal or great item from a table.
+	 * \ingroup c_crud
+	 *
+	 * Briefly this function does the same as \ref mdbx_get() with a few differences:
+	 * 1. Return equal or great (due comparison function) key-value pair, but not only exactly matching with the
+	 * 		key.
+	 * 2. On success return \ref MDBX_SUCCESS if key found exactly, and \ref MDBX_RESULT_TRUE otherwise.
+	 * 		Moreover, for tables with \ref MDBX_DUPSORT flag the data argument also will be used to match over
+	 *    multi-value/duplicates, and \ref MDBX_SUCCESS will be returned only when BOTH the key and the data
+	 *    match exactly.
+	 * 3. Updates BOTH the key and the data for pointing to the actual key-value pair inside the table.
+	 *
+	 * @param txn           [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi           [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param key       [in,out] The key to search for in the table.
+	 * @param data      [in,out] The data corresponding to the key.
+	 *
+	 * @return A non-zero error value on failure and \ref MDBX_RESULT_FALSE or \ref MDBX_RESULT_TRUE on success
+	 * 				 (as described above). Some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
+	 *                               by current thread.
+	 * \retval MDBX_NOTFOUND      The key was not in the table.
+	 * \retval MDBX_EINVAL        An invalid parameter was specified. */
 	@JniMethod
 	public static final native int mdbx_get_equal_or_great(
 			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3034,6 +3337,83 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val key,
 			@JniArg(cast = "MDBX_val *") MDBX_val data);
 
+	/**
+	 * Store items into a table.
+	 * \ingroup c_crud
+	 *
+	 * This function stores key/data pairs in the table. The default behavior is to enter the new key/data pair,
+	 * replacing any previously existing key if duplicates are disallowed, or adding a duplicate data item if
+	 * duplicates are allowed (see \ref MDBX_DUPSORT).
+	 *
+	 * @param txn        [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi        [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param key        [in] The key to store in the table.
+	 * @param data   [in,out] The data to store.
+	 * @param flags      [in] Special options for this operation. This parameter must be set to 0 or by bitwise
+	 *                        OR'ing together one or more of the values described here:
+	 *   - \ref MDBX_NODUPDATA
+	 *      Enter the new key-value pair only if it does not already appear
+	 *      in the table. This flag may only be specified if the table
+	 *      was opened with \ref MDBX_DUPSORT. The function will return
+	 *      \ref MDBX_KEYEXIST if the key/data pair already appears in the table.
+	 *
+	 *  - \ref MDBX_NOOVERWRITE
+	 *      Enter the new key/data pair only if the key does not already appear
+	 *      in the table. The function will return \ref MDBX_KEYEXIST if the key
+	 *      already appears in the table, even if the table supports
+	 *      duplicates (see \ref  MDBX_DUPSORT). The data parameter will be set
+	 *      to point to the existing item.
+	 *
+	 *  - \ref MDBX_CURRENT
+	 *      Update an single existing entry, but not add new ones. The function will
+	 *      return \ref MDBX_NOTFOUND if the given key not exist in the table.
+	 *      In case multi-values for the given key, with combination of
+	 *      the \ref MDBX_ALLDUPS will replace all multi-values,
+	 *      otherwise return the \ref MDBX_EMULTIVAL.
+	 *
+	 *  - \ref MDBX_RESERVE
+	 *      Reserve space for data of the given size, but don't copy the given
+	 *      data. Instead, return a pointer to the reserved space, which the
+	 *      caller can fill in later - before the next update operation or the
+	 *      transaction ends. This saves an extra memcpy if the data is being
+	 *      generated later. MDBX does nothing else with this memory, the caller
+	 *      is expected to modify all of the space requested. This flag must not
+	 *      be specified if the table was opened with \ref MDBX_DUPSORT.
+	 *
+	 *  - \ref MDBX_APPEND
+	 *      Append the given key/data pair to the end of the table. This option
+	 *      allows fast bulk loading when keys are already known to be in the
+	 *      correct order. Loading unsorted keys with this flag will cause
+	 *      a \ref MDBX_EKEYMISMATCH error.
+	 *
+	 *  - \ref MDBX_APPENDDUP
+	 *      As above, but for sorted dup data.
+	 *
+	 *  - \ref MDBX_MULTIPLE
+	 *      Store multiple contiguous data elements in a single request. This flag
+	 *      may only be specified if the table was opened with
+	 *      \ref MDBX_DUPFIXED. With combination the \ref MDBX_ALLDUPS
+	 *      will replace all multi-values.
+	 *      The data argument must be an array of two \ref MDBX_val. The `iov_len`
+	 *      of the first \ref MDBX_val must be the size of a single data element.
+	 *      The `iov_base` of the first \ref MDBX_val must point to the beginning
+	 *      of the array of contiguous data elements which must be properly aligned
+	 *      in case of table with \ref MDBX_INTEGERDUP flag.
+	 *      The `iov_len` of the second \ref MDBX_val must be the count of the
+	 *      number of data elements to store. On return this field will be set to
+	 *      the count of the number of elements actually written. The `iov_base` of
+	 *      the second \ref MDBX_val is unused.
+	 *
+	 * \see \ref c_crud_hints "Quick reference for Insert/Update/Delete operations"
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_KEYEXIST  The key/value pair already exists in the table.
+	 * \retval MDBX_MAP_FULL  The database is full, see \ref mdbx_env_set_mapsize().
+	 * \retval MDBX_TXN_FULL  The transaction has too many dirty pages.
+	 * \retval MDBX_EACCES    An attempt was made to write in a read-only transaction.
+	 * \retval MDBX_EINVAL    An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_put(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3042,6 +3422,25 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data,
 			@JniArg(cast = "unsigned") int flags);
 
+	/**
+	 * Store multiple items into a table.
+	 *
+	 * This function stores multiple key/data pairs in the table. It is a utility function that call
+	 * {@link #mdbx_put(long, long, MDBX_val, MDBX_val, int)} and needs to have the multiple flag. It expects
+	 * the data to be formatted according the mdbx_put documentation.
+	 *
+	 * @param txn        [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi        [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param key        [in] The key to store in the table.
+	 * @param data1  [in,out] First data element (see doc).
+	 * @param data2  [in,out] Second data element (see doc)
+	 * @param flags      [in] Special options for this operation. This parameter must be set to 0 or by bitwise
+	 *                        OR'ing together one or more of the values described here:
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 *
+	 * @see #mdbx_put(long, long, MDBX_val, MDBX_val, int)
+	 */
 	@JniMethod
 	public static final native int mdbx_put_multiple(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3060,6 +3459,40 @@ public class JNI {
 //			@JniArg(cast = "uint_fast64_t *") long[] attr,
 //			@JniArg(cast = "unsigned") int flags);
 
+	/**
+	 * Replace items in a table.
+	 * \ingroup c_crud
+	 *
+	 * This function allows to update or delete an existing value at the same time as the previous value is
+	 * retrieved. If the argument new_data equal is NULL zero, the removal is performed, otherwise the
+	 * update/insert.
+	 *
+	 * The current value may be in an already changed (aka dirty) page. In this case, the page will be
+	 * overwritten during the update, and the old value will be lost. Therefore, an additional buffer must be
+	 * passed via old_data argument initially to copy the old value. If the buffer passed in is too small, the
+	 * function will return \ref MDBX_RESULT_TRUE by setting iov_len field pointed by old_data argument to the
+	 * appropriate value, without performing any changes.
+	 *
+	 * For tables with non-unique keys (i.e. with \ref MDBX_DUPSORT flag), another use case is also possible,
+	 * when by old_data argument selects a specific item from multi-value/duplicates with the same key for
+	 * deletion or update. To select this scenario in flags should simultaneously specify \ref MDBX_CURRENT and
+	 * \ref MDBX_NOOVERWRITE. This combination is chosen because it makes no sense, and thus allows you to
+	 * identify the request of such a scenario.
+	 *
+	 * @param txn           [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi           [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param key           [in] The key to store in the table.
+	 * @param new_data      [in] The data to store, if NULL then deletion will be performed.
+	 * @param old_data  [in,out] The buffer for retrieve previous value as describe above.
+	 * @param flags         [in] Special options for this operation. This parameter must be set to 0 or by
+	 *                           bitwise OR'ing together one or more of the values described in \ref mdbx_put()
+	 *                           description above, and additionally (\ref MDBX_CURRENT | \ref MDBX_NOOVERWRITE)
+	 *                           combination for selection particular item from multi-value/duplicates.
+	 *
+	 * \see \ref c_crud_hints "Quick reference for Insert/Update/Delete operations"
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_replace(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3069,6 +3502,29 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val old_data,
 			@JniArg(cast = "unsigned") int flags);
 
+	/**
+	 * Delete items from a table.
+	 * \ingroup c_crud
+	 *
+	 * This function removes key/data pairs from the table.
+	 *
+	 * \note The data parameter is NOT ignored regardless the table does support sorted duplicate data items or
+	 * not. If the data parameter is non-NULL only the matching data item will be deleted. Otherwise, if data
+	 * parameter is NULL, any/all value(s) for specified key will be deleted.
+	 *
+	 * This function will return \ref MDBX_NOTFOUND if the specified key/data pair is not in the table.
+	 *
+	 * \see \ref c_crud_hints "Quick reference for Insert/Update/Delete operations"
+	 *
+	 * @param txn   [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi   [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param key   [in] The key to delete from the table.
+	 * @param data  [in] The data to delete.
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_EACCES   An attempt was made to write in a read-only transaction.
+	 * \retval MDBX_EINVAL   An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_del(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3076,17 +3532,58 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
 			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val data);
 
+	/**
+	 * Empty or delete and close a table.
+	 * \ingroup c_crud
+	 *
+	 * @see #mdbx_dbi_close(long, long)
+	 * @see #mdbx_dbi_open(long, String, int, long[])
+	 *
+	 * @param txn  [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi  [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param del  [in] `false` to empty the DB, `true` to delete it from the environment and close the DB
+	 *                  handle.
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_drop(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "uint32_t") long dbi,
 			int del);
 
+	/**
+	 * Returns fours integers markers (aka "canary") associated with the environment.
+	 * \ingroup c_crud
+	 *
+	 * \see mdbx_canary_put()
+	 *
+	 * @param txn     [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param canary  [in] The address of an \ref MDBX_canary structure where the information will be copied.
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_canary_get(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "MDBX_canary *") MDBX_canary canary);
 
+	/**
+	 * Set integers markers (aka "canary") associated with the environment.
+	 * \ingroup c_crud
+	 * @see #mdbx_canary_get(long, MDBX_canary)
+	 *
+	 * @param txn     [in] A transaction handle returned by \ref mdbx_txn_begin()
+	 * @param canary  [in] A optional pointer to \ref MDBX_canary structure for `x`, `y` and `z` values from.
+	 *            - If canary is NOT NULL then the `x`, `y` and `z` values will be updated from given canary
+	 *              argument, but the 'v' be always set to the current transaction number if at least one `x`,
+	 *              `y` or `z` values have changed (i.e. if `x`, `y` and `z` have the same values as currently
+	 *              present then nothing will be changes or updated).
+	 *            - if canary is NULL then the `v` value will be explicitly update to the current transaction
+	 *              number without changes `x`, `y` nor `z`.
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_canary_put(
 			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
@@ -3123,29 +3620,123 @@ public class JNI {
 	 * corruption and segfaults.
 	 * </p>
 	 *
-	 * @param txn
-	 * @param dbi
-	 * @param cursor
-	 * @return
+	 * @param txn      [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi      [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param cursor  [out] Address where the new \ref MDBX_cursor handle will be stored.
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
+	 *                               by current thread.
+	 * \retval MDBX_EINVAL  An invalid parameter was specified. 	 *
 	 */
 	@JniMethod
 	public static final native int mdbx_cursor_open(
-			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
+			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "uint32_t") long dbi,
 			@JniArg(cast = "MDBX_cursor **", flags={NO_IN}) long[] cursor);
 
+	/**
+	 * Closes a cursor handle without returning error code.
+	 * \ingroup c_cursors
+	 *
+	 * The cursor handle will be freed and must not be used again after this call, but its transaction may still
+	 * be live.
+	 *
+	 * This function returns `void` but panic in case of error. Use \ref mdbx_cursor_close2() if you need to
+	 * receive an error code instead of an app crash.
+	 *
+	 * @see mdbx_cursor_close2
+	 *
+	 * \note In contrast to LMDB, the MDBX required that any opened cursors can be
+	 * reused and must be freed explicitly, regardless ones was opened in a
+	 * read-only or write transaction. The REASON for this is eliminates ambiguity
+	 * which helps to avoid errors such as: use-after-free, double-free, i.e.
+	 * memory corruption and segfaults.
+	 *
+	 * @param cursor  [in] A cursor handle returned by \ref mdbx_cursor_open() or \ref mdbx_cursor_create().
+	 */
 	@JniMethod
 	public static final native void mdbx_cursor_close(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Closes a cursor handle with returning error code.
+	 * \ingroup c_cursors
+	 *
+	 * The cursor handle will be freed and must not be used again after this call, but its transaction may still
+	 * be live.
+	 *
+	 * @see JNI#mdbx_cursor_close(long)
+	 *
+	 * \note In contrast to LMDB, the MDBX required that any opened cursors can be reused and must be freed
+	 * explicitly, regardless ones was opened in a read-only or write transaction. The REASON for this is
+	 * eliminates ambiguity which helps to avoid errors such as: use-after-free, double-free, i.e. memory
+	 * corruption and segfaults.
+	 *
+	 * @param cursor  [in] A cursor handle returned by \ref mdbx_cursor_open() or \ref mdbx_cursor_create().
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_EINVAL  An invalid parameter was specified.
+	 */
 	@JniMethod
-	public static final native int mdbx_cursor_renew(
-			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
+	public static final native int mdbx_cursor_close2(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Renew a cursor handle for use within the given transaction.
+	 * \ingroup c_cursors
+	 *
+	 * A cursor may be associated with a new transaction whether the previous transaction is running or finished.
+	 *
+	 * Using of the `mdbx_cursor_renew()` is equivalent to calling \ref mdbx_cursor_bind() with the DBI-handle
+	 * that previously the cursor was used with.
+	 *
+	 * \note In contrast to LMDB, the MDBX allow any cursor to be re-used by using \ref mdbx_cursor_renew(), to
+	 * avoid unnecessary malloc/free overhead until it freed by \ref mdbx_cursor_close().
+	 *
+	 * @param txn      [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param cursor   [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_EINVAL  An invalid parameter was specified.
+	 * \retval MDBX_BAD_DBI The cursor was not bound to a DBI-handle or such a handle became invalid.
+	 */
+	@JniMethod
+	public static final native int mdbx_cursor_renew(
+			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
+			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	/**
+	 * Bind cursor to specified transaction and DBI-handle.
+	 * \ingroup c_cursors
+	 *
+	 * Using of the `mdbx_cursor_bind()` is equivalent to calling \ref mdbx_cursor_renew() but with specifying
+	 * an arbitrary DBI-handle.
+	 *
+	 * A cursor may be associated with a new transaction, and referencing a new or the same table handle as it
+	 * was created with. This may be done whether the previous transaction is live or dead.
+	 *
+	 * If the transaction is nested, then the cursor should not be used in its parent transaction. Otherwise it
+	 * is no way to restore state if this nested transaction will be aborted, nor impossible to define the
+	 * expected behavior.
+	 *
+	 * \note In contrast to LMDB, the MDBX required that any opened cursors can be reused and must be freed
+	 * explicitly, regardless ones was opened in a read-only or write transaction. The REASON for this is
+	 * eliminates ambiguity which helps to avoid errors such as: use-after-free, double-free, i.e. memory
+	 * corruption and segfaults.
+	 *
+	 * @param txn      [in] A transaction handle returned by \ref mdbx_txn_begin().
+	 * @param dbi      [in] A table handle returned by \ref mdbx_dbi_open().
+	 * @param cursor   [in] A cursor handle returned by \ref mdbx_cursor_create().
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_EINVAL  An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_bind(
-			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
+			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
 			@JniArg(cast = "uint32_t") long dbi);
 
@@ -3155,6 +3746,10 @@ public class JNI {
 	 * Unbound cursor is disassociated with any transactions but still holds the original DBI-handle internally.
 	 * Thus it could be renewed with any running transaction or closed.
 	 *
+	 * If the transaction is nested, then the cursor should not be used in its parent transaction. Otherwise it
+	 * is no way to restore state if this nested transaction will be aborted, nor impossible to define the
+	 * expected behavior.
+	 *
 	 * \note In contrast to LMDB, the MDBX required that any opened cursors can be reused and must be freed
 	 * explicitly, regardless ones was opened in a read-only or write transaction. The REASON for this is
 	 * eliminates ambiguity which helps to avoid errors such as: use-after-free, double-free, i.e. memory
@@ -3163,7 +3758,7 @@ public class JNI {
 	 * @param cursor [in]
 	 *          A cursor handle returned by \ref mdbx_cursor_open().
 	 *
-	 *          \returns A non-zero error value on failure and 0 on success.
+	 * @return A non-zero error value on failure and 0 on success.
 	 *
 	 * @see #mdbx_cursor_renew(long, long)
 	 * @see #mdbx_cursor_bind(long, long, long)
@@ -3190,6 +3785,17 @@ public class JNI {
 	public static final native int mdbx_cursor_reset(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Copy cursor position and state.
+	 * \ingroup c_cursors
+	 *
+	 * @param src       [in] A source cursor handle returned by \ref mdbx_cursor_create() or
+	 *                       \ref mdbx_cursor_open().
+	 * @param dest  [in,out] A destination cursor handle returned by \ref mdbx_cursor_create() or
+	 *                       \ref mdbx_cursor_open().
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_copy(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long src,
@@ -3203,17 +3809,14 @@ public class JNI {
 	 * transactions, or with different tables, or one of them is not initialized, the result of the comparison
 	 * is undefined (the behavior may be changed in future versions).
 	 *
-	 * @param left [in]
-	 *          Left cursor for comparing positions.
-	 * @param right [in]
-	 *          Right cursor for comparing positions.
-	 * @param ignore_multival [in]
-	 *          Boolean flag that affects the result only when comparing cursors for tables with
-	 *          multi-values, i.e. with the \ref MDBX_DUPSORT flag. If `true`, cursor positions are compared
-	 *          only by keys, without taking into account positioning among multi-values. Otherwise, if `false`,
-	 *          if the positions by keys match, the positions by multi-values ​​are also compared.
+	 * @param left [in]  Left cursor for comparing positions.
+	 * @param right [in] Right cursor for comparing positions.
+	 * @param ignore_multival [in] Boolean flag that affects the result only when comparing cursors for tables
+	 * 					with multi-values, i.e. with the \ref MDBX_DUPSORT flag. If `true`, cursor positions are
+	 * 					compared only by keys, without taking into account positioning among multi-values. Otherwise, if
+	 * 					`false`, if the positions by keys match, the positions by multi-values ​​are also compared.
 	 *
-	 *          \retval A signed value in the semantics of the `&lt;=&gt;` operator (less than zero, zero, or greater
+	 * @return A signed value in the semantics of the `&lt;=&gt;` operator (less than zero, zero, or greater
 	 *          than zero) as a result of comparing cursor positions.
 	 */
 	@JniMethod
@@ -3222,6 +3825,35 @@ public class JNI {
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long right,
 			@JniArg(cast = "int") int ignore_multival);  //bool
 
+	/**
+	 * Retrieve by cursor.
+	 * \ingroup c_crud
+	 *
+	 * This function retrieves key/data pairs from the table. The address and length of the key are returned in
+	 * the object to which key refers (except for the case of the \ref MDBX_SET option, in which the key object
+	 * is unchanged), and the address and length of the data are returned in the object to which data refers.
+	 *
+	 * @see #mdbx_get(long, long, MDBX_val, MDBX_val)
+	 *
+	 * \note The memory pointed to by the returned values is owned by the database. The caller MUST not dispose
+	 * of the memory, and MUST not modify it in any way regardless in a read-only nor read-write transactions!
+	 * For case a database opened without the \ref MDBX_WRITEMAP modification attempts likely will cause a
+	 * `SIGSEGV`. However, when a database opened with the \ref MDBX_WRITEMAP or in case values returned inside
+	 * read-write transaction are located on a "dirty" (modified and pending to commit) pages, such modification
+	 * will silently accepted and likely will lead to DB and/or data corruption.
+	 *
+	 * @param cursor    [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 * @param key   [in,out] The key for a retrieved item.
+	 * @param data  [in,out] The data of a retrieved item.
+	 * @param op        [in] A cursor operation \ref MDBX_cursor_op.
+	 *
+	 * @return A non-zero error value on failure and 0 on success,
+	 *          some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
+	 *                               by current thread.
+	 * \retval MDBX_NOTFOUND  No matching key found.
+	 * \retval MDBX_EINVAL    An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_get(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
@@ -3229,6 +3861,43 @@ public class JNI {
 			@JniArg(cast = "MDBX_val *") MDBX_val data, //in,out
 			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int op);
 
+	/**
+	 * Retrieve multiple non-dupsort key/value pairs by cursor.
+	 * \ingroup c_crud
+	 *
+	 * This function retrieves multiple key/data pairs from the table without \ref MDBX_DUPSORT option. For
+	 * `MDBX_DUPSORT` tables please use \ref MDBX_GET_MULTIPLE and \ref MDBX_NEXT_MULTIPLE.
+	 *
+	 * The number of key and value items is returned in the `size_t count` refers. The addresses and lengths of
+	 * the keys and values are returned in the array to which `pairs` refers.
+	 *
+	 * @see #mdbx_cursor_get(long, MDBX_val, MDBX_val, int)
+	 *
+	 * \note The memory pointed to by the returned values is owned by the database. The caller MUST not dispose
+	 * of the memory, and MUST not modify it in any way regardless in a read-only nor read-write transactions!
+	 * For case a database opened without the \ref MDBX_WRITEMAP modification attempts likely will cause a
+	 * `SIGSEGV`. However, when a database opened with the \ref MDBX_WRITEMAP or in case values returned inside
+	 * read-write transaction are located on a "dirty" (modified and pending to commit) pages, such modification
+	 * will silently accepted and likely will lead to DB and/or data corruption.
+	 *
+	 * @param cursor     [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 * @param count     [out] The number of key and value item returned, on success it always be the even
+	 *                        because the key-value pairs are returned.
+	 * @param pairs  [in,out] A pointer to the array of key value pairs.
+	 * @param limit      [in] The size of pairs buffer as the number of items, but not a pairs.
+	 * @param op         [in] A cursor operation \ref MDBX_cursor_op (only \ref MDBX_FIRST and \ref MDBX_NEXT
+	 *                       are supported).
+	 *
+	 * @return A non-zero error value on failure and 0 on success,
+	 *          some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned
+	 *                               by current thread.
+	 * \retval MDBX_NOTFOUND         No any key-value pairs are available.
+	 * \retval MDBX_ENODATA          The cursor is already at the end of data.
+	 * \retval MDBX_RESULT_TRUE      The returned chunk is the last one,
+	 *                               and there are no pairs left.
+	 * \retval MDBX_EINVAL           An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_get_batch(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
@@ -3248,6 +3917,7 @@ public class JNI {
 	 *
 	 * check avoid_custom_comparators
 	 *
+	 * @param cursor cursor pointer
 	 * @return The result of the scanning operation, or an error code.
 	 */
 	@JniMethod
@@ -3391,6 +4061,8 @@ public class JNI {
  *          Pointer to the key used for both the initial positioning and subsequent iterations of the
  *          transition. * @param [in,out] from_value Pointer to the value used for both the initial
  *          positioning and subsequent iterations of the transition
+ * @param from_value [in,out]
+ *          Pointer to a value used for both the initial positioning and subsequent iterations of the transition.
  * @param turn_op [in]
  *          Operation of positioning the cursor for the transition to the next element. Allowed values
  *          \ref MDBX_NEXT, \ref MDBX_NEXT_DUP, \ref MDBX_NEXT_NODUP, \ref MDBX_PREV, \ref MDBX_PREV_DUP, \ref
@@ -3456,41 +4128,97 @@ public class JNI {
 //			@JniArg(cast = "uint_fast64_t") long attr,
 //			@JniArg(cast = "unsigned") int flags);
 
+	/**
+	 * Return the cursor's transaction handle.
+	 * \ingroup c_cursors
+	 *
+	 * @param cursor [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 * @return cursor transaction handle
+	 */
 	@JniMethod(cast = "MDBX_txn *")
 	public static final native long mdbx_cursor_txn(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Return the cursor's table handle.
+	 * \ingroup c_cursors
+	 *
+	 * @param cursor  [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 * @return cursor table handle
+	 */
 	@JniMethod(cast = "uint32_t")
 	public static final native long mdbx_cursor_dbi(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Delete current key/data pair.
+	 * \ingroup c_crud
+	 *
+	 * This function deletes the key/data pair to which the cursor refers. This does not invalidate the cursor,
+	 * so operations such as \ref MDBX_NEXT can still be used on it. Both \ref MDBX_NEXT and
+	 * \ref MDBX_GET_CURRENT will return the same record after this operation.
+	 *
+	 * @param cursor  [in] A cursor handle returned by mdbx_cursor_open().
+	 * @param flags   [in] Options for this operation. This parameter must be set to one of the values described
+	 *                     here.
+	 *  - \ref MDBX_CURRENT Delete only single entry at current cursor position.
+	 *  - \ref MDBX_ALLDUPS or \ref MDBX_NODUPDATA (supported for compatibility)
+	 *      Delete all of the data items for the current key. This flag has effect
+	 *      only for table(s) was created with \ref MDBX_DUPSORT.
+	 *
+	 * \see \ref c_crud_hints "Quick reference for Insert/Update/Delete operations"
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_MAP_FULL      The database is full, see \ref mdbx_env_set_mapsize().
+	 * \retval MDBX_TXN_FULL      The transaction has too many dirty pages.
+	 * \retval MDBX_EACCES        An attempt was made to write in a read-only transaction.
+	 * \retval MDBX_EINVAL        An invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_del(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
 			@JniArg(cast = "unsigned") int flags);
 
+	/**
+	 * Return count values (aka duplicates) for current key.
+	 * \ingroup c_crud
+	 *
+	 * @see #mdbx_cursor_count_ex(long, long[], MDBX_stat, long)
+	 *
+	 * This call is valid for all tables, but reasonable only for that support sorted duplicate data items
+	 * \ref MDBX_DUPSORT.
+	 *
+	 * @param cursor    [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 * @param count    [out] Address where the count will be stored.
+	 *
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
+	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
+	 * \retval MDBX_EINVAL   Cursor is not initialized, or an invalid parameter was specified.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_count(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
 			@JniArg(cast = "size_t *") long[] count);
 
-	/** \brief Return count values (aka duplicates) and nested b-tree statistics for current key.
+	/**
+	 * Return count values (aka duplicates) and nested b-tree statistics for current key.
 	 * \ingroup c_crud
 	 *
-	 * \see mdbx_dbi_stat
-	 * \see mdbx_dbi_dupsort_depthmask
-	 * \see mdbx_cursor_count
+	 * @see #mdbx_dbi_stat(long, long, MDBX_stat, long)
+	 * @see #mdbx_dbi_dupsort_depthmask(long, long, long[])
+	 * @see #mdbx_cursor_count(long, long[])
 	 *
 	 * This call is valid for all tables, but reasonable only for that support sorted duplicate data items
 	 * \ref MDBX_DUPSORT.
 	 *
-	 * \param [in] cursor    A cursor handle returned by \ref mdbx_cursor_open().
-	 * \param [out] count    Address where the count will be stored.
-	 * \param [out] stat     The address of an \ref MDBX_stat structure where the statistics of a nested b-tree
+	 * @param cursor    [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 * @param count    [out] Address where the count will be stored.
+	 * @param stat     [out] The address of an \ref MDBX_stat structure where the statistics of a nested b-tree
 	 *                       will be copied.
-	 * \param [in] bytes     The size of \ref MDBX_stat.
+	 * @param bytes     [in] The size of \ref MDBX_stat.
 	 *
-	 * \returns A non-zero error value on failure and 0 on success, some possible errors are:
+	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
 	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
 	 * \retval MDBX_EINVAL   Cursor is not initialized, or an invalid parameter was specified.
 	 */
@@ -3501,6 +4229,17 @@ public class JNI {
 			@JniArg(cast = "MDBX_stat *") MDBX_stat stat,
 			@JniArg(cast = "size_t") long bytes);
 
+	/**
+	 * Determines whether the cursor is pointed to a key-value pair or not, i.e. was not positioned or points to
+	 * the end of data.
+	 * \ingroup c_cursors
+	 *
+	 * @param cursor    [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 *
+	 * @return A \ref MDBX_RESULT_TRUE or \ref MDBX_RESULT_FALSE value, otherwise the error code.
+	 * \retval MDBX_RESULT_TRUE    No more data available or cursor not positioned
+	 * \retval MDBX_RESULT_FALSE   A data is available
+	 * \retval Otherwise the error code */
 	@JniMethod
 	public static final native int mdbx_cursor_eof(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
@@ -3538,8 +4277,8 @@ public class JNI {
 	 * Determines whether the cursor is on the last or only multi-value matching the key.
 	 *
 	 * @param cursor [in]
-	 *          The cursor created by \ref mdbx_cursor_open(). \returns The value of \ref
-	 *          MDBX_RESULT_TRUE, or \ref MDBX_RESULT_FALSE, otherwise an error code.
+	 *          The cursor created by \ref mdbx_cursor_open().
+	 * @return The value of \ref MDBX_RESULT_TRUE, or \ref MDBX_RESULT_FALSE, otherwise an error code.
 	 * retval MDBX_RESULT_TRUE the cursor is positioned on the last or only multi-value matching the key.
 	 * retval MDBX_RESULT_FALSE the cursor is NOT positioned on the last or only multi-value matching the key.
 	 * retval OTHERWISE the error code.
@@ -3548,21 +4287,72 @@ public class JNI {
 	public static final native int mdbx_cursor_on_last_dup(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Determines whether the cursor is pointed to the last key-value pair or not.
+	 * \ingroup c_cursors
+	 *
+	 * @param cursor    [in] A cursor handle returned by \ref mdbx_cursor_open().
+	 *
+	 * @return A \ref MDBX_RESULT_TRUE or \ref MDBX_RESULT_FALSE value, otherwise the error code.
+	 * \retval MDBX_RESULT_TRUE   Cursor positioned to the last key-value pair
+	 * \retval MDBX_RESULT_FALSE  Cursor NOT positioned to the last key-value pair
+	 * \retval Otherwise the error code
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_on_last(
 			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
 
+	/**
+	 * Create a cursor handle but not bind it to transaction nor DBI-handle.
+	 * \ingroup c_cursors
+	 *
+	 * A cursor cannot be used when its table handle is closed. Nor when its transaction has ended, except with
+	 * \ref mdbx_cursor_bind() and \ref mdbx_cursor_renew(). Also it can be discarded with
+	 * \ref mdbx_cursor_close().
+	 *
+	 * A cursor must be closed explicitly always, before or after its transaction ends. It can be reused with
+	 * \ref mdbx_cursor_bind() or \ref mdbx_cursor_renew() before finally closing it.
+	 *
+	 * \note In contrast to LMDB, the MDBX required that any opened cursors can be reused and must be freed
+	 * explicitly, regardless ones was opened in a read-only or write transaction. The REASON for this is
+	 * eliminates ambiguity which helps to avoid errors such as: use-after-free, double-free, i.e. memory
+	 * corruption and segfaults.
+	 *
+	 * @param ctx [in] A pointer to application context to be associated with created cursor and could be
+	 *                 retrieved by \ref mdbx_cursor_get_userctx() until cursor closed.
+	 *
+	 * @return Created cursor handle or NULL in case out of memory.
+	 */
 	@JniMethod(cast = "MDBX_cursor *")
 	public static final native long mdbx_cursor_create(
 			@JniArg(cast = "void *") long ctx);
 
+	/**
+	 * Get the application information associated with the MDBX_cursor.
+	 * \ingroup c_cursors
+	 * @see #mdbx_cursor_set_userctx(long, long)
+	 *
+	 * @param cursor  [in] An cursor handle returned by \ref mdbx_cursor_create() or \ref mdbx_cursor_open().
+	 * @return The pointer which was passed via the `context` parameter of `mdbx_cursor_create()` or set by
+	 *         \ref mdbx_cursor_set_userctx(), or `NULL` if something wrong. */
 	@JniMethod(cast = "void *")
 	public static final native long mdbx_cursor_get_userctx(
-			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long env);
+			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long cursor);
 
+	/**
+	 * Set application information associated with the cursor.
+	 * \ingroup c_cursors
+	 *
+	 * @see #mdbx_cursor_get_userctx(long)
+	 *
+	 * @param cursor  [in] An cursor handle returned by \ref mdbx_cursor_create() or \ref mdbx_cursor_open().
+	 * @param ctx     [in] An arbitrary pointer for whatever the application needs.
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
+	 */
 	@JniMethod
 	public static final native int mdbx_cursor_set_userctx(
-			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long env,
+			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long cursor,
 			@JniArg(cast = "void *") long ctx);
 
 	//====================================================//
@@ -3649,9 +4439,12 @@ public class JNI {
 	public static final native long mdbx_limits_dbsize_max(
 			@JniArg(cast = "intptr_t") long pagesize);
 
-	/** \brief Returns minimal key size in bytes for given table flags.
+	/**
+	 * Returns minimal key size in bytes for given table flags.
 	 * \ingroup c_statinfo
-	 * \see db_flags
+	 * \see #db_flags
+	 * @param flags flags
+	 * @return size in bytes
 	 */
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_keysize_min(
@@ -3668,47 +4461,63 @@ public class JNI {
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_pgsize_max();
 
-	/** \brief Returns maximal write transaction size (i.e. limit for summary volume
-	 * of dirty pages) in bytes for given page size, or -1 if pagesize is invalid.
+	/**
+	 * Returns maximal write transaction size (i.e. limit for summary volume of dirty pages) in bytes for given
+	 * page size, or -1 if pagesize is invalid.
 	 * \ingroup c_statinfo
+	 * @param pagesize page size
+	 * @return maximum write transaction size in bytes
 	 */
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_txnsize_max(
 			@JniArg(cast = "intptr_t") long pagesize);
 
-	/** \brief Returns minimal data size in bytes for given table flags.
+	/**
+	 * brief Returns minimal data size in bytes for given table flags.
 	 * \ingroup c_statinfo
 	 * \see db_flags
+	 * @param flags flags
+	 * @return size in bytes
 	 */
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_valsize_min(
 			@JniArg(cast = "unsigned") long flags);
 
-	/** \brief Returns maximal data size in bytes for given page size
-	 * and table flags, or -1 if pagesize is invalid.
+	/**
+	 * Returns maximal data size in bytes for given page size and table flags, or -1 if pagesize is invalid.
 	 * \ingroup c_statinfo
 	 * \see db_flags
+	 * @param pagesize page size
+	 * @param flags flags
+	 * @return size in bytes
 	 */
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_valsize_max(
 			@JniArg(cast = "intptr_t") long pagesize,
 			@JniArg(cast = "unsigned") long flags);
 
-	/** \brief Returns maximal size of key-value pair to fit in a single page with
-	 * the given size and table flags, or -1 if pagesize is invalid.
+	/**
+	 * Returns maximal size of key-value pair to fit in a single page with the given size and table flags, or -1
+	 * if pagesize is invalid.
 	 * \ingroup c_statinfo
 	 * \see db_flags
+	 * @param pagesize page size
+	 * @param flags flags
+	 * @return size in bytes
 	 */
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_pairsize4page_max(
 			@JniArg(cast = "intptr_t") long pagesize,
 			@JniArg(cast = "unsigned") long flags);
 
-	/** \brief Returns maximal data size in bytes to fit in a leaf-page or
-	 * single large/overflow-page with the given page size and table flags,
-	 * or -1 if pagesize is invalid.
+	/**
+	 * Returns maximal data size in bytes to fit in a leaf-page or single large/overflow-page with the given
+	 * page size and table flags, or -1 if pagesize is invalid.
 	 * \ingroup c_statinfo
 	 * \see db_flags
+	 * @param pagesize page size
+	 * @param flags flags
+	 * @return size in bytes
 	 */
 	@JniMethod(cast = "intptr_t")
 	public static final native long mdbx_limits_valsize4page_max(
@@ -3787,10 +4596,11 @@ public class JNI {
 	 * about available RAM and can be useful in that it returns the same information that libmdbx uses
 	 * internally to adjust various options and control readahead.
 	 *
-	 * @param page_size
-	 * @param total_pages
-	 * @param avail_pages
-	 * @return
+ 	 * @param page_size     [out] Optional address where the system page size will be stored.
+	 * @param total_pages   [out] Optional address where the number of total RAM pages will be stored.
+	 * @param avail_pages   [out] Optional address where the number of available/free RAM pages will be stored.
+	 *
+	 * @return A non-zero error value on failure and 0 on success.
 	 */
 	@JniMethod
 	public static final native int mdbx_get_sysraminfo(

@@ -51,10 +51,19 @@ public enum CursorStateFlags {
 		this.value = value;
 	}
 
+	/**
+	 * Get value
+	 * @return value
+	 */
 	public int getValue() {
 		return value;
 	}
 
+	/**
+	 * Get enum by value
+	 * @param value the value associate with the enum
+	 * @return the related CursorStateFlags
+	 */
 	public static CursorStateFlags getByValue(int value) {
 		for (CursorStateFlags level : values()) {
 			if (value == level.getValue()) {

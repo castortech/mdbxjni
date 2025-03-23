@@ -2,16 +2,31 @@ package com.castortech.mdbxjni.types;
 
 import java.nio.ByteBuffer;
 
+/**
+ * Utility class supporting byte manipulation
+ * @author Alain Picard
+ */
 public class ByteUtil {
 	private static final String HexStringForLongMaxValue = Long.toHexString(Long.MAX_VALUE);
 	private static ByteBuffer buffer = ByteBuffer.allocate(Long.BYTES);
 
 	private ByteUtil() { }
 
+	/**
+	 * Converts a byte into an hex string using default prefix of 0x
+	 * @param b byte to convert
+	 * @return hex string for byte
+	 */
 	public static String hexStringForByte(byte b) {
 		return hexStringForByte(b, "0x"); //$NON-NLS-1$
 	}
 
+	/**
+	 * Converts a byte into an hex string
+	 * @param b byte to convert
+	 * @param prefix to add to converted byte
+	 * @return hex string for byte
+	 */
 	public static String hexStringForByte(byte b, String prefix) {
 		StringBuilder sb = new StringBuilder();
 		int i = b;
@@ -33,6 +48,13 @@ public class ByteUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Converts a byte array into an hex string
+	 * @param bytes bytes to convert
+	 * @param bytePrefix prefix to add to converted bytes
+	 * @param byteSeparator separator to insert between bytes if not null
+	 * @return hex string for bytes
+	 */
 	public static String hexStringForBytes(byte[] bytes, String bytePrefix, String byteSeparator) {
 		StringBuilder sb = new StringBuilder();
 
@@ -45,6 +67,11 @@ public class ByteUtil {
 		return sb.toString();
 	}
 
+	/**
+	 * Converts an hex string to a byte. Note that there is minimal validation performed
+	 * @param hexString string to convert
+	 * @return byte represented by the string
+	 */
 	public static byte hexToByte(String hexString) {
 		int firstDigit = toDigit(hexString.charAt(0));
 		int secondDigit = toDigit(hexString.charAt(1));
@@ -59,6 +86,13 @@ public class ByteUtil {
 		return digit;
 	}
 
+	/**
+	 * Converts an hex string to a byte array. Note that there is minimal validation performed
+	 * @param hexString string to convert
+	 * @param bytePrefix prefix contained in hexString
+	 * @param byteSeparator separator between bytes contained in hexString
+	 * @return byte array from converstion
+	 */
 	public static byte[] bytesForHexString(String hexString, String bytePrefix, String byteSeparator) {
 		if (byteSeparator != null) { //add a trailing separator to make it easier to split things
 			hexString += byteSeparator;
@@ -75,6 +109,11 @@ public class ByteUtil {
 		return bytes;
 	}
 
+	/**
+	 * Converts a long value into an hex string
+	 * @param lValue long value
+	 * @return hex string for long value
+	 */
 	public static String hexStringForLong(long lValue) {
 		String raw = Long.toHexString(lValue);
 		if (raw.length() == HexStringForLongMaxValue.length()) {
@@ -100,19 +139,32 @@ public class ByteUtil {
 		return 256 + (long)b;
 	}
 
-	// little endian
+	/**
+	 * Convert a little endian byte array (4 bytes) representing a long
+	 * @param buf byte array
+	 * @return long from byte array
+	 */
 	public static long longForByteArray(byte[] buf) {
 		return unsignedByte(buf[0]) + unsignedByte(buf[1]) * 256 + unsignedByte(buf[2]) * 65536
 				+ unsignedByte(buf[3]) * 16777216;
 	}
 
-	// little endian
+	/**
+	 * Convert a little endian byte array (4 bytes) representing a long
+	 * @param buf byte array
+	 * @param offset offset from which to start extracting bytes
+	 * @return long from byte array
+	 */
 	public static long longForByteArray(byte[] buf, int offset) {
 		return unsignedByte(buf[offset + 0]) + unsignedByte(buf[offset + 1]) * 256
 				+ unsignedByte(buf[offset + 2]) * 65536 + unsignedByte(buf[offset + 3]) * 16777216;
 	}
 
-	// little endian
+	/**
+	 * Convert a long into a little endian byte array (4 bytes)
+	 * @param l long to convert
+	 * @return byte array representing long
+	 */
 	public static byte[] byteArrayForLong(long l) {
 //		byte[] buf = new byte[4];
 //		buf[0] = (byte)(l & 0x000000FF);
@@ -125,6 +177,11 @@ public class ByteUtil {
 		return bs;
 	}
 
+	/**
+	 * Convert a long into an unsigned byte array
+	 * @param l long value
+	 * @return byte array representing unsigned int.
+	 */
 	public static byte[] unsignedIntByteArray(long l) {
 		byte[] buf = new byte[4];
 		buf[0] = (byte)(l >>> 24);
@@ -134,7 +191,11 @@ public class ByteUtil {
 		return buf;
 	}
 
-	// convert between little and big endian and vice versa
+	/**
+	 * Convert between little and big endian and vice versa
+	 * @param bytes byte array to reverse
+	 * @return reversed bytes
+	 */
 	public static byte[] reverseByteOrderInPlace(byte[] bytes) {
 		for (int index = 0, count = bytes.length / 2; index < count; index++) {
 			byte temp = bytes[index];
@@ -145,6 +206,12 @@ public class ByteUtil {
 		return bytes;
 	}
 
+	/**
+	 * Reverse the bytes in the passed in array specified range
+	 * @param bytes byte array to reverse
+	 * @param offset starting offset
+	 * @param length length to convert
+	 */
 	public static void reverseBytes(byte[] bytes, int offset, int length) {
 		for (int index = 0, count = length / 2; index < count; index++) {
 			int thisIndex = offset + index;

@@ -7,6 +7,10 @@ import com.castortech.mdbxjni.Env;
 import com.castortech.mdbxjni.SecondaryDatabase;
 import com.castortech.mdbxjni.Transaction;
 
+/**
+ * Cursor key identifying a cursor in the pool,
+ * @author Alain Picard
+ */
 public class CursorKey {
 	private final long threadId;
 	private final Env env;
@@ -14,6 +18,12 @@ public class CursorKey {
 	private final Transaction txn;
 	private final boolean secondary;
 
+	/**
+	 * Constructor
+	 * @param env environment
+	 * @param db cursor database
+	 * @param txn cursor transaction
+	 */
 	public CursorKey(final Env env, final Database db, final Transaction txn) {
 		threadId = txn.getThreadId();
 		this.env = env;
@@ -22,6 +32,12 @@ public class CursorKey {
 		secondary = db instanceof SecondaryDatabase;
 	}
 
+	/**
+	 * Constructor
+	 * @param env environment
+	 * @param secondary true for secondary database
+	 * @param txn cursor transaction
+	 */
 	public CursorKey(final Env env, final boolean secondary, final Transaction txn) {
 		threadId = txn.getThreadId();
 		this.env = env;
@@ -30,18 +46,34 @@ public class CursorKey {
 		this.secondary = secondary;
 	}
 
+	/**
+	 * Cursor thread id
+	 * @return thread id
+	 */
 	public long getThreadId() {
 		return threadId;
 	}
 
+	/**
+	 * Cursor database
+	 * @return database
+	 */
 	public Database getDb() {
 		return db;
 	}
 
+	/**
+	 * Cursor transaction
+	 * @return transaction
+	 */
 	public Transaction getTxn() {
 		return txn;
 	}
 
+	/**
+	 * If for secondary database
+	 * @return true if for secondary database
+	 */
 	public boolean isSecondary() {
 		return secondary;
 	}

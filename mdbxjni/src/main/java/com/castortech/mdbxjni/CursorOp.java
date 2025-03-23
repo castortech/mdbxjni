@@ -141,26 +141,43 @@ public enum CursorOp {
    */
 	SET_UPPERBOUND(MDBX_SET_UPPERBOUND),
 
-	/* Doubtless cursor positioning at a specified key. */
+	/** Doubtless cursor positioning at a specified key. */
 	TO_KEY_LESSER_THAN(MDBX_TO_KEY_LESSER_THAN),
+	/** See {@link CursorOp#TO_KEY_LESSER_THAN}. */
 	TO_KEY_LESSER_OR_EQUAL(MDBX_TO_KEY_LESSER_OR_EQUAL),
+	/** See {@link CursorOp#TO_KEY_LESSER_THAN}. */
 	TO_KEY_EQUAL(MDBX_TO_KEY_EQUAL),
+	/** See {@link CursorOp#TO_KEY_LESSER_THAN}. */
 	TO_KEY_GREATER_OR_EQUAL(MDBX_TO_KEY_GREATER_OR_EQUAL),
+	/** See {@link CursorOp#TO_KEY_LESSER_THAN}. */
 	TO_KEY_GREATER_THAN(MDBX_TO_KEY_GREATER_THAN),
 
-	/* Doubtless cursor positioning at a specified key-value pair for dupsort/multi-value hives. */
+	/** Doubtless cursor positioning at a specified key-value pair for dupsort/multi-value hives. */
 	TO_EXACT_KEY_VALUE_LESSER_THAN(MDBX_TO_EXACT_KEY_VALUE_LESSER_THAN),
+	/** See {@link CursorOp#TO_EXACT_KEY_VALUE_LESSER_THAN}. */
 	TO_EXACT_KEY_VALUE_LESSER_OR_EQUAL(MDBX_TO_EXACT_KEY_VALUE_LESSER_OR_EQUAL),
+	/** See {@link CursorOp#TO_EXACT_KEY_VALUE_LESSER_THAN}. */
 	TO_EXACT_KEY_VALUE_EQUAL(MDBX_TO_EXACT_KEY_VALUE_EQUAL),
+	/** See {@link CursorOp#TO_EXACT_KEY_VALUE_LESSER_THAN}. */
 	TO_EXACT_KEY_VALUE_GREATER_OR_EQUAL(MDBX_TO_EXACT_KEY_VALUE_GREATER_OR_EQUAL),
+	/** See {@link CursorOp#TO_EXACT_KEY_VALUE_LESSER_THAN}. */
 	TO_EXACT_KEY_VALUE_GREATER_THAN(MDBX_TO_EXACT_KEY_VALUE_GREATER_THAN),
 
+	/** Doubtless cursor positioning at a specified key-value pair for dupsort/multi-value hives. */
 	TO_PAIR_LESSER_THAN(MDBX_TO_PAIR_LESSER_THAN),
+	/** See {@link CursorOp#TO_PAIR_LESSER_THAN}. */
 	TO_PAIR_LESSER_OR_EQUAL(MDBX_TO_PAIR_LESSER_OR_EQUAL),
+	/** See {@link CursorOp#TO_PAIR_LESSER_THAN}. */
 	TO_PAIR_EQUAL(MDBX_TO_PAIR_EQUAL),
+	/** See {@link CursorOp#TO_PAIR_LESSER_THAN}. */
 	TO_PAIR_GREATER_OR_EQUAL(MDBX_TO_PAIR_GREATER_OR_EQUAL),
+	/** See {@link CursorOp#TO_PAIR_LESSER_THAN}. */
 	TO_PAIR_GREATER_THAN(MDBX_TO_PAIR_GREATER_THAN),
 
+	/** \ref MDBX_DUPFIXED -only: Seek to given key and return up to a page of
+	 * duplicate data items from current cursor position. Move cursor to prepare
+	 * for \ref MDBX_NEXT_MULTIPLE. \see MDBX_GET_MULTIPLE
+	 */
 	SEEK_AND_GET_MULTIPLE(MDBX_SEEK_AND_GET_MULTIPLE),
 	;
 
@@ -170,6 +187,10 @@ public enum CursorOp {
 		this.value = value;
 	}
 
+	/**
+	 * Return the constant value associated with the cursor operation
+	 * @return associated value
+	 */
 	public int getValue() {
 		return value;
 	}

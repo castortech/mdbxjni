@@ -34,6 +34,8 @@ import static com.castortech.mdbxjni.Util.checkErrorCode;
 import static com.castortech.mdbxjni.Util.checkSize;
 
 /**
+ * Represents a database from libmdbx
+ *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 public class Database extends NativeObject implements Closeable {
@@ -74,7 +76,10 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
+	 * Get database statistics using of new temporary transaction
 	 * @return Statistics for a database.
+	 *
+	 * @see #stat(Transaction)
 	 */
 	public Stat stat() {
 		Transaction tx = env.createTransaction();
@@ -86,6 +91,12 @@ public class Database extends NativeObject implements Closeable {
 		}
 	}
 
+	/**
+	 * Get database statistics
+	 *
+	 * @param tx transaction to use
+	 * @return Statistics for a database.
+	 */
 	public Stat stat(Transaction tx) {
 		checkArgNotNull(tx, "tx"); //$NON-NLS-1$
 		MDBX_stat rc = new MDBX_stat();
@@ -96,6 +107,13 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
+	 * <p>
+	 * Empty or delete+close a database using of new temporary transaction.
+	 * </p>
+	 *
+	 * @param delete
+	 *            false to empty the DB, true to delete it from the environment and
+	 *            close the DB handle.
 	 * @see com.castortech.mdbxjni.Database#drop(Transaction, boolean)
 	 */
 	public void drop(boolean delete) {
@@ -129,15 +147,31 @@ public class Database extends NativeObject implements Closeable {
 		}
 	}
 
+	/**
+	 * Get the database name
+	 * @return name
+	 */
 	public String getName() {
 		return name;
 	}
 
+	/**
+	 * Get the list of secondary databases
+	 * @return list of secondary databases
+	 */
 	public List<SecondaryDatabase> getSecondaries() {
 		return secondaries;
 	}
 
 	/**
+	 * <p>
+	 * Get items from a database using of new temporary transaction.
+	 * </p>
+	 *
+	 * @param key
+	 *            The key to search for in the database
+	 * @return The data corresponding to the key or null if not found
+	 *
 	 * @see com.castortech.mdbxjni.Database#get(Transaction, byte[])
 	 */
 	public byte[] get(byte[] key) {
@@ -240,7 +274,6 @@ public class Database extends NativeObject implements Closeable {
 	 * databases with MDBX_DUPSORT flag the data argument also will be used to match over multi-value/duplicates,
 	 * and MDBX_SUCCESS will be returned only when BOTH the key and the data match exactly.</li>
 	 * <li>Updates BOTH the key and the data for pointing to the actual key-value pair inside the database.
-	 * <p>
 	 * </li>
 	 * </ol>
 	 *
@@ -318,14 +351,42 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see com.castortech.mdbxjni.Database#put(Transaction, byte[], byte[], int)
+	 * <p>
+	 * Store items into a database using of new temporary transaction.
+	 * </p>
+	 *
+	 * @param key
+	 *            The key to store in the database
+	 * @param value
+	 *            The value to store in the database
+	 * @return the existing value if it was a dup insert attempt.
+	 *
+ 	 * @see #put(Transaction, byte[], byte[], int)
 	 */
 	public byte[] put(byte[] key, byte[] value) {
 		return put(key, value, 0);
 	}
 
 	/**
-	 * @see com.castortech.mdbxjni.Database#put(Transaction, byte[], byte[], int)
+	 * <p>
+	 * Store items into a database using of new temporary transaction.
+	 * </p>
+	 *
+	 * This function stores key/data pairs in the database. The default behavior is
+	 * to enter the new key/data pair, replacing any previously existing key if
+	 * duplicates are disallowed, or adding a duplicate data item if duplicates are
+	 * allowed ({@link com.castortech.mdbxjni.Constants#DUPSORT}).
+	 *
+	 * @param key
+	 *            The key to store in the database
+	 * @param value
+	 *            The value to store in the database
+	 * @param flags
+	 * 						Flags see parent
+	 *
+	 * @return the existing value if it was a dup insert attempt.
+	 *
+	 * @see #put(Transaction, byte[], byte[], int)
 	 */
 	public byte[] put(byte[] key, byte[] value, int flags) {
 		checkArgNotNull(key, "key"); //$NON-NLS-1$
@@ -339,7 +400,20 @@ public class Database extends NativeObject implements Closeable {
 	}
 
 	/**
-	 * @see com.castortech.mdbxjni.Database#put(Transaction, byte[], byte[], int)
+	 * <p>
+	 * Store items into a database.
+	 * </p>
+	 *
+	 * @param tx
+	 *            transaction handle
+	 * @param key
+	 *            The key to store in the database
+	 * @param value
+	 *            The value to store in the database
+*
+	 * @return the existing value if it was a dup insert attempt.
+	 *
+	 * @see #put(Transaction, byte[], byte[], int)
 	 */
 	public byte[] put(Transaction tx, byte[] key, byte[] value) {
 		return put(tx, key, value, 0);

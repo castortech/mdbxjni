@@ -780,13 +780,6 @@ public class Env extends NativeObject implements Closeable {
 	 *            transactions.
 	 * @param readOnly
 	 *            This transaction will not perform any write operations.
-	 * @param parent
-	 *            If this parameter is non-NULL, the new transaction will be a
-	 *            nested transaction, with the transaction indicated by \b parent as
-	 *            its parent. Transactions may be nested to any level. A parent
-	 *            transaction and its cursors may not issue any other operations
-	 *            than mdb_txn_commit and mdb_txn_abort while it has active child
-	 *            transactions.
 	 * @return transaction handle
 	 * <b>Note</b> A transaction and its cursors must only be used by a single thread, and
 	 *       a thread may only have a single transaction at a time. If {@link EnvFlags#NOSTICKYTHREADS} is in

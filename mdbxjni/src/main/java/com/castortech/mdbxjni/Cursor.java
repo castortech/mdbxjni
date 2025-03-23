@@ -181,6 +181,12 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		return new Entry(key.toByteArray(), value.toByteArray());
 	}
 
+	/**
+	 * Get cursor entry
+	 * @param op operation
+	 * @param key seed key
+	 * @return entry or null if not found
+	 */
 	public Entry get(CursorOp op, byte[] key) {
 		checkArgNotNull(op, "op"); //$NON-NLS-1$
 		NativeBuffer keyBuffer = NativeBuffer.create(key);
@@ -202,10 +208,29 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Get cursor entry
+	 * @param op operation
+	 * @param key seed key
+	 * @param value seed value
+	 * @return entry or null if not found
+	 *
+	 * @see Cursor#get(CursorOp, byte[], byte[], Predicate)
+	 */
 	public Entry get(CursorOp op, byte[] key, byte[] value) {
 		return get(op, key, value, x -> true);
 	}
 
+	/**
+	 * Get cursor entry
+	 * @param op operation
+	 * @param key seed key as a byte array
+	 * @param value seed value as a byte array
+	 * @param matchPredicate predicate of byte array to filter results
+	 * @return entry or null if not found
+	 *
+	 * @see JNI#mdbx_cursor_get(long, MDBX_val, MDBX_val, int)
+	 */
 	public Entry get(CursorOp op, byte[] key, byte[] value, Predicate<byte[]> matchPredicate) {
 		checkArgNotNull(op, "op"); //$NON-NLS-1$
 		NativeBuffer keyBuffer = NativeBuffer.create(key);
@@ -235,10 +260,26 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		}
 	}
 
+	/**
+	 * Get cursor entry with operation status and updated key/value arguments
+	 * @param op operation
+	 * @param key seed key as a DatabaseEntry
+	 * @param value seed value as a DatabaseEntry
+	 * @return Operation status and on success updated key and value entries
+	 */
 	public OperationStatus get(CursorOp op, DatabaseEntry key, DatabaseEntry value) {
 		return get(op, key, value, null, null);
 	}
 
+	/**
+	 * Get cursor entry with operation status and updated key/value arguments
+	 * @param op operation
+	 * @param key seed key as a DatabaseEntry
+	 * @param value seed value as a DatabaseEntry
+	 * @param keyMatchPredicate key predicate of DatabaseEntry to filter keys
+	 * @param valMatchPredicate value predicate of DatabaseEntry to filter values
+	 * @return Operation status and on success updated key and value entries
+	 */
 	public OperationStatus get(CursorOp op, DatabaseEntry key, DatabaseEntry value,
 			Predicate<DatabaseEntry> keyMatchPredicate, Predicate<DatabaseEntry> valMatchPredicate) {
 		checkArgNotNull(op, "op"); //$NON-NLS-1$
@@ -449,7 +490,10 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	/**
 	 * Special version of count that starts with a positioned cursor and will iterate to count duplicates for
 	 * the current key
-	 *
+	 * @param op operation
+	 * @param key seed key as a DatabaseEntry
+	 * @param value seed value as a DatabaseEntry
+	 * @param valMatchPredicate value predicate of DatabaseEntry to filter values
 	 * @return count of scanned records. Note that if cursor was initialized via a cursor op that returns data,
 	 *         the count will have to be incremented to account for 1st value.
 	 */
@@ -467,14 +511,26 @@ public class Cursor extends NativeObject implements AutoCloseable {
 		return cnt;
 	}
 
+	/**
+	 * Get cursor database
+	 * @return cursor database
+	 */
 	public Database getDatabase() {
 		return db;
 	}
 
+	/**
+	 * Get cursor transaction
+	 * @return cursor transaction
+	 */
 	public Transaction getTransaction() {
 		return tx;
 	}
 
+	/**
+	 * Internal cursor copy
+	 * @return copied cursor
+	 */
 	public MDBX_cursor internCursor() {
 		MDBX_cursor rc = new MDBX_cursor();
 		JNIIntern.ptr_2_cursor(pointer(), rc, JNIIntern.SIZEOF_CURSOR);

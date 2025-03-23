@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>com.castortech.mdbxjni</groupId>
 		<artifactId>mdbxjni-project</artifactId>
-		<version>0.13.3-SNAPSHOT</version>
+		<version>0.13.5-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mdbxjni-win64</artifactId>

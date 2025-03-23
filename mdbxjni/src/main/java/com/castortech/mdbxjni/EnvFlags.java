@@ -21,6 +21,8 @@ package com.castortech.mdbxjni;
 import static com.castortech.mdbxjni.JNI.*;
 
 /**
+ * Environment values from libmdbx
+ *
  * @see JNI#MDBX_ENV_DEFAULTS
  * @author Alain Picard
  */

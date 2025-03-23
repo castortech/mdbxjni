@@ -7,15 +7,27 @@ import java.util.stream.Collectors;
 
 import com.castortech.mdbxjni.types.UnsignedInt8;
 
+/**
+ * Cursor State
+ * @author Alain Picard
+ */
 public class CursorState {
 	private final short rawResult;
 	private final UnsignedInt8 flags;
 
+	/**
+	 * Constructor
+	 * @param rawResult result from cursor operation
+	 */
 	public CursorState(short rawResult) {
 		this.rawResult = rawResult;
 		flags = new UnsignedInt8(rawResult);
 	}
 
+	/**
+	 * Get cursor state flags
+	 * @return collection of CursorStateFlags
+	 */
 	public Collection<CursorStateFlags> getCursorStateFlags() {
 		List<CursorStateFlags> csFlags = new ArrayList<>();
 //		int flgsInt = flags.intValue();
@@ -44,6 +56,10 @@ public class CursorState {
 		return csFlags;
 	}
 
+	/**
+	 * Get raw result
+	 * @return the raw result
+	 */
 	public short getRawResult() {
 		return rawResult;
 	}

@@ -3,21 +3,21 @@ package com.castortech.mdbxjni;
 import java.util.Comparator;
 
 public class DatabaseConfig implements Cloneable {
-	/** @see JNI#MDBX_REVERSEKEY */
+	/** See {@link JNI#MDBX_REVERSEKEY}. */
 	private boolean reverseKey = false;
-	/** @see JNI#MDBX_DUPSORT */
+	/** See {@link JNI#MDBX_DUPSORT}. */
 	private boolean dupSort = false;
-	/** @see JNI#MDBX_DUPFIXED */
+	/** See {@link JNI#MDBX_DUPFIXED}. */
 	private boolean dupFixed = false;
-	/** @see JNI#MDBX_INTEGERKEY */
+	/** See {@link JNI#MDBX_INTEGERKEY}. */
 	private boolean integerKey = false;
-	/** @see JNI#MDBX_INTEGERDUP */
+	/** See {@link JNI#MDBX_INTEGERDUP}. */
 	private boolean integerDup = false;
-	/** @see JNI#MDBX_REVERSEDUP */
+	/** See {@link JNI#MDBX_REVERSEDUP}. */
 	private boolean reverseDup = false;
-	/** @see JNI#MDBX_CREATE */
+	/** See {@link JNI#MDBX_CREATE}. */
 	private boolean create = false;
-	/** @see JNI#MDBX_DB_ACCEDE */
+	/** See {@link JNI#MDBX_ACCEDE}. */
 	private boolean accede = false;
 
 	private Comparator<byte[]> keyComparator;

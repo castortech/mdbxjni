@@ -21,7 +21,7 @@
 
 	<groupId>com.castortech.mdbxjni</groupId>
 	<artifactId>mdbxjni-project</artifactId>
-	<version>0.13.3-SNAPSHOT</version>
+	<version>0.13.5-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>${project.groupId}:${project.artifactId}</name>
@@ -200,6 +200,9 @@
 <!--				</dependencies>-->
 
 				<configuration>
+<!--					<doclint>all,-missing,-reference</doclint>-->
+					<doclint>all</doclint>
+					<failOnError>false</failOnError>
 					<docfilessubdirs>true</docfilessubdirs>
 					<useStandardDocletOptions>true</useStandardDocletOptions>
 					<charset>UTF-8</charset>
@@ -230,6 +233,9 @@
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>${mvn-javadoc-version}</version>
 				<configuration>
+<!--					<doclint>all,-missing,-reference</doclint>-->
+					<doclint>all</doclint>
+					<failOnError>false</failOnError>
 					<docfilessubdirs>true</docfilessubdirs>
 					<useStandardDocletOptions>true</useStandardDocletOptions>
 					<charset>UTF-8</charset>
@@ -259,20 +265,6 @@
 					<aggregate>true</aggregate>
 				</configuration>
 			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>${mvn-javadoc-version}</version>
-				<configuration>
-					<excludePackageNames>*.internal</excludePackageNames>
-					<linksource>true</linksource>
-					<links>
-						<link>https://docs.oracle.com/en/java/javase/17/docs/api</link>
-					</links>
-				</configuration>
-			</plugin>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
