@@ -45,7 +45,7 @@
 		<mvn-shade-version>3.6.0</mvn-shade-version>
 		<mvn-site-version>3.21.0</mvn-site-version>
 		<mvn-source-version>3.3.1</mvn-source-version>
-		<mvn-surefire-version>3.5.2</mvn-surefire-version>
+		<mvn-surefire-version>3.5.3</mvn-surefire-version>
 		<maven.compiler.release>17</maven.compiler.release>
 	</properties>
 
