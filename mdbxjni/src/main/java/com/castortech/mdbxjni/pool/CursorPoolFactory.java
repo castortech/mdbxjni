@@ -30,9 +30,6 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		this.env = env;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public Cursor create(CursorKey key) throws Exception {
 		Cursor cursor;
@@ -56,9 +53,6 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		return cursor;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public PooledObject<Cursor> wrap(Cursor cursor) {
 		if (log.isTraceEnabled()) {
@@ -67,17 +61,11 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		return new DefaultPooledObject<>(cursor);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public boolean validateObject(CursorKey key, PooledObject<Cursor> p) {
 		return p.getObject() != null;  //can be null if the txn was freed
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void activateObject(CursorKey key, PooledObject<Cursor> p) throws Exception {
 		if (log.isDebugEnabled()) {
@@ -89,9 +77,6 @@ public class CursorPoolFactory extends BaseKeyedPooledObjectFactory<CursorKey, C
 		}
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public void destroyObject(CursorKey key, PooledObject<Cursor> p) throws Exception {
 		if (key.getThreadId() != Thread.currentThread().getId()) {  //probably the evictor thread
