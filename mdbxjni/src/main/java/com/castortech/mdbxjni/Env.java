@@ -18,24 +18,62 @@
 
 package com.castortech.mdbxjni;
 
+import static com.castortech.mdbxjni.Constants.NEXT_NODUP;
+import static com.castortech.mdbxjni.Constants.string;
+import static com.castortech.mdbxjni.JNI.MDBX_RDONLY;
+import static com.castortech.mdbxjni.JNI.map_printf;
+import static com.castortech.mdbxjni.JNI.map_val;
+import static com.castortech.mdbxjni.JNI.mdbx_cursor_create;
+import static com.castortech.mdbxjni.JNI.mdbx_dbi_open;
+import static com.castortech.mdbxjni.JNI.mdbx_dbi_open_ex;
+import static com.castortech.mdbxjni.JNI.mdbx_env_close;
+import static com.castortech.mdbxjni.JNI.mdbx_env_copy;
+import static com.castortech.mdbxjni.JNI.mdbx_env_create;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_flags;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_maxdbs;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_maxkeysize;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_maxkeysize_ex;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_maxreaders;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_maxvalsize_ex;
+import static com.castortech.mdbxjni.JNI.mdbx_env_get_userctx;
+import static com.castortech.mdbxjni.JNI.mdbx_env_info;
+import static com.castortech.mdbxjni.JNI.mdbx_env_info_ex;
+import static com.castortech.mdbxjni.JNI.mdbx_env_open;
+import static com.castortech.mdbxjni.JNI.mdbx_env_openW;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_flags;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_geometry;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_mapsize;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_maxdbs;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_maxreaders;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_option;
+import static com.castortech.mdbxjni.JNI.mdbx_env_set_userctx;
+import static com.castortech.mdbxjni.JNI.mdbx_env_stat;
+import static com.castortech.mdbxjni.JNI.mdbx_env_stat_ex;
+import static com.castortech.mdbxjni.JNI.mdbx_env_sync;
+import static com.castortech.mdbxjni.JNI.mdbx_env_sync_ex;
+import static com.castortech.mdbxjni.JNI.mdbx_env_sync_poll;
+import static com.castortech.mdbxjni.JNI.mdbx_setup_debug;
+import static com.castortech.mdbxjni.JNI.mdbx_txn_begin;
+import static com.castortech.mdbxjni.JNI.mdbx_txn_begin_ex;
+import static com.castortech.mdbxjni.Util.checkArgNotNull;
+import static com.castortech.mdbxjni.Util.checkErrorCode;
+
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+
 import org.fusesource.hawtjni.runtime.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.castortech.mdbxjni.JNI.MDBX_build_info;
 import com.castortech.mdbxjni.JNI.MDBX_envinfo;
 import com.castortech.mdbxjni.JNI.MDBX_stat;
+import com.castortech.mdbxjni.JNI.MDBX_version_info;
 import com.castortech.mdbxjni.pool.CursorPool;
 import com.castortech.mdbxjni.pool.CursorPoolConfig;
 import com.castortech.mdbxjni.pool.CursorPoolImpl;
-
-import static com.castortech.mdbxjni.Constants.NEXT_NODUP;
-import static com.castortech.mdbxjni.Constants.string;
-import static com.castortech.mdbxjni.JNI.*;
-import static com.castortech.mdbxjni.Util.*;
 
 /**
  * An environment handle.
@@ -952,6 +990,9 @@ public class Env extends NativeObject implements Closeable {
 
 	public Database openDatabase(Transaction tx, String name, int flags, Comparator<byte[]> keyComp,
 			Comparator<byte[]> dataComp) {
+		if (log.isDebugEnabled())
+			log.debug("Opening database for {} with flags:{}", name, flags); //$NON-NLS-1$
+
 		if (tx == null) {
 			return openDatabase(name, flags, keyComp, dataComp);
 		}
