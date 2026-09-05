@@ -74,6 +74,7 @@ public class DatabaseConfig implements Cloneable {
 		return dupSort;
 	}
 
+	/** @see JNI#MDBX_DUPSORT */
 	public void setDupSort(boolean dupSort) {
 		this.dupSort = dupSort;
 	}
@@ -103,6 +104,7 @@ public class DatabaseConfig implements Cloneable {
 		return integerDup;
 	}
 
+	/** @see JNI#MDBX_INTEGERDUP */
 	public void setIntegerDup(boolean integerDup) {
 		this.integerDup = integerDup;
 	}
@@ -112,6 +114,7 @@ public class DatabaseConfig implements Cloneable {
 		return reverseDup;
 	}
 
+	/** @see JNI#MDBX_REVERSEDUP */
 	public void setReverseDup(boolean reverseDup) {
 		this.reverseDup = reverseDup;
 	}
@@ -121,6 +124,7 @@ public class DatabaseConfig implements Cloneable {
 		return create;
 	}
 
+	/** @see JNI#MDBX_CREATE */
 	public void setCreate(boolean create) {
 		this.create = create;
 	}
@@ -130,6 +134,7 @@ public class DatabaseConfig implements Cloneable {
 		return accede;
 	}
 
+	/** @see JNI#MDBX_ACCEDE */
 	public void setAccede(boolean accede) {
 		this.accede = accede;
 	}
