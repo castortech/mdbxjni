@@ -18,7 +18,6 @@
 
 package com.castortech.mdbxjni;
 
-import org.fusesource.hawtjni.runtime.PointerMath;
 
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -83,7 +82,7 @@ class NativeBuffer extends NativeObject {
 			}
 
 			NativeBuffer rc = new NativeBuffer(allocation, pos, size);
-			pos = PointerMath.add(pos, size);
+			pos += size;
 			remaining -= size;
 			return rc;
 		}
@@ -178,7 +177,7 @@ class NativeBuffer extends NativeObject {
 			throw new IllegalArgumentException("offset cannot be negative");
 		if (offset + length >= capacity)
 			throw new ArrayIndexOutOfBoundsException("offset + length exceed the length of this buffer");
-		return new NativeBuffer(allocation, PointerMath.add(self, offset), length);
+		return new NativeBuffer(allocation, self + offset, length);
 	}
 
 	static byte[] cbytes(String strvalue) {

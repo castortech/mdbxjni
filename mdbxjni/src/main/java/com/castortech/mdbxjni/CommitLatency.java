@@ -30,6 +30,14 @@ public class CommitLatency extends JNI.MDBX_commit_latency {
 		gc_prof_self_rsteps= rc.gc_prof_self_rsteps;
 		gc_prof_self_xpages = rc.gc_prof_self_xpages;
 		gc_prof_self_majflt = rc.gc_prof_self_majflt;
+		gc_prof_pnl_merge_work_time = rc.gc_prof_pnl_merge_work_time;
+		gc_prof_pnl_merge_work_volume = rc.gc_prof_pnl_merge_work_volume;
+		gc_prof_pnl_merge_work_calls = rc.gc_prof_pnl_merge_work_calls;
+		gc_prof_pnl_merge_self_time = rc.gc_prof_pnl_merge_self_time;
+		gc_prof_pnl_merge_self_volume = rc.gc_prof_pnl_merge_self_volume;
+		gc_prof_pnl_merge_self_calls = rc.gc_prof_pnl_merge_self_calls;
+		gc_prof_max_reader_lag = rc.gc_prof_max_reader_lag;
+		gc_prof_max_retained_pages = rc.gc_prof_max_retained_pages;
 	}
 
 	@SuppressWarnings("nls")
@@ -61,6 +69,14 @@ public class CommitLatency extends JNI.MDBX_commit_latency {
 			", gc_prof_self_rsteps=" + gc_prof_self_rsteps +
 			", gc_prof_self_xpages=" + gc_prof_self_xpages +
 			", gc_prof_self_majflt=" + gc_prof_self_majflt +
+			", gc_prof_pnl_merge_work_time=" + gc_prof_pnl_merge_work_time +
+			", gc_prof_pnl_merge_work_volume=" + gc_prof_pnl_merge_work_volume +
+			", gc_prof_pnl_merge_work_calls=" + gc_prof_pnl_merge_work_calls +
+			", gc_prof_pnl_merge_self_time=" + gc_prof_pnl_merge_self_time +
+			", gc_prof_pnl_merge_self_volume=" + gc_prof_pnl_merge_self_volume +
+			", gc_prof_pnl_merge_self_calls=" + gc_prof_pnl_merge_self_calls +
+			", gc_prof_max_reader_lag=" + gc_prof_max_reader_lag +
+			", gc_prof_max_retained_pages=" + gc_prof_max_retained_pages +
 			'}';
 	}
 }

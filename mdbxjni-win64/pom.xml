@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>com.castortech.mdbxjni</groupId>
 		<artifactId>mdbxjni-project</artifactId>
-		<version>0.13.5-SNAPSHOT</version>
+		<version>0.14.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mdbxjni-win64</artifactId>
@@ -86,7 +86,7 @@
 <!--									<goal>copy-resources</goal>-->
 <!--								</goals>-->
 <!--								<configuration>-->
-<!--									<outputDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/windows64</outputDirectory>-->
+<!--									<outputDirectory>${project.build.outputDirectory}/META-INF/native/windows64</outputDirectory>-->
 <!--									<overwrite>true</overwrite>-->
 <!--									<resources>-->
 <!--										<resource>-->
@@ -120,35 +120,7 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>${mvn-jar-version}</version>
 				<configuration>
-					<classesDirectory>${basedir}/target/generated-sources/hawtjni/lib</classesDirectory>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.fusesource.hawtjni</groupId>
-				<artifactId>hawtjni-maven-plugin</artifactId>
-				<version>${hawtjni-version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<name>mdbxjni</name>
-					<windowsProjectName>mdbxjni</windowsProjectName>
-					<windowsBuildTool>msbuild</windowsBuildTool>
-					<!-- make sure to also change copy resource below to match -->
-					<windowsConfiguration>${windowsConfigMode}</windowsConfiguration>
-					<classified>false</classified>
-					<nativeSrcDependency>
-						<groupId>com.castortech.mdbxjni</groupId>
-						<artifactId>mdbxjni</artifactId>
-						<version>${project.version}</version>
-						<classifier>native-src</classifier>
-						<type>zip</type>
-					</nativeSrcDependency>
-					<packageDirectory>${basedir}/../mdbxjni/target/generated-sources/hawtjni/native-package</packageDirectory>
+					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 				</configuration>
 			</plugin>
 			<plugin>
@@ -162,7 +134,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/windows64</outputDirectory>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/native/windows64</outputDirectory>
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>

@@ -9,6 +9,7 @@ public class TxnInfo {
 	private final long spaceRetired;
 	private final long spaceLeftover;
 	private final long spaceDirty;
+	private final long pageGets;
 
 	TxnInfo(JNI.MDBX_txn_info rc) {
 		id = rc.txn_id;
@@ -19,6 +20,7 @@ public class TxnInfo {
 		spaceRetired = rc.txn_space_retired;
 		spaceLeftover = rc.txn_space_leftover;
 		spaceDirty = rc.txn_space_dirty;
+		pageGets = rc.txn_pget;
 	}
 
 	public long getId() {
@@ -53,6 +55,13 @@ public class TxnInfo {
 		return spaceDirty;
 	}
 
+	/**
+	 * @return Page-get count. Zero unless libmdbx was built with page-get statistics.
+	 */
+	public long getPageGets() {
+		return pageGets;
+	}
+
 	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
@@ -65,6 +74,7 @@ public class TxnInfo {
 				", spaceRetired=" + spaceRetired +
 				", spaceLeftover=" + spaceLeftover +
 				", spaceDirty=" + spaceDirty +
+				", pageGets=" + pageGets +
 				"]";
 	}
 }

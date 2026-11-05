@@ -15,12 +15,16 @@ public class BuildInfo {
 	private final String metadata;
 
 	BuildInfo(JNI.MDBX_build_info rc) {
-		datetime = new String(rc.datetime);
-		target= new String(rc.target);
-		options= new String(rc.options);
-		compiler= new String(rc.compiler);
-		flags= new String(rc.flags);
-		metadata = new String(rc.metadata);
+		datetime = text(rc.datetime);
+		target= text(rc.target);
+		options= text(rc.options);
+		compiler= text(rc.compiler);
+		flags= text(rc.flags);
+		metadata = text(rc.metadata);
+	}
+
+	private static String text(char[] value) {
+		return value == null ? "" : new String(value);
 	}
 
 	/**

@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>com.castortech.mdbxjni</groupId>
 		<artifactId>mdbxjni-project</artifactId>
-		<version>0.13.5-SNAPSHOT</version>
+		<version>0.14.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mdbxjni</artifactId>
@@ -30,16 +30,7 @@
 	<description>mdbxjni is a jni library for accessing mdbx.</description>
 	<url>https://github.com/castortech/mdbxjni</url>
 
-	<properties>
-		<skipAutogen>false</skipAutogen>
-	</properties>
-
 	<dependencies>
-		<dependency>
-			<groupId>org.fusesource.hawtjni</groupId>
-			<artifactId>hawtjni-runtime</artifactId>
-			<version>${hawtjni-version}</version>
-		</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
@@ -110,54 +101,15 @@
 			</plugin>
 
 			<plugin>
-				<groupId>org.fusesource.hawtjni</groupId>
-				<artifactId>hawtjni-maven-plugin</artifactId>
-				<version>${hawtjni-version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-							<goal>package-source</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<skipAutogen>${skipAutogen}</skipAutogen>
-					<name>mdbxjni</name>
-					<windowsProjectName>mdbxjni</windowsProjectName>
-					<callbacks>true</callbacks>
-					<windowsBuildTool>msbuild</windowsBuildTool>
-<!--					<windowsConfiguration>debug</windowsConfiguration>-->
-					<windowsConfiguration>release</windowsConfiguration>
-					<windowsCustomProps>true</windowsCustomProps>
-					<windowsToolsVersion>17.0</windowsToolsVersion>
-					<windowsTargetPlatformVersion>10.0.19041.0</windowsTargetPlatformVersion>
-					<windowsPlatformToolset>v143</windowsPlatformToolset>
-					<copyright><![CDATA[
-/*******************************************************************************
-* Copyright (C) 2011, FuseSource Corp.	All rights reserved.
-*
-*		 http://fusesource.com
-*
-* The software in this package is published under the terms of the
-* CDDL license a copy of which has been included with this distribution
-* in the license.txt file.
-*******************************************************************************/
-					]]></copyright>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
 						<redirectTestOutputToFile>true</redirectTestOutputToFile>
-						<argLine>-ea</argLine>
+						<argLine>-ea --enable-native-access=ALL-UNNAMED</argLine>
+						<!-- A shared fork hits a JDK 25 crash while an upcall links its call shape. -->
+						<reuseForks>false</reuseForks>
 						<failIfNoTests>false</failIfNoTests>
 						<workingDirectory>${project.build.directory}</workingDirectory>
-						<excludes>
-								<exclude>**/*</exclude>
-						</excludes>
 						<includes>
 								<include>**/*Test.java</include>
 						</includes>
@@ -167,6 +119,28 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<release>25</release>
+				</configuration>
+				<executions>
+					<execution>
+						<id>default-compile</id>
+						<configuration>
+							<release>25</release>
+							<compileSourceRoots>
+								<compileSourceRoot>${project.basedir}/src/main/java</compileSourceRoot>
+								<compileSourceRoot>${project.basedir}/src/ffm/java</compileSourceRoot>
+								<compileSourceRoot>${project.basedir}/src/ffm/generated</compileSourceRoot>
+							</compileSourceRoots>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-testCompile</id>
+						<configuration>
+							<release>25</release>
+						</configuration>
+					</execution>
+				</executions>
 			</plugin>
 
 			<plugin>
@@ -181,7 +155,7 @@
 						</goals>
 						<configuration>
 							<instructions>
-									<Import-Package>!com.castortech.mdbxjni*,!org.fusesource.hawtjni*,sun.reflect;resolution:=optional,*</Import-Package>
+									<Import-Package>!com.castortech.mdbxjni*,sun.reflect;resolution:=optional,*</Import-Package>
 							</instructions>
 						</configuration>
 					</execution>

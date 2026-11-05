@@ -11,6 +11,7 @@ public class Stat extends JNI.MDBX_stat {
 		ms_entries = rc.ms_entries;
 		ms_overflow_pages = rc.ms_overflow_pages;
 		ms_psize = rc.ms_psize;
+		ms_mod_txnid = rc.ms_mod_txnid;
 	}
 
 	@SuppressWarnings("nls")
@@ -23,6 +24,7 @@ public class Stat extends JNI.MDBX_stat {
 			", leafPages=" + ms_leaf_pages +
 			", overflowPages=" + ms_overflow_pages +
 			", entries=" + ms_entries +
+			", modTxnId=" + ms_mod_txnid +
 			'}';
 	}
 }

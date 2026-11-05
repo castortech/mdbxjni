@@ -18,14 +18,7 @@
 
 package com.castortech.mdbxjni;
 
-import org.fusesource.hawtjni.runtime.*;
-
-import static org.fusesource.hawtjni.runtime.ClassFlag.STRUCT;
-import static org.fusesource.hawtjni.runtime.ClassFlag.TYPEDEF;
-import static org.fusesource.hawtjni.runtime.FieldFlag.CONSTANT;
-import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_GETTER;
-import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
-import static org.fusesource.hawtjni.runtime.ArgFlag.*;
+import com.castortech.mdbxjni.ffm.FfmDispatch;
 
 /**
  * This class holds all the native constant, structure and function mappings.
@@ -33,26 +26,16 @@ import static org.fusesource.hawtjni.runtime.ArgFlag.*;
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 @SuppressWarnings( {"java:S1444", "java:S3008", "java:S101", "java:S116", "java:S117", "squid:S00100" })
-@JniClass
+
 public class JNI {
-	private static final Library DB_LIB;
-	private static final Library JNI_LIB;
-
 	static {
-		//Needed to avoid java.lang.UnsatisfiedLinkError: Can't find dependent libraries
-		//The sha1 strategy on windows will prohibit the JNI lib to find the DB lib.
-		System.setProperty("hawtjni.strategy", "temp"); //$NON-NLS-1$ //$NON-NLS-2$
-
-		DB_LIB = new Library("mdbx", JNI.class); //$NON-NLS-1$
-		JNI_LIB = new Library("mdbxjni", JNI.class); //$NON-NLS-1$
-
-		JNI.DB_LIB.load();
-		JNI.JNI_LIB.load();
-		init();
+		FfmDispatch.loadConstants();
 	}
 
-	@JniMethod(flags = {CONSTANT_INITIALIZER})
-	private static final native void init();
+
+	private static final void init() {
+		FfmDispatch.init();
+	}
 
 	///////////////////////////////////////////////////////////////////////
 	//
@@ -64,56 +47,60 @@ public class JNI {
 	 * Provide access to standard C errno function
 	 * @return error number
 	 */
-	@JniMethod(flags={CONSTANT_GETTER})
-	public static final native int errno();
+
+	public static final int errno() {
+		return FfmDispatch.errno();
+	}
 
 	/**
 	 * Provide access to standard C strerror function
 	 * @param errnum error number
 	 * @return char* to the error message string
 	 */
-	@JniMethod(cast = "char *")
-	public static final native long strerror(int errnum);
+
+	public static final long strerror(int errnum) {
+		return FfmDispatch.strerror(errnum);
+	}
 
 	/**
 	 * Provide access to standard C strlen function
 	 * @param s char* to the error message string
 	 * @return length of string error message
 	 */
-	public static final native int strlen(@JniArg(cast = "const char *")long s);
+	public static final int strlen(long s) {
+		return FfmDispatch.strlen(s);
+	}
 
 	/**
 	 * Provide access to standard C malloc function
 	 * @param size size to allocate
 	 * @return void pointer
 	 */
-	@JniMethod(cast = "void *")
-	public static final native long malloc(@JniArg(cast = "size_t") long size);
+
+	public static final long malloc( long size) {
+		return FfmDispatch.malloc(size);
+	}
 
 	/**
 	 * Provide access to standard C free function
 	 * @param self void pointer from previous malloc
 	 */
-	public static final native void free(@JniArg(cast = "void *") long self);
+	public static final void free( long self) {
+		FfmDispatch.free(self);
+	}
 
 	///////////////////////////////////////////////////////////////////////
 	//
 	// Additional Helpers
 	//
 	///////////////////////////////////////////////////////////////////////
-	public static final native void buffer_copy (
-			@JniArg(cast = "const void *", flags={NO_OUT, CRITICAL}) byte[] src,
-			@JniArg(cast = "size_t") long srcPos,
-			@JniArg(cast = "void *") long dest,
-			@JniArg(cast = "size_t") long destPos,
-			@JniArg(cast = "size_t") long length);
+	public static final void buffer_copy ( byte[] src, long srcPos, long dest, long destPos, long length) {
+		FfmDispatch.buffer_copy(src, srcPos, dest, destPos, length);
+	}
 
-	public static final native void buffer_copy (
-			@JniArg(cast = "const void *") long src,
-			@JniArg(cast = "size_t") long srcPos,
-			@JniArg(cast = "void *", flags={NO_IN, CRITICAL}) byte[] dest,
-			@JniArg(cast = "size_t") long destPos,
-			@JniArg(cast = "size_t") long length);
+	public static final void buffer_copy ( long src, long srcPos, byte[] dest, long destPos, long length) {
+		FfmDispatch.buffer_copy(src, srcPos, dest, destPos, length);
+	}
 
 	///////////////////////////////////////////////////////////////////////
 	//
@@ -124,34 +111,34 @@ public class JNI {
 	//====================================================//
 	// Version Info (no enum)
 	//====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_VERSION_MAJOR;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_VERSION_MINOR;
 
-	@JniClass(flags = STRUCT)
+
 	public static class MDBX_version_info {
-		@JniField(cast = "uint16_t")
+
 		public int major;
-		@JniField(cast = "uint16_t")
+
 		public int minor;
-		@JniField(cast = "uint16_t")
+
 		public int patch;
-		@JniField(cast = "uint16_t")
+
 		public int tweak;
-		@JniField(cast = "char *")
+
 		public char[] semver_prerelease;
 
-		@JniField(accessor="git.datetime", cast = "char *")
+
 		public char[] git_datetime;
-		@JniField(accessor="git.tree", cast = "char *")
+
 		public char[] git_tree;
-		@JniField(accessor="git.commit", cast = "char *")
+
 		public char[] git_commit;
-		@JniField(accessor="git.describe", cast = "char *")
+
 		public char[] git_describe;
 
-		@JniField(accessor="sourcery", cast = "char *")
+
 		public char[] sourcery;
 
 		@SuppressWarnings("nls")
@@ -177,33 +164,43 @@ public class JNI {
 		}
 	}
 
-	@JniField(accessor="sizeof(struct MDBX_version_info)", flags={CONSTANT})
+	public static void readVersion(MDBX_version_info info) {
+		FfmDispatch.readVersion(info);
+	}
+
+	public static void readBuild(MDBX_build_info info) {
+		FfmDispatch.readBuild(info);
+	}
+
+
 	public static int SIZEOF_VERSIONINFO;
 
 
-//	@JniMethod(flags={CONSTANT_GETTER})
-//	public static final native int mdbx_version();
+//
+//	public static final int mdbx_version() {
+//		return FfmDispatch.mdbx_version();
+//	}
 
-//	@JniField(flags = { CONSTANT })
+//
 //	public static int mdbx_version;
 //	public static MDBX_version_info mdbx_version;
 
 	//====================================================//
 	// Build Info
 	//====================================================//
-	@JniClass(flags = STRUCT)
+
 	public static class MDBX_build_info {
-		@JniField(cast = "char *")
+
 		public char[] datetime;
-		@JniField(cast = "char *")
+
 		public char[] target;
-		@JniField(cast = "char *")
+
 		public char[] options;
-		@JniField(cast = "char *")
+
 		public char[] compiler;
-		@JniField(cast = "char *")
+
 		public char[] flags;
-		@JniField(cast = "char *")
+
 		public char[] metadata;
 
 		@SuppressWarnings("nls")
@@ -220,30 +217,33 @@ public class JNI {
 		}
 	}
 
-	@JniField(accessor="sizeof(struct MDBX_build_info)", flags={CONSTANT})
+
 	public static int SIZEOF_BUILDINFO;
 
 	//====================================================//
 	// Transaction Info
 	//====================================================//
-	@JniClass(flags = {STRUCT, TYPEDEF})
+
 	public static class MDBX_txn_info {
-		@JniField(cast = "uint64_t")
+
 		public long txn_id;
-		@JniField(cast = "uint64_t")
+
 		public long txn_reader_lag;
-		@JniField(cast = "uint64_t")
+
 		public long txn_space_used;
-		@JniField(cast = "uint64_t")
+
 		public long txn_space_limit_soft;
-		@JniField(cast = "uint64_t")
+
 		public long txn_space_limit_hard;
-		@JniField(cast = "uint64_t")
+
 		public long txn_space_retired;
-		@JniField(cast = "uint64_t")
+
 		public long txn_space_leftover;
-		@JniField(cast = "uint64_t")
+
 		public long txn_space_dirty;
+
+		/** Page-get count when the library was built with MDBX_ENABLE_PGET_STAT. */
+		public long txn_pget;
 
 		@SuppressWarnings("nls")
 		@Override
@@ -257,6 +257,7 @@ public class JNI {
 					", txn_space_retired=" + txn_space_retired +
 					", txn_space_leftover=" + txn_space_leftover +
 					", txn_space_dirty=" + txn_space_dirty +
+					", txn_pget=" + txn_pget +
 					'}';
 		}
 	}
@@ -264,185 +265,197 @@ public class JNI {
 	//====================================================//
 	// Commit Latency
 	//====================================================//
-	@JniClass(flags = STRUCT)
+
 	public static class MDBX_commit_latency {
 		/**
 		 * Duration of preparation (commit child transactions, update sub-databases records and cursors
 		 * destroying).
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int preparation;
 
 		/**
 		 * Duration of GC update by wall clock
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int gc_wallclock;
 
 		/**
 		 * Duration of internal audit if enabled.
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int audit;
 
 		/**
 		 * Duration of writing dirty/modified data pages.
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int write;
 
 		/**
 		 * Duration of syncing written data to the dist/storage.
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int sync;
 
 		/**
 		 * Duration of transaction ending (releasing resources).
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int ending;
 
 		/**
 		 * The total duration of a commit
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int whole;
 
 		/**
 		 * Duration of GC update by wall clock
 		 */
-		@JniField(cast = "uint32_t")
+
 		public int gc_cputime;
 
 		/**
 		 * Number of GC update iterations, more than 1 if there were repetitions/restarts.
 		 */
-		@JniField(accessor="gc_prof.wloops", cast = "uint32_t")
+
 		public int gc_prof_wloops;
 
 		/**
 		 * Number of iterations to merge GC records.
 		 */
-		@JniField(accessor="gc_prof.coalescences", cast = "uint32_t")
+
 		public int gc_prof_coalescences;
 
 		/**
 		 * The number of times previous good/resilient commit points were killed when running in
 		 * MDBX_UTTERLY_NOSYNC mode.
 		 */
-		@JniField(accessor="gc_prof.wipes", cast = "uint32_t")
+
 		public int gc_prof_wipes;
 
 		/**
 		 * The number of forced commits to disk to avoid database growth when working outside of the
 		 * MDBX_UTTERLY_NOSYNC mode.
 		 */
-		@JniField(accessor="gc_prof.flushes", cast = "uint32_t")
+
 		public int gc_prof_flushes;
 
 		/**
 		 * The number of calls to the Handle-Slow-Readers mechanism to avoid database increment. See also
 		 * MDBX_hsr_func
 		 */
-		@JniField(accessor="gc_prof.kicks", cast = "uint32_t")
+
 		public int gc_prof_kicks;
 
 		/**
 		 * Slow path execution count GC for user data.
 		 */
-		@JniField(accessor="gc_prof.work_counter", cast = "uint32_t")
+
 		public int gc_prof_work_counter;
 
 		/**
 		 * Wall clock time spent reading and searching within the GC for user data.
 		 */
-		@JniField(accessor="gc_prof.work_rtime_monotonic", cast = "uint32_t")
+
 		public int gc_prof_work_rtime_monotonic;
 
 		/**
 		 * CPU time in user mode spent preparing pages fetched from the GC for user data, including paging from disk.
 		 */
-		@JniField(accessor="gc_prof.work_xtime_cpu", cast = "uint32_t")
+
 		public int gc_prof_work_xtime_cpu;
 
 		/**
 		 * The number of search iterations inside the GC when allocating pages for user data.
 		 */
-		@JniField(accessor="gc_prof.work_rsteps", cast = "uint32_t")
+
 		public int gc_prof_work_rsteps;
 
 		/**
 		 * Number of requests to allocate sequences of pages for user data.
 		 */
-		@JniField(accessor="gc_prof.work_xpages", cast = "uint32_t")
+
 		public int gc_prof_work_xpages;
 
 		/**
 		 * The number of page faults within the GC when allocating and preparing pages for user data.
 		 */
-		@JniField(accessor="gc_prof.work_majflt", cast = "uint32_t")
+
 		public int gc_prof_work_majflt;
 
 		/**
 		 * GC slow path execution count for purposes of maintaining and updating the GC itself.
 		 */
-		@JniField(accessor="gc_prof.self_counter", cast = "uint32_t")
+
 		public int gc_prof_self_counter;
 
 		/**
 		 * Wall clock time spent reading and searching within the GC for purposes of maintaining and updating the
 		 * GC itself.
 		 */
-		@JniField(accessor="gc_prof.self_rtime_monotonic", cast = "uint32_t")
+
 		public int gc_prof_self_rtime_monotonic;
 
 		/**
 		 * CPU time in user mode spent preparing pages to be retrieved from the GC for the purposes of maintaining
 		 * and updating the GC itself, including paging from disk.
 		 */
-		@JniField(accessor="gc_prof.self_rtime_monotonic", cast = "uint32_t")
+
 		public int gc_prof_self_xtime_cpu;
 
 		/**
 		 * The number of iterations of searching within the GC when allocating pages for the purpose of
 		 * maintaining and updating the GC itself.
 		 */
-		@JniField(accessor="gc_prof.self_rsteps", cast = "uint32_t")
+
 		public int gc_prof_self_rsteps;
 
 		/**
 		 * Number of requests to allocate sequences of pages for user data.
 		 */
-		@JniField(accessor="gc_prof.self_xpages", cast = "uint32_t")
+
 		public int gc_prof_self_xpages;
 
 		/**
 		 * The number of page faults within the GC when allocating and preparing pages for the GC itself.
 		 */
-		@JniField(accessor="gc_prof.self_xpages", cast = "uint32_t")
+
 		public int gc_prof_self_majflt;
 
 		/**
 		 * For disassembling with pnl_merge()
 		 */
-		@JniField(accessor="gc_prof.pnl_merge_work.time", cast = "uint32_t")
+
 		public int gc_prof_pnl_merge_work_time;
 
-		@JniField(accessor="gc_prof.pnl_merge_work.volume", cast = "uint64_t")
-		public int gc_prof_pnl_merge_work_volume;
 
-		@JniField(accessor="gc_prof.pnl_merge_work.calls", cast = "uint32_t")
+		public long gc_prof_pnl_merge_work_volume;
+
+
 		public int gc_prof_pnl_merge_work_calls;
 
-		@JniField(accessor="gc_prof.pnl_merge_self.time", cast = "uint32_t")
+
 		public int gc_prof_pnl_merge_self_time;
 
-		@JniField(accessor="gc_prof.pnl_merge_self.volume", cast = "uint64_t")
-		public int gc_prof_pnl_merge_self_volume;
 
-		@JniField(accessor="gc_prof.pnl_merge_self.calls", cast = "uint32_t")
+		public long gc_prof_pnl_merge_self_volume;
+
+
 		public int gc_prof_pnl_merge_self_calls;
+
+		/**
+		 * The maximum observed difference between the latest and oldest read MVCC-snapshots.
+		 */
+
+		public int gc_prof_max_reader_lag;
+
+		/**
+		 * The maximum noticed number of pages withheld from reclaim due to reading old MVCC-snapshots.
+		 */
+
+		public int gc_prof_max_retained_pages;
 
 		@SuppressWarnings("nls")
 		@Override
@@ -479,6 +492,8 @@ public class JNI {
 					", gc_prof_pnl_merge_self_time=" + gc_prof_pnl_merge_self_time +
 					", gc_prof_pnl_merge_self_volume=" + gc_prof_pnl_merge_self_volume +
 					", gc_prof_pnl_merge_self_calls=" + gc_prof_pnl_merge_self_calls +
+					", gc_prof_max_reader_lag=" + gc_prof_max_reader_lag +
+					", gc_prof_max_retained_pages=" + gc_prof_max_retained_pages +
 					"}";
 		}
 	}
@@ -486,15 +501,15 @@ public class JNI {
 	//====================================================//
 	// Canary
 	//====================================================//
-	@JniClass(flags = STRUCT)
+
 	public static class MDBX_canary {
-		@JniField(cast = "uint64_t")
+
 		public long x;
-		@JniField(cast = "uint64_t")
+
 		public long y;
-		@JniField(cast = "uint64_t")
+
 		public long z;
-		@JniField(cast = "uint64_t")
+
 		public long v;
 
 		@SuppressWarnings("nls")
@@ -518,7 +533,7 @@ public class JNI {
 	 * \see mdbx_env_open()
 	 * \see mdbx_env_set_flags()
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENV_DEFAULTS;
 
 	/**
@@ -527,7 +542,7 @@ public class JNI {
 	 * The `MDBX_VALIDATION` enabled the simple safe/careful mode for working with damaged or untrusted DB.
 	 * However, a notable performance degradation should be expected.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_VALIDATION;
 
 	/**
@@ -546,7 +561,7 @@ public class JNI {
 	 * This flag affects only at new environment creating by \ref mdbx_env_open(), otherwise at opening an
 	 * existing environment libmdbx will choice this automatically.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NOSUBDIR;
 
 	/**
@@ -563,7 +578,7 @@ public class JNI {
 	 *
 	 * This flag affects only at environment opening but can't be changed after.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_RDONLY;
 
 	/**
@@ -587,7 +602,7 @@ public class JNI {
 	 *
 	 * This flag affects only at environment opening but can't be changed after.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EXCLUSIVE;
 
 	/**
@@ -602,7 +617,7 @@ public class JNI {
 	 * `MDBX_ACCEDE` has no effect if the current process is the only one either opening the DB in read-only
 	 * mode or other process(es) uses the DB in read-only mode.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ACCEDE;
 
 	/**
@@ -630,7 +645,7 @@ public class JNI {
 	 *
 	 * This flag affects only at environment opening but can't be changed after.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_WRITEMAP;
 
 	/**
@@ -686,7 +701,7 @@ public class JNI {
 	 *
 	 * This flag takes effect when the environment is opened and cannot be changed afterward.*
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NOSTICKYTHREADS;
 
 	/**
@@ -706,7 +721,7 @@ public class JNI {
 	 *
 	 * This flag affects only at environment opening and can't be changed after.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NORDAHEAD;
 
 	/**
@@ -728,7 +743,7 @@ public class JNI {
 	 *
 	 * This flag may be changed at any time using `mdbx_env_set_flags()`.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NOMEMINIT;
 
 	/**
@@ -746,7 +761,7 @@ public class JNI {
 	 *
 	 * This flag may be changed at any time using mdbx_env_set_flags().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	@Deprecated
 	public static int MDBX_COALESCE;
 
@@ -770,13 +785,13 @@ public class JNI {
 	 *
 	 * This flag may be changed at any time using mdbx_env_set_flags().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LIFORECLAIM;
 
 	/**
 	 * Debugging option, fill/perturb released pages.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PAGEPERTURB;
 
 	/* SYNC MODES ****************************************************************/
@@ -821,7 +836,7 @@ public class JNI {
 	 * \attention Please do not use other modes until you have studied all the details and are sure. Otherwise,
 	 * you may lose your users' data, as happens in [Miranda NG](https://www.miranda-ng.org/) messenger.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SYNC_DURABLE;
 
 	/**
@@ -837,7 +852,7 @@ public class JNI {
 	 * `MDBX_NOMETASYNC` flag may be changed at any time using \ref mdbx_env_set_flags() or by passing to \ref
 	 * mdbx_txn_begin() for particular write transaction. \see sync_modes
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NOMETASYNC;
 
 	/**
@@ -879,7 +894,7 @@ public class JNI {
 	 * `MDBX_SAFE_NOSYNC` flag may be changed at any time using \ref mdbx_env_set_flags() or by passing to \ref
 	 * mdbx_txn_begin() for particular write transaction.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SAFE_NOSYNC;
 
 	/**
@@ -888,7 +903,7 @@ public class JNI {
 	 * Since version 0.9.x the `MDBX_MAPASYNC` is deprecated and has the same effect as \ref MDBX_SAFE_NOSYNC
 	 * with \ref MDBX_WRITEMAP. This just API simplification is for convenience and clarity.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MAPASYNC;
 
 	/**
@@ -923,26 +938,26 @@ public class JNI {
 	 * `MDBX_UTTERLY_NOSYNC` flag may be changed at any time using \ref mdbx_env_set_flags(), but don't has
 	 * effect if passed to \ref mdbx_txn_begin() for particular write transaction. \see sync_modes
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_UTTERLY_NOSYNC;
 
 	//====================================================//
 	// MDBX_constants (MDBX_constants)
 	//====================================================//
 	/** The hard limit for DBI handles*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MAX_DBI; //
 
 	/** The maximum size of a data item.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MAXDATASIZE;
 
 	/** The minimal database page size in bytes.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MIN_PAGESIZE;
 
 	/** The maximal database page size in bytes. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MAX_PAGESIZE;
 
 	//====================================================//
@@ -959,110 +974,110 @@ public class JNI {
 	 * environment. \note On Windows, the behavior of `MDBX_ENV_JUST_DELETE` is different because the system
 	 * does not support deleting files that are currently memory mapped.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENV_JUST_DELETE;
 
 	/**
 	 * \brief Make sure that the environment is not being used by other processes, or return an error otherwise.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENV_ENSURE_UNUSED;
 
 	/**
 	 * \brief Wait until other processes closes the environment before deletion.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENV_WAIT_FOR_UNUSED;
 
 	//====================================================//
 	// MDBX environment options (MDBX_option_t)
 	//====================================================//
 	/** Controls the maximum number of named databases for the environment.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_max_db;
 
 	/** Defines the maximum number of threads/reader slots for all processes interacting with the database. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_max_readers;
 
 	/**
 	 * Controls interprocess/shared threshold to force flush the data buffers to disk, if MDBX_SAFE_NOSYNC is
 	 * used.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_sync_bytes;
 
 	/**
 	 * Controls interprocess/shared relative period since the last unsteady commit to force flush the data
 	 * buffers to disk, if MDBX_SAFE_NOSYNC is used.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_sync_period;
 
 	/**
 	 * Controls the in-process limit to grow a list of reclaimed/recycled page's numbers for finding a sequence
 	 * of contiguous pages for large data items.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_rp_augment_limit;
 
 	/** Controls the in-process limit to grow a cache of dirty pages for reuse in the current transaction.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_loose_limit;
 
 	/** Controls the in-process limit of a pre-allocated memory items for dirty pages.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_dp_reserve_limit;
 
 	/** Controls the in-process limit of dirty pages for a write transaction.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_txn_dp_limit;
 
 	/**
 	 * Controls the in-process initial allocation size for dirty pages list of a write transaction. Default is
 	 * 1024.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_txn_dp_initial;
 
 	/** Controls the in-process how maximal part of the dirty pages may be spilled when necessary.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_spill_max_denominator;
 
 	/** Controls the in-process how minimal part of the dirty pages should be spilled when necessary.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_spill_min_denominator;
 
 	/**
 	 * Controls the in-process how much of the parent transaction dirty pages will be spilled while start each
 	 * child transaction.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_spill_parent4child_denominator;
 
 	/** Controls the in-process threshold of semi-empty pages merge.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_merge_threshold_16dot16_percent;
 
 	/**
 	 * Controls the choosing between use write-through disk writes and usual ones with followed flush by the
 	 * `fdatasync()` syscall..
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_writethrough_threshold;
 
 	/**
 	 * Controls prevention of page-faults of reclaimed and allocated pages in the MDBX_WRITEMAP mode by clearing
 	 * ones through file handle before touching
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_prefault_write_enable;
 
 	/**
 	 * Controls the in-process spending time limit of searching consecutive pages inside GC. \see
 	 * MDBX_opt_rp_augment_limit
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_gc_time_limit;
 
 	/**
@@ -1071,7 +1086,7 @@ public class JNI {
 	 *
 	 * \see MDBX_opt_merge_threshold_16dot16_percent
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_prefer_waf_insteadof_balance;
 
 	/**
@@ -1087,7 +1102,7 @@ public class JNI {
 	 *
 	 * min 12.5% (8192), max 100% (65535), default = 100%
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_subpage_limit;
 
 	/**
@@ -1096,7 +1111,7 @@ public class JNI {
 	 *
 	 * min 0, max 100% (65535), default = 0
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_subpage_room_threshold;
 
 	/**
@@ -1113,7 +1128,7 @@ public class JNI {
 	 *
 	 * min 0, max 100% (65535), default = 42% (27525)
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_subpage_reserve_prereq;
 
 	/**
@@ -1121,7 +1136,7 @@ public class JNI {
 	 *
 	 * min 0, max 100% (65535), default = 4.2% (2753)
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_opt_subpage_reserve_limit;
 
 	//====================================================//
@@ -1136,7 +1151,7 @@ public class JNI {
 	/**
 	 * By default \ref mdbx_env_warmup() just ask OS kernel to asynchronously prefetch database pages.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_warmup_default;
 
 	/**
@@ -1144,7 +1159,7 @@ public class JNI {
 	 * the pages are just peeks sequentially, so unused pages that are in GC will be loaded in the same way as
 	 * those that contain payload.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_warmup_force;
 
 	/**
@@ -1152,7 +1167,7 @@ public class JNI {
 	 * overhead avoids killing the current process by OOM-killer in a lack of memory condition. \note Has effect
 	 * only on POSIX (non-Windows) systems with conjunction to \ref MDBX_warmup_force option.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_warmup_oomsafe;
 
 	/**
@@ -1167,7 +1182,7 @@ public class JNI {
 	 * memory until the environment closes, or explicitly unblocked by using \ref MDBX_warmup_release, or the
 	 * database geometry will changed, including its auto-shrinking.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_warmup_lock;
 
 	/**
@@ -1176,11 +1191,11 @@ public class JNI {
 	 * this environment disregarding all other factors. For real-world database application you will need
 	 * full-fledged management of resources and their limits with respective engineering.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_warmup_touchlimit;
 
 	/** Release the lock that was performed before by \ref MDBX_warmup_lock. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_warmup_release;
 
 	//====================================================//
@@ -1190,26 +1205,26 @@ public class JNI {
 	// see mdbx_env_chk()
 	//====================================================//
 	/** Default verification mode, including read-only mode.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CHK_DEFAULTS;
 
 	/** Checking in read-write mode, with lock acquisition and suspension of writing transactions. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CHK_READWRITE;
 
 	/** Skip page tree traversal.*/
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CHK_SKIP_BTREE_TRAVERSAL;
 
 	/** Skip scanning key-value records. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CHK_SKIP_KV_TRAVERSAL;
 
 	/**
 	 * Ignore key and record order. Note: Required when checking legacy DBs created using custom (user-defined)
 	 * key or value comparison functions.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CHK_IGNORE_ORDER;
 
 	//====================================================//
@@ -1217,31 +1232,31 @@ public class JNI {
 	// Logging/detail levels of information provided via database integrity check callbacks.
 	// see mdbx_env_chk()
 	//====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_severity_prio_shift;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_severity_kind_mask;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_fatal;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_error;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_warning;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_notice;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_result;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_resolution;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_processing;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_info;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_verbose;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_details;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_extra;
 
 	//====================================================//
@@ -1249,29 +1264,29 @@ public class JNI {
 	// Check stages reported via callbacks when checking database integrity.
 	// see mdbx_env_chk()
 	//====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_none;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_init;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_lock;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_meta;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_tree;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_gc;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_space;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_maindb;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_tables;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_conclude;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_unlock;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_chk_finalize;
 
 	//====================================================//
@@ -1308,115 +1323,115 @@ public class JNI {
 	//====================================================//
 	// MDBX Log Level (MDBX_log_level_t)
 	//====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_FATAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_ERROR;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_WARN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_NOTICE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_VERBOSE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_DEBUG;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_TRACE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_EXTRA;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LOG_DONTCHANGE;
 
 	//====================================================//
 	// MDBX debug flags (MDBX_debug_flags_t)
 	// Runtime debug flags
 	//====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_NONE;
 
 	/** Enable assertion checks.
    * \note Always enabled for builds with `MDBX_FORCE_ASSERTIONS` option,
    * otherwise requires build with \ref MDBX_DEBUG > 0
    */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_ASSERT;
 
 	/** Enable pages usage audit at commit transactions.
    * \note Requires build with \ref MDBX_DEBUG > 0
    */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_AUDIT;
 
 	/** Enable small random delays in critical points.
    * \note Requires build with \ref MDBX_DEBUG > 0
    */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_JITTER;
 
 	/** Include or not meta-pages in coredump files.
    * \note May affect performance in \ref MDBX_WRITEMAP mode
    */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_DUMP;
 
 	/** Allow multi-opening environment(s) */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_LEGACY_MULTIOPEN;
 
 	/** Allow read and write transactions overlapping for the same thread. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_LEGACY_OVERLAP;
 
 	/** Don't auto-upgrade format signature.
    * \note However a new write transactions will use and store
    * the last signature regardless this flag
    */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_DONT_UPGRADE;
 
 	/** for mdbx_setup_debug() only: Don't change current settings */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBG_DONTCHANGE;
 
 	// ====================================================//
 	// Database Flags (MDBX_db_flags_t)
 	// ====================================================//
 	/** Variable length unique keys with usual byte-by-byte string comparison. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DB_DEFAULTS;
 
 	/** Use reverse string comparison for keys. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_REVERSEKEY;
 
 	/** Use sorted duplicates, i.e. allow multi-values for a keys. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DUPSORT;
 
 	/**
 	 * Numeric keys in native byte order either uint32_t or uint64_t. The keys must all be of the same size and
 	 * must be aligned while passing as arguments.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_INTEGERKEY;
 
 	/** With MDBX_DUPSORT; sorted dup items have fixed size. The data values must all be of the same size. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DUPFIXED;
 
 	/**
 	 * With MDBX_DUPSORT and with MDBX_DUPFIXED; dups are fixed size like MDBX_INTEGERKEY -style integers. The
 	 * data values must all be of the same size and must be aligned while passing as arguments.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_INTEGERDUP;
 
 	/** With MDBX_DUPSORT; use reverse string comparison for data values. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_REVERSEDUP;
 
 	/** Create DB if not already existing. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CREATE;
 
 	/**
@@ -1428,57 +1443,57 @@ public class JNI {
 	 * In such cases, instead of returning the MDBX_INCOMPATIBLE error, the sub-database will be opened with
 	 * flags which it was created, and then an application could determine the actual flags by mdbx_dbi_flags().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DB_ACCEDE;
 
 	// ====================================================//
 	// Transaction Flags (MDBX_txn_flags_t)
 	// ====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_READWRITE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_RDONLY;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_RDONLY_PREPARE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_TRY;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_NOMETASYNC;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_NOSYNC;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_INVALID;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_FINISHED;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_ERROR;
 
 	/**
 	 * Transaction must write, even if dirty list is empty. \note This is a transaction state flag. Returned
 	 * from \ref mdbx_txn_flags() but can't be used with \ref mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_DIRTY;
 
 	/**
 	 * Transaction or a parent has spilled pages. \note This is a transaction state flag. Returned from \ref
 	 * mdbx_txn_flags() but can't be used with \ref mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_SPILLS;
 
 	/**
 	 * Transaction has a nested child transaction. \note This is a transaction state flag. Returned from \ref
 	 * mdbx_txn_flags() but can't be used with \ref mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_HAS_CHILD;
 
 	/**
 	 * Transaction is parked by mdbx_txn_park(). \note This is a transaction state flag. Returned from
 	 * mdbx_txn_flags() but can't be used with mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_PARKED;
 
 	/**
@@ -1486,7 +1501,7 @@ public class JNI {
 	 * explicitly calling mdbx_txn_unpark() first. \note This is a transaction state flag. Returned from
 	 * mdbx_txn_flags() but can't be used with mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_AUTOUNPARK;
 
 	/**
@@ -1494,76 +1509,76 @@ public class JNI {
 	 * transaction because this transaction was interfered with garbage recycling. \note This is a transaction
 	 * state flag. Returned from mdbx_txn_flags() but can't be used with mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_OUSTED;
 
 	/**
 	 * Most operations on the transaction are currently illegal. \note This is a transaction state flag.
 	 * Returned from mdbx_txn_flags() but can't be used with mdbx_txn_begin().
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_BLOCKED;
 
 	// ====================================================//
 	// DBI State Flags (MDBX_dbi_state_t)
 	// ====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBI_DIRTY; //DB was written in this txn
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBI_STALE; //Named-DB record is older than txnID
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBI_FRESH; //Named-DB handle opened in this txn
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBI_CREAT; //Named-DB handle created in this txn
 
 	// ====================================================//
 	// Copy Flags (MDBX_copy_flags_t)
 	// ====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_DEFAULTS;
 
 	/** Copy with compactification: Omit free space from copy and renumber all pages sequentially */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_COMPACT; //
 
 	/** Force to make resizeable copy, i.e. dynamic size instead of fixed */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_FORCE_DYNAMIC_SIZE;
 
 	/** Don't explicitly flush the written data to an output media */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_DONT_FLUSH;
 
 	/** Use read transaction parking during copying MVCC-snapshot \see mdbx_txn_park() */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_THROTTLE_MVCC;
 
 	/** Abort/dispose passed transaction after copy mdbx_txn_copy2fd() \see mdbx_txn_copy2pathname() */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_DISPOSE_TXN;
 
 	/**
 	 * Enable renew/restart read transaction in case it use outdated MVCC shapshot, otherwise the
 	 * MDBX_MVCC_RETARDED will be returned \see mdbx_txn_copy2fd() \see mdbx_txn_copy2pathname()
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CP_RENEW_TXN;
 
 	// ====================================================//
 	// Write Flags (MDBX_put_flags_t)
 	// ====================================================//
 	/** Upsertion by default (without any other flags) */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_UPSERT;
 
 	/** For insertion: Don't write if the key already exists. */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NOOVERWRITE;
 
 	/** Has effect only for \ref MDBX_DUPSORT tables.
 	 * For upsertion: don't write if the key-value pair already exist.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NODUPDATA;
 
 	/** For upsertion: overwrite the current key/data pair.
@@ -1571,238 +1586,240 @@ public class JNI {
 	 * without insertion.
 	 * For deletion: remove only single entry at the current cursor position.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CURRENT;
 
 	/**
 	 * Has effect only for \ref MDBX_DUPSORT tables. For deletion: remove all multi-values (aka duplicates) for
 	 * given key. For upsertion: replace all multi-values for given key with a new one.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ALLDUPS;
 
 	/** For upsertion: Just reserve space for data, don't copy it.
 	 * Return a pointer to the reserved space.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_RESERVE;
 
 	/** Data is being appended.
 	 * Don't split full pages, continue on a new instead.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_APPEND;
 
 	/** Has effect only for \ref MDBX_DUPSORT tables.
 	 * Duplicate data is being appended.
 	 * Don't split full pages, continue on a new instead.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_APPENDDUP;
 
 	/** Only for \ref MDBX_DUPFIXED.
 	 * Store multiple data items in one call.
 	 */
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MULTIPLE;
 
 	// ====================================================//
 	// Cursor Flags (MDBX_cursor_op)
 	// ====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_FIRST;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_FIRST_DUP;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_GET_BOTH;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_GET_BOTH_RANGE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_GET_CURRENT;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_GET_MULTIPLE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LAST;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LAST_DUP;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NEXT;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NEXT_DUP;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NEXT_MULTIPLE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NEXT_NODUP;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PREV;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PREV_DUP;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PREV_NODUP;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SET;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SET_KEY;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SET_RANGE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PREV_MULTIPLE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SET_LOWERBOUND;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SET_UPPERBOUND;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_KEY_LESSER_THAN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_KEY_LESSER_OR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_KEY_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_KEY_GREATER_OR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_KEY_GREATER_THAN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_EXACT_KEY_VALUE_LESSER_THAN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_EXACT_KEY_VALUE_LESSER_OR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_EXACT_KEY_VALUE_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_EXACT_KEY_VALUE_GREATER_OR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_EXACT_KEY_VALUE_GREATER_THAN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_PAIR_LESSER_THAN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_PAIR_LESSER_OR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_PAIR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_PAIR_GREATER_OR_EQUAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TO_PAIR_GREATER_THAN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SEEK_AND_GET_MULTIPLE;
 
 	// ====================================================//
 	// Return Codes (no enum)
 	// ====================================================//
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENODATA;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EINVAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EACCESS;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENOMEM;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EROFS;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_ENOSYS;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EIO;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EPERM;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EINTR;
-	@JniField(flags = { CONSTANT })
+
+	public static int MDBX_EEXIST;
+
 	public static int MDBX_ENOFILE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EREMOTE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EDEADLK;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_SUCCESS;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_RESULT_FALSE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_RESULT_TRUE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_KEYEXIST;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_FIRST_LMDB_ERRCODE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_NOTFOUND;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PAGE_NOTFOUND;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CORRUPTED;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PANIC;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_VERSION_MISMATCH;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_INVALID;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MAP_FULL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DBS_FULL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_READERS_FULL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_FULL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_CURSOR_FULL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PAGE_FULL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_UNABLE_EXTEND_MAPSIZE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_INCOMPATIBLE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_BAD_RSLOT;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_BAD_TXN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_BAD_VALSIZE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_BAD_DBI;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_PROBLEM;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LAST_LMDB_ERRCODE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_BUSY;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_FIRST_ADDED_ERRCODE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EMULTIVAL;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EBADSIGN;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_WANNA_RECOVERY;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_EKEYMISMATCH;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TOO_LARGE;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_THREAD_MISMATCH;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_TXN_OVERLAPPING;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_BACKLOG_DEPLETED;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DUPLICATED_CLK;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_DANGLING_DBI;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_OUSTED;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_MVCC_RETARDED;
-	@JniField(flags = { CONSTANT })
+
 	public static int MDBX_LAST_ADDED_ERRCODE;
 
-//	@JniClass(flags = {STRUCT})
+//
 //	public static class MiGeo {
-//		@JniField(cast = "uint64_t")
+//
 //		public long lower;		/* lower limit for datafile size */
-//		@JniField(cast = "uint64_t")
+//
 //		public long upper;  	/* upper limit for datafile size */
-//		@JniField(cast = "uint64_t")
+//
 //		public long current; 	/* current datafile size */
-//		@JniField(cast = "uint64_t")
+//
 //		public long shrink;  	/* shrink treshold for datafile */
-//		@JniField(cast = "uint64_t")
+//
 //		public long grow;    	/* growth step for datafile */
 //
 //		@SuppressWarnings("nls")
@@ -1821,110 +1838,114 @@ public class JNI {
 	// ====================================================//
 	// Environment Info
 	// ====================================================//
-	@JniClass(flags = {STRUCT, TYPEDEF})
+
 	public static class MDBX_envinfo {
 //		public MiGeo mi_geo = new MiGeo();
-		@JniField(accessor="mi_geo.lower", cast = "uint64_t")
+
 		public long mi_geo_lower;		/* lower limit for datafile size */
-		@JniField(accessor="mi_geo.upper", cast = "uint64_t")
+
 		public long mi_geo_upper;		/* upper limit for datafile size */
-		@JniField(accessor="mi_geo.current", cast = "uint64_t")
+
 		public long mi_geo_current;		/* current datafile size */
-		@JniField(accessor="mi_geo.shrink", cast = "uint64_t")
+
 		public long mi_geo_shrink;		/* shrink treshold for datafile */
-		@JniField(accessor="mi_geo.grow", cast = "uint64_t")
+
 		public long mi_geo_grow;			/* growth step for datafile */
 
-		@JniField(cast = "uint64_t")
 		public long mi_mapsize;							/* Size of the data memory map */
-		@JniField(cast = "uint64_t")
+
+		public long mi_dxb_fsize;						/* Current database file size */
+
+		public long mi_dxb_fallocated;					/* Space allocated for the database file */
+
 		public long mi_last_pgno;						/* ID of the last used page */
-		@JniField(cast = "uint64_t")
+
 		public long mi_recent_txnid;					/* ID of the last committed transaction */
-		@JniField(cast = "uint64_t")
+
 		public long mi_latter_reader_txnid; 	/* ID of the last reader transaction */
-		@JniField(cast = "uint64_t")
+
 		public long mi_self_latter_reader_txnid; /* ID of the last reader transaction of caller process */
 
-		@JniField(accessor="mi_meta_txnid[0]", cast = "uint64_t")
 		public long mi_meta0_txnid;
-		@JniField(accessor="mi_meta_txnid[1]", cast = "uint64_t")
+
 		public long mi_meta1_txnid;
-		@JniField(accessor="mi_meta_txnid[1]", cast = "uint64_t")
+
 		public long mi_meta2_txnid;
 
-		@JniField(accessor="mi_meta_sign[0]", cast = "uint64_t")
 		public long mi_meta0_sign;
-		@JniField(accessor="mi_meta_sign[1]", cast = "uint64_t")
+
 		public long mi_meta1_sign;
-		@JniField(accessor="mi_meta_sign[2]", cast = "uint64_t")
+
 		public long mi_meta2_sign;
 
-		@JniField(cast = "uint32_t")
+
 		public long mi_maxreaders; /* max reader slots in the environment */
-		@JniField(cast = "uint32_t")
+
 		public long mi_numreaders; /* max reader slots used in the environment */
-		@JniField(cast = "uint32_t")
+
 		public long mi_dxb_pagesize; /* database pagesize */
-		@JniField(cast = "uint32_t")
+
 		public long mi_sys_pagesize; /* system pagesize */
-		@JniField(accessor="mi_bootid.current.x", cast = "uint64_t")
+
+		public long mi_sys_upcblk; /* system unified page-cache block size */
+
+		public long mi_sys_ioblk; /* filesystem I/O block size */
+
 		public long mi_bootid_current_x;
-		@JniField(accessor="mi_bootid.current.y", cast = "uint64_t")
+
 		public long mi_bootid_current_y;
 
-		@JniField(accessor="mi_bootid.meta[0].x", cast = "uint64_t")
 		public long mi_bootid_meta0_x;
-		@JniField(accessor="mi_bootid.meta[0].y", cast = "uint64_t")
+
 		public long mi_bootid_meta0_y;
-		@JniField(accessor="mi_bootid.meta[1].x", cast = "uint64_t")
+
 		public long mi_bootid_meta1_x;
-		@JniField(accessor="mi_bootid.meta[1].y", cast = "uint64_t")
+
 		public long mi_bootid_meta1_y;
-		@JniField(accessor="mi_bootid.meta[2].x", cast = "uint64_t")
+
 		public long mi_bootid_meta2_x;
-		@JniField(accessor="mi_bootid.meta[2].y", cast = "uint64_t")
+
 		public long mi_bootid_meta2_y;
 
-		@JniField(cast = "uint64_t")
+
 		public long mi_unsync_volume;
-		@JniField(cast = "uint64_t")
+
 		public long mi_autosync_threshold;
-		@JniField(cast = "uint32_t")
+
 		public long mi_since_sync_seconds16dot16;
-		@JniField(cast = "uint32_t")
+
 		public long mi_autosync_period_seconds16dot16;
-		@JniField(cast = "uint32_t")
+
 		public long mi_since_reader_check_seconds16dot16;
-		@JniField(cast = "uint32_t")
+
 		public long mi_mode;
-		@JniField(accessor="mi_pgop_stat.newly", cast = "uint64_t")
+
 		public long mi_pgop_stat_newly;
-		@JniField(accessor="mi_pgop_stat.cow", cast = "uint64_t")
+
 		public long mi_pgop_stat_cow;
-		@JniField(accessor="mi_pgop_stat.clone", cast = "uint64_t")
+
 		public long mi_pgop_stat_clone;
-		@JniField(accessor="mi_pgop_stat.split", cast = "uint64_t")
+
 		public long mi_pgop_stat_split;
-		@JniField(accessor="mi_pgop_stat.merge", cast = "uint64_t")
+
 		public long mi_pgop_stat_merge;
-		@JniField(accessor="mi_pgop_stat.spill", cast = "uint64_t")
+
 		public long mi_pgop_stat_spill;
-		@JniField(accessor="mi_pgop_stat.unspill", cast = "uint64_t")
+
 		public long mi_pgop_stat_unspill;
-		@JniField(accessor="mi_pgop_stat.wops", cast = "uint64_t")
+
 		public long mi_pgop_stat_wops;
-		@JniField(accessor="mi_pgop_stat.prefault", cast = "uint64_t")
+
 		public long mi_pgop_stat_prefault;
-		@JniField(accessor="mi_pgop_stat.mincore", cast = "uint64_t")
+
 		public long mi_pgop_stat_mincore;
-		@JniField(accessor="mi_pgop_stat.msync", cast = "uint64_t")
+
 		public long mi_pgop_stat_msync;
-		@JniField(accessor="mi_pgop_stat.fsync", cast = "uint64_t")
+
 		public long mi_pgop_stat_fsync;
-		@JniField(accessor="mi_dxbid.x", cast = "uint64_t")
+
 		public long mi_dxbid_x;
-		@JniField(accessor="mi_dxbid.y", cast = "uint64_t")
+
 		public long mi_dxbid_y;
 
 		@SuppressWarnings("nls")
@@ -1937,6 +1958,8 @@ public class JNI {
 					", mi_geo_shrink=" + mi_geo_shrink +
 					", mi_geo_grow=" + mi_geo_grow +
 					", mi_mapsize=" + mi_mapsize +
+					", mi_dxb_fsize=" + mi_dxb_fsize +
+					", mi_dxb_fallocated=" + mi_dxb_fallocated +
 					", mi_last_pgno=" + mi_last_pgno +
 					", mi_recent_txnid=" + mi_recent_txnid +
 					", mi_latter_reader_txnid=" + mi_latter_reader_txnid +
@@ -1952,6 +1975,8 @@ public class JNI {
 					", mi_numreaders=" + mi_numreaders +
 					", mi_dxb_pagesize=" + mi_dxb_pagesize +
 					", mi_sys_pagesize=" + mi_sys_pagesize +
+					", mi_sys_upcblk=" + mi_sys_upcblk +
+					", mi_sys_ioblk=" + mi_sys_ioblk +
 					", mi_bootid_current_x=" + mi_bootid_current_x +
 					", mi_bootid_current_y=" + mi_bootid_current_y +
 
@@ -1989,21 +2014,14 @@ public class JNI {
 	// ====================================================//
 	// Stats Info
 	// ====================================================//
-	@JniClass(flags = {STRUCT, TYPEDEF})
+
 	public static class MDBX_stat {
-		@JniField(cast = "uint32_t")
 		public long ms_psize;
-		@JniField(cast = "uint32_t")
 		public long ms_depth;
-		@JniField(cast = "uint64_t")
 		public long ms_branch_pages;
-		@JniField(cast = "uint64_t")
 		public long ms_leaf_pages;
-		@JniField(cast = "uint64_t")
 		public long ms_overflow_pages;
-		@JniField(cast = "uint64_t")
 		public long ms_entries;
-		@JniField(cast = "uint64_t")
 		public long ms_mod_txnid;
 
 		@SuppressWarnings("nls")
@@ -2021,64 +2039,115 @@ public class JNI {
 		}
 	}
 
-	@JniField(accessor="sizeof(struct MDBX_envinfo)", flags={CONSTANT})
+
 	public static int SIZEOF_ENVINFO;
 
-	@JniField(accessor="sizeof(struct MDBX_stat)", flags={CONSTANT})
 	public static int SIZEOF_STAT;
 
 	//====================================================//
 	// Global Extern constant
 	//====================================================//
-//	@JniField(accessor = "const struct MDBX_build_info", flags = { CONSTANT })
+//
 //	public static MDBX_build_info mdbx_build;
 
-//	@JniField(accessor="mdbx_version", flags = { CONSTANT })
-//			@JniField(cast = "const struct MDBX_version_info", flags = { CONSTANT })
+//
+//
 //			public static MDBX_version_info mdbx_version;
 
 
 	// ====================================================//
 	// Value classes
 	// ====================================================//
-	@JniClass(flags = { STRUCT, TYPEDEF })
+
 	public static class MDBX_val {
-		@JniField(cast = "void *")
 		public long iov_base;
-		@JniField(cast = "size_t")
 		public long iov_len;
 	}
 
-	@JniMethod
-	public static final native void map_val(
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) long in,
-			@JniArg(cast = "MDBX_val *", flags={NO_IN}) MDBX_val out);
+	/** In/out cache entry for {@code mdbx_cache_get}. */
+	public static class MDBX_cache_entry {
+		public long trunk_txnid;
+		public long last_confirmed_txnid;
+		public long offset;
+		public int length;
+	}
 
-//	@JniMethod
-//	public static final native int get_mdbx_build_info(
-//			@JniArg(cast = "void *", flags = {NO_IN}) long arg,
-//			@JniArg(cast = "size_t") long bytes);
+	/** Pair returned by value from {@code mdbx_cache_get}. */
+	public static class MDBX_cache_result {
+		public int errcode;
+		public int status;
+	}
 
-//	@JniMethod
-//	public static final native int mdbx_build();
+	/** Histogram carried inside {@link MDBX_gc_info}. */
+	public static class MDBX_chk_histogram {
+		public long amount;
+		public long count;
+		public long le1_amount;
+		public long le1_count;
+		public long[] range_begin = new long[9];
+		public long[] range_end = new long[9];
+		public long[] range_amount = new long[9];
+		public long[] range_count = new long[9];
+	}
+
+	/** Summary filled by {@code mdbx_gc_info}. */
+	public static class MDBX_gc_info {
+		public long pages_total;
+		public long pages_backed;
+		public long pages_allocated;
+		public long pages_gc;
+		public long gc_reclaimable_pages;
+		public MDBX_chk_histogram gc_reclaimable_span_histogram = new MDBX_chk_histogram();
+		public MDBX_chk_histogram gc_reclaimable_pgno_distribution = new MDBX_chk_histogram();
+		public long max_reader_lag;
+		public long max_retained_pages;
+	}
+
+	/** Counters filled by {@code mdbx_env_defrag}. */
+	public static class MDBX_defrag_result {
+		public long pages_shrinked;
+		public long pages_moved;
+		public long pages_scheduled;
+		public long pages_retained;
+		public long pages_left;
+		public long pages_whole;
+		public long obstructed_pgno;
+		public long obstructed_span;
+		public long obstructed_txnid;
+		public long obstructor_tid;
+		public long obstructor_pid;
+		public long rough_estimation_cycle_progress_permille;
+		public long cycles;
+		public long stopping_reasons;
+		public long spent_time_dot16;
+	}
+
+	public static final void map_val( long in, MDBX_val out) {
+		FfmDispatch.map_val(in, out);
+	}
+
+//
+//	public static final int get_mdbx_build_info(long arg, long bytes) {
+//		return FfmDispatch.get_mdbx_build_info(arg, bytes);
+//	}
+
+//
+//	public static final int mdbx_build() {
+//		return FfmDispatch.mdbx_build();
+//	}
 
 	// ====================================================//
 	// Debug methods
 	// ====================================================//
-	@JniMethod(cast = "char *")
-	public static final native long map_printf(
-			@JniArg(cast = "char *", flags={NO_OUT}) long buf,
-			@JniArg(cast = "unsigned") int size,
-			@JniArg(cast = "const char *", flags={NO_OUT}) long fmt,
-			@JniArg(cast = "void *", flags={NO_OUT}) long args);
 
-//	@JniMethod
-//	public static final native void debug_func(
-//			@JniArg(cast = "unsigned", flags={NO_OUT}) int logLevel,
-//			@JniArg(cast = "const char *", flags={NO_OUT}) long function,
-//			@JniArg(cast = "unsigned", flags={NO_OUT}) long line,
-//			@JniArg(cast = "const char *", flags={NO_OUT}) long fmt,
-//			@JniArg(cast = "const char *", flags={NO_OUT}) long args);
+	public static final long map_printf( long buf, int size, long fmt, long args) {
+		return FfmDispatch.map_printf(buf, size, fmt, args);
+	}
+
+//
+//	public static final void debug_func(int logLevel, long function, long line, long fmt, long args) {
+//		FfmDispatch.debug_func(logLevel, function, line, fmt, args);
+//	}
 
 	/**
 	 * Setup global log-level, debug options and debug logger.
@@ -2087,12 +2156,10 @@ public class JNI {
 	 * @param logger logger
 	 * @return The previously `debug_flags` in the 0-15 bits and `log_level` in the 16-31 bits.
 	 */
-	@JniMethod
-	public static final native int mdbx_setup_debug(
-			@JniArg(cast = "MDBX_log_level_t") int log_level,
-			@JniArg(cast = "MDBX_debug_flags_t") int debug_flags,
-			@JniArg(cast = "void(*)(MDBX_log_level_t, const char *, int, const char *, va_list)",
-					flags = ArgFlag.POINTER_ARG) long logger);
+
+	public static final int mdbx_setup_debug( int log_level, int debug_flags, long logger) {
+		return FfmDispatch.mdbx_setup_debug(log_level, debug_flags, logger);
+	}
 
 	/**
 	 * Setup global log-level, debug options and debug logger.
@@ -2103,14 +2170,10 @@ public class JNI {
 	 * @param logger_buffer_size buffer size
 	 * @return The previously `debug_flags` in the 0-15 bits and `log_level` in the 16-31 bits.
 	 */
-	@JniMethod
-	public static final native int mdbx_setup_debug_nofmt(
-			@JniArg(cast = "MDBX_log_level_t") int log_level,
-			@JniArg(cast = "MDBX_debug_flags_t") int debug_flags,
-			@JniArg(cast = "void(*)(MDBX_log_level_t, const char *, int, const char *, unsigned)",
-					flags = ArgFlag.POINTER_ARG) long logger,
-			@JniArg(cast = "char *") long logger_buffer,
-			@JniArg(cast = "size_t") long logger_buffer_size);
+
+	public static final int mdbx_setup_debug_nofmt( int log_level, int debug_flags, long logger, long logger_buffer, long logger_buffer_size) {
+		return FfmDispatch.mdbx_setup_debug_nofmt(log_level, debug_flags, logger, logger_buffer, logger_buffer_size);
+	}
 
 	// ====================================================//
 	// Error methods
@@ -2135,8 +2198,10 @@ public class JNI {
 	 *
 	 * @return "error message" The description of the error.
 	 */
-	@JniMethod(cast = "char *")
-	public static final native long mdbx_strerror(int errnum);
+
+	public static final long mdbx_strerror(int errnum) {
+		return FfmDispatch.mdbx_strerror(errnum);
+	}
 
 	/**
 	 * Return a string describing a given error code.
@@ -2164,10 +2229,10 @@ public class JNI {
 	 *
 	 * @return "error message" The description of the error.
 	 */
-	@JniMethod(cast = "char *")
-	public static final native long mdbx_strerror_r(int errnum,
-			@JniArg(cast = "char *") long buf,
-			@JniArg(cast = "size_t") long buflen);
+
+	public static final long mdbx_strerror_r(int errnum, long buf, long buflen) {
+		return FfmDispatch.mdbx_strerror_r(errnum, buf, buflen);
+	}
 
 	/**
 	 * Bit of Windows' madness. The similar to \ref mdbx_strerror() but returns Windows error-messages in the
@@ -2179,8 +2244,10 @@ public class JNI {
 	 * @param errnum Error number
 	 * @return "error message" The description of the error.
 	 */
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)", cast = "char *")
-	public static final native long mdbx_strerror_ANSI2OEM(int errnum);
+
+	public static final long mdbx_strerror_ANSI2OEM(int errnum) {
+		return FfmDispatch.mdbx_strerror_ANSI2OEM(errnum);
+	}
 
 	/**
 	 * Bit of Windows' madness. The similar to \ref mdbx_strerror_r() but returns Windows error-messages in the
@@ -2193,10 +2260,10 @@ public class JNI {
 	 * @param buflen buffer length
 	 * @return "error message" The description of the error.
 	 */
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)", cast = "char *")
-	public static final native long mdbx_strerror_r_ANSI2OEM(int errnum,
-			@JniArg(cast = "char *") long buf,
-			@JniArg(cast = "size_t") long buflen);
+
+	public static final long mdbx_strerror_r_ANSI2OEM(int errnum, long buf, long buflen) {
+		return FfmDispatch.mdbx_strerror_r_ANSI2OEM(errnum, buf, buflen);
+	}
 
 	/**
 	 * Sets a Handle-Slow-Readers callback to resolve database full/overflow
@@ -2216,17 +2283,18 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 * */
-	@JniMethod
-	public static final native int mdbx_env_set_hsr(
-			@JniArg(cast = "MDBX_env *") long env,
-			@JniArg(cast = "int(*)(void *, const MDBX_env *, const MDBX_txn *, mdbx_pid_t, mdbx_tid_t, uint64_t, unsigned, size_t, int)", flags = ArgFlag.POINTER_ARG) long hsr_callback);
+
+	public static final int mdbx_env_set_hsr( long env, long hsr_callback) {
+		return FfmDispatch.mdbx_env_set_hsr(env, hsr_callback);
+	}
 
 	//====================================================//
 	// ENV methods
 	//====================================================//
-	@JniMethod
-	public static final native int mdbx_env_create(
-			@JniArg(cast = "MDBX_env **", flags={NO_IN}) long[] penv);
+
+	public static final int mdbx_env_create( long[] penv) {
+		return FfmDispatch.mdbx_env_create(penv);
+	}
 
 	/**
 	 * Open an environment instance. \ingroup c_opening
@@ -2280,12 +2348,10 @@ public class JNI {
 	 * \retval MDBX_TOO_LARGE Database is too large for this process, i.e. 32-bit process tries to open >4Gb
 	 * database.
 	 */
-	@JniMethod
-	public static final native int mdbx_env_open(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const char *") String pathname,
-			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "mdbx_mode_t") int mode);
+
+	public static final int mdbx_env_open( long env, String pathname, int flags, int mode) {
+		return FfmDispatch.mdbx_env_open(env, pathname, flags, mode);
+	}
 
 	/**
 	 * Open environment version for Windows
@@ -2298,12 +2364,10 @@ public class JNI {
 	 * @param mode mode
 	 * @return pointer to environment
 	 */
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_env_openW(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
-			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "mdbx_mode_t") int mode);
+
+	public static final int mdbx_env_openW( long env, String pathname, int flags, int mode) {
+		return FfmDispatch.mdbx_env_openW(env, pathname, flags, mode);
+	}
 
 	/**
 	 * Open an environment instance using specific meta-page for checking and recovery.
@@ -2320,12 +2384,10 @@ public class JNI {
 	 * @param writeable writable boolean
 	 * @return pointer to environment
 	 */
-	@JniMethod
-	public static final native int mdbx_env_open_for_recovery(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const char *") String pathname,
-			@JniArg(cast = "unsigned") int target_meta,
-			@JniArg(cast = "int") int writeable);  //bool
+
+	public static final int mdbx_env_open_for_recovery( long env, String pathname, int target_meta, int writeable) {
+		return FfmDispatch.mdbx_env_open_for_recovery(env, pathname, target_meta, writeable);
+	}  //bool
 
 	/**
 	 * \copydoc mdbx_env_open_for_recovery()
@@ -2339,12 +2401,10 @@ public class JNI {
 	 * @param writeable writable boolean
 	 * @return pointer to environment
 	 */
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_env_open_for_recoveryW(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
-			@JniArg(cast = "unsigned") int target_meta,
-			@JniArg(cast = "int") int writeable);  //bool
+
+	public static final int mdbx_env_open_for_recoveryW( long env, String pathname, int target_meta, int writeable) {
+		return FfmDispatch.mdbx_env_open_for_recoveryW(env, pathname, target_meta, writeable);
+	}  //bool
 
 	/**
 	 * Turn database to the specified meta-page.
@@ -2356,10 +2416,10 @@ public class JNI {
 	 * @param target_meta target meta
 	 * @return error code if any
 	 */
-	@JniMethod
-	public static final native int mdbx_env_turn_for_recovery(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") int target_meta);
+
+	public static final int mdbx_env_turn_for_recovery( long env, int target_meta) {
+		return FfmDispatch.mdbx_env_turn_for_recovery(env, target_meta);
+	}
 
 	/**
 	 * Gets basic information about the database without opening it.
@@ -2392,17 +2452,15 @@ public class JNI {
 	 *
 	 * @return Non-zero error code value, or 0 if successful.
 	 */
-	@JniMethod
-	public static final native int mdbx_preopen_snapinfo(
-			@JniArg(cast = "const char *") String pathname,
-			@JniArg(cast = "MDBX_envinfo *", flags = {NO_IN}) MDBX_envinfo info,
-			@JniArg(cast = "size_t") long bytes);
 
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_preopen_snapinfoW(
-			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
-			@JniArg(cast = "MDBX_envinfo *", flags = {NO_IN}) MDBX_envinfo info,
-			@JniArg(cast = "size_t") long bytes);
+	public static final int mdbx_preopen_snapinfo( String pathname, MDBX_envinfo info, long bytes) {
+		return FfmDispatch.mdbx_preopen_snapinfo(pathname, info, bytes);
+	}
+
+
+	public static final int mdbx_preopen_snapinfoW( String pathname, MDBX_envinfo info, long bytes) {
+		return FfmDispatch.mdbx_preopen_snapinfoW(pathname, info, bytes);
+	}
 
 	/**
 	 * Delete the environment's files in a proper and multiprocess-safe way.
@@ -2421,10 +2479,10 @@ public class JNI {
 	 * @return A non-zero error value on failure and 0 on success, some possible errors are:
 	 * \retval MDBX_RESULT_TRUE  No corresponding files or directories were found, so no deletion was performed.
 	 */
-	@JniMethod
-	public static final native int mdbx_env_delete(
-			@JniArg(cast = "const char *") String pathname,
-			@JniArg(cast = "unsigned") int mode);
+
+	public static final int mdbx_env_delete( String pathname, int mode) {
+		return FfmDispatch.mdbx_env_delete(pathname, mode);
+	}
 
 	/**
 	 * 	 Delete the environment's files in a proper and multiprocess-safe way (Windows version)
@@ -2436,22 +2494,20 @@ public class JNI {
 	 * @param mode mode
 	 * @return error code or 0 on success
 	 */
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_env_deleteW(
-			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String pathname,
-			@JniArg(cast = "unsigned") int mode);
 
-	@JniMethod
-	public static final native int mdbx_env_copy(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const char *") String dest,
-			@JniArg(cast = "MDBX_copy_flags_t") int flags);
+	public static final int mdbx_env_deleteW( String pathname, int mode) {
+		return FfmDispatch.mdbx_env_deleteW(pathname, mode);
+	}
 
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_env_copyW(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String dest,
-			@JniArg(cast = "MDBX_copy_flags_t") int flags);
+
+	public static final int mdbx_env_copy( long env, String dest, int flags) {
+		return FfmDispatch.mdbx_env_copy(env, dest, flags);
+	}
+
+
+	public static final int mdbx_env_copyW( long env, String dest, int flags) {
+		return FfmDispatch.mdbx_env_copyW(env, dest, flags);
+	}
 
 	/**
 	 * Copy an MDBX environment by given read transaction to the specified path, with options.
@@ -2479,23 +2535,20 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_copy2pathname(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "const char *") String dest,
-			@JniArg(cast = "MDBX_copy_flags_t") int flags);
 
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_txn_copy2pathnameW(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "const wchar_t *", flags = {UNICODE}) String dest,
-			@JniArg(cast = "MDBX_copy_flags_t") int flags);
+	public static final int mdbx_txn_copy2pathname( long txn, String dest, int flags) {
+		return FfmDispatch.mdbx_txn_copy2pathname(txn, dest, flags);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_copy2fd(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "mdbx_filehandle_t") long fd,
-			@JniArg(cast = "MDBX_copy_flags_t") int flags);
+
+	public static final int mdbx_txn_copy2pathnameW( long txn, String dest, int flags) {
+		return FfmDispatch.mdbx_txn_copy2pathnameW(txn, dest, flags);
+	}
+
+
+	public static final int mdbx_env_copy2fd( long env, long fd, int flags) {
+		return FfmDispatch.mdbx_env_copy2fd(env, fd, flags);
+	}
 
 	/**
 	 * Copy an environment by given read transaction to the specified file descriptor, with options.
@@ -2516,46 +2569,40 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_copy2fd(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "mdbx_filehandle_t") long fd,
-			@JniArg(cast = "MDBX_copy_flags_t") int flags);
 
-	@JniMethod
-	public static final native int mdbx_env_stat(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_stat *", flags = {NO_IN}) MDBX_stat stat,
-			@JniArg(cast = "size_t") long bytes);
+	public static final int mdbx_txn_copy2fd( long txn, long fd, int flags) {
+		return FfmDispatch.mdbx_txn_copy2fd(txn, fd, flags);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_stat_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_stat *", flags = {NO_IN}) MDBX_stat stat,
-			@JniArg(cast = "size_t") long bytes);
 
-	@JniMethod
-	public static final native int mdbx_env_info(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_envinfo *", flags = {NO_IN}) MDBX_envinfo info,
-			@JniArg(cast = "size_t") long bytes);
+	public static final int mdbx_env_stat( long env, MDBX_stat stat, long bytes) {
+		return FfmDispatch.mdbx_env_stat(env, stat, bytes);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_info_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_envinfo *", flags = {NO_IN}) MDBX_envinfo info,
-			@JniArg(cast = "size_t") long bytes);
 
-	@JniMethod
-	public static final native int mdbx_env_close(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
+	public static final int mdbx_env_stat_ex( long env, long txn, MDBX_stat stat, long bytes) {
+		return FfmDispatch.mdbx_env_stat_ex(env, txn, stat, bytes);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_close_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			int dont_sync);
+
+	public static final int mdbx_env_info( long env, MDBX_envinfo info, long bytes) {
+		return FfmDispatch.mdbx_env_info(env, info, bytes);
+	}
+
+
+	public static final int mdbx_env_info_ex( long env, long txn, MDBX_envinfo info, long bytes) {
+		return FfmDispatch.mdbx_env_info_ex(env, txn, info, bytes);
+	}
+
+
+	public static final int mdbx_env_close( long env) {
+		return FfmDispatch.mdbx_env_close(env);
+	}
+
+
+	public static final int mdbx_env_close_ex( long env, int dont_sync) {
+		return FfmDispatch.mdbx_env_close_ex(env, dont_sync);
+	}
 
 	/**
 	 * \brief Restores the environment instance in the child process after forking the parent process via
@@ -2618,96 +2665,90 @@ public class JNI {
 	 * \retval MDBX_PANIC A critical error occurred while restoring the environment instance, or such an error
 	 * already existed before the function was called.
 	 */
-	@JniMethod(conditional="!(defined(_WIN32) || defined(_WIN64))")
-	public static final native int mdbx_env_resurrect_after_fork(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
 
-	@JniMethod
-	public static final native int mdbx_env_sync(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
+	public static final int mdbx_env_resurrect_after_fork( long env) {
+		return FfmDispatch.mdbx_env_resurrect_after_fork(env);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_sync_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			int force,  //_Bool
-			int nonblock);   //_Bool
 
-	@JniMethod
-	public static final native int mdbx_env_sync_poll(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
+	public static final int mdbx_env_sync( long env) {
+		return FfmDispatch.mdbx_env_sync(env);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_flags(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "int") int onoff);
 
-	@JniMethod
-	public static final native int mdbx_env_get_flags(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned *", flags = {NO_IN}) long[] flags);
+	public static final int mdbx_env_sync_ex( long env, int force, int nonblock) {
+		return FfmDispatch.mdbx_env_sync_ex(env, force, nonblock);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_get_option(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") int option,
-			@JniArg(cast = "uint64_t *", flags = {NO_IN}) long[] pvalue);
 
-	@JniMethod
-	public static final native int mdbx_env_set_option(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") int option,
-			@JniArg(cast = "uint64_t") long value);
+	public static final int mdbx_env_sync_poll( long env) {
+		return FfmDispatch.mdbx_env_sync_poll(env);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_get_path(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const char **", flags={NO_IN}) long[] dest);
 
-	@JniMethod(conditional="defined(_WIN32) || defined(_WIN64)")
-	public static final native int mdbx_env_get_pathW(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "const wchar_t **", flags={NO_IN}) long[] dest);
+	public static final int mdbx_env_set_flags( long env, int flags, int onoff) {
+		return FfmDispatch.mdbx_env_set_flags(env, flags, onoff);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_get_fd(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "mdbx_filehandle_t *", flags = {NO_IN}) long[] fd);
 
-	@JniMethod
-	public static final native int mdbx_env_set_geometry(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "intptr_t") long size_lower,
-			@JniArg(cast = "intptr_t") long size_now,
-			@JniArg(cast = "intptr_t") long size_upper,
-			@JniArg(cast = "intptr_t") long growth_step,
-			@JniArg(cast = "intptr_t") long shrink_threshold,
-			@JniArg(cast = "intptr_t") long pagesize);
+	public static final int mdbx_env_get_flags( long env, long[] flags) {
+		return FfmDispatch.mdbx_env_get_flags(env, flags);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_mapsize(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "size_t") long size);
 
-	@JniMethod
-	public static final native int mdbx_env_get_maxreaders(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned *", flags = {NO_IN}) long[] readers);
+	public static final int mdbx_env_get_option( long env, int option, long[] pvalue) {
+		return FfmDispatch.mdbx_env_get_option(env, option, pvalue);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_maxreaders(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") int readers);
 
-	@JniMethod
-	public static final native int mdbx_env_get_maxdbs(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned *") long[] flags);
+	public static final int mdbx_env_set_option( long env, int option, long value) {
+		return FfmDispatch.mdbx_env_set_option(env, option, value);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_maxdbs(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "uint32_t") long dbs);
+
+	public static final int mdbx_env_get_path( long env, long[] dest) {
+		return FfmDispatch.mdbx_env_get_path(env, dest);
+	}
+
+
+	public static final int mdbx_env_get_pathW( long env, long[] dest) {
+		return FfmDispatch.mdbx_env_get_pathW(env, dest);
+	}
+
+
+	public static final int mdbx_env_get_fd( long env, long[] fd) {
+		return FfmDispatch.mdbx_env_get_fd(env, fd);
+	}
+
+
+	public static final int mdbx_env_set_geometry( long env, long size_lower, long size_now, long size_upper, long growth_step, long shrink_threshold, long pagesize) {
+		return FfmDispatch.mdbx_env_set_geometry(env, size_lower, size_now, size_upper, growth_step, shrink_threshold, pagesize);
+	}
+
+
+	public static final int mdbx_env_set_mapsize( long env, long size) {
+		return FfmDispatch.mdbx_env_set_mapsize(env, size);
+	}
+
+
+	public static final int mdbx_env_get_maxreaders( long env, long[] readers) {
+		return FfmDispatch.mdbx_env_get_maxreaders(env, readers);
+	}
+
+
+	public static final int mdbx_env_set_maxreaders( long env, int readers) {
+		return FfmDispatch.mdbx_env_set_maxreaders(env, readers);
+	}
+
+
+	public static final int mdbx_env_get_maxdbs( long env, long[] flags) {
+		return FfmDispatch.mdbx_env_get_maxdbs(env, flags);
+	}
+
+
+	public static final int mdbx_env_set_maxdbs( long env, long dbs) {
+		return FfmDispatch.mdbx_env_set_maxdbs(env, dbs);
+	}
 
 	/** \deprecated Please use \ref mdbx_env_get_maxkeysize_ex() and/or \ref mdbx_env_get_maxvalsize_ex()
 	 * \ingroup c_statinfo
@@ -2717,9 +2758,10 @@ public class JNI {
 	 * @return The maximum size of a key can write, or -1 if something is wrong.
 	 */
 	@Deprecated
-	@JniMethod
-	public static final native int mdbx_env_get_maxkeysize(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
+
+	public static final int mdbx_env_get_maxkeysize( long env) {
+		return FfmDispatch.mdbx_env_get_maxkeysize(env);
+	}
 
 	/**
 	 * Returns the maximum size of keys can put.
@@ -2730,15 +2772,15 @@ public class JNI {
 	 *
 	 * @return The maximum size of a key can write, or -1 if something is wrong.
 	 */
-	@JniMethod
-	public static final native int mdbx_env_get_maxkeysize_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") long flags);
 
-	@JniMethod
-	public static final native int mdbx_env_get_maxvalsize_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") long flags);
+	public static final int mdbx_env_get_maxkeysize_ex( long env, long flags) {
+		return FfmDispatch.mdbx_env_get_maxkeysize_ex(env, flags);
+	}
+
+
+	public static final int mdbx_env_get_maxvalsize_ex( long env, long flags) {
+		return FfmDispatch.mdbx_env_get_maxvalsize_ex(env, flags);
+	}
 
 	/**
 	 * Returns maximal size of key-value pair to fit in a single page for specified table flags.
@@ -2749,10 +2791,10 @@ public class JNI {
 	 *
 	 * @return The maximum size of a data can write, or -1 if something is wrong.
 	 */
-	@JniMethod
-	public static final native int mdbx_env_get_pairsize4page_max(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") long flags);
+
+	public static final int mdbx_env_get_pairsize4page_max( long env, long flags) {
+		return FfmDispatch.mdbx_env_get_pairsize4page_max(env, flags);
+	}
 
 	/** \brief Returns maximal data size in bytes to fit in a leaf-page or single large/overflow-page for
 	 * specified table flags.
@@ -2763,39 +2805,40 @@ public class JNI {
 	 *
 	 * @return The maximum size of a data can write, or -1 if something is wrong.
 	 */
-	@JniMethod
-	public static final native int mdbx_env_get_valsize4page_max(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") long flags);
 
-	@JniMethod
-	public static final native int mdbx_env_get_syncbytes(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "size_t *", flags = {NO_IN}) long[] threshold);
+	public static final int mdbx_env_get_valsize4page_max( long env, long flags) {
+		return FfmDispatch.mdbx_env_get_valsize4page_max(env, flags);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_syncbytes(
-			@JniArg(cast = "MDBX_env *") long env,
-			@JniArg(cast = "size_t") long bytes);
 
-	@JniMethod
-	public static final native int mdbx_env_get_syncperiod(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned *", flags = {NO_IN}) long[] period_seconds_16dot16);
+	public static final int mdbx_env_get_syncbytes( long env, long[] threshold) {
+		return FfmDispatch.mdbx_env_get_syncbytes(env, threshold);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_syncperiod(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "unsigned") long seconds_16dot16);
 
-	@JniMethod(cast = "void *")
-	public static final native long mdbx_env_get_userctx(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
+	public static final int mdbx_env_set_syncbytes( long env, long bytes) {
+		return FfmDispatch.mdbx_env_set_syncbytes(env, bytes);
+	}
 
-	@JniMethod
-	public static final native int mdbx_env_set_userctx(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "void *", flags = {NO_OUT}) long ctx);
+
+	public static final int mdbx_env_get_syncperiod( long env, long[] period_seconds_16dot16) {
+		return FfmDispatch.mdbx_env_get_syncperiod(env, period_seconds_16dot16);
+	}
+
+
+	public static final int mdbx_env_set_syncperiod( long env, long seconds_16dot16) {
+		return FfmDispatch.mdbx_env_set_syncperiod(env, seconds_16dot16);
+	}
+
+
+	public static final long mdbx_env_get_userctx( long env) {
+		return FfmDispatch.mdbx_env_get_userctx(env);
+	}
+
+
+	public static final int mdbx_env_set_userctx( long env, long ctx) {
+		return FfmDispatch.mdbx_env_set_userctx(env, ctx);
+	}
 
 	/**
 	 * \brief Warms up the database by loading pages into memory, optionally lock ones. \ingroup c_settings
@@ -2819,12 +2862,10 @@ public class JNI {
 	 *
 	 * \retval MDBX_RESULT_TRUE The specified timeout is reached during load data into memory.
 	 */
-	@JniMethod
-	public static final native int mdbx_env_warmup(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "unsigned") long flags,
-			@JniArg(cast = "unsigned") long timeout_seconds_16dot16);
+
+	public static final int mdbx_env_warmup( long env, long txn, long flags, long timeout_seconds_16dot16) {
+		return FfmDispatch.mdbx_env_warmup(env, txn, flags, timeout_seconds_16dot16);
+	}
 
 	//====================================================//
 	// Debug methods
@@ -2836,20 +2877,15 @@ public class JNI {
 	//====================================================//
 	// TXN methods
 	//====================================================//
-	@JniMethod
-	public static final native int mdbx_txn_begin(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long parent,
-			@JniArg(cast = "unsigned") long flags,
-			@JniArg(cast = "MDBX_txn **", flags={NO_IN}) long[] txn);
 
-	@JniMethod
-	public static final native int mdbx_txn_begin_ex(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long parent,
-			@JniArg(cast = "unsigned") long flags,
-			@JniArg(cast = "MDBX_txn **", flags={NO_IN}) long[] txn,
-			@JniArg(cast = "void *") long ctx);
+	public static final int mdbx_txn_begin( long env, long parent, long flags, long[] txn) {
+		return FfmDispatch.mdbx_txn_begin(env, parent, flags, txn);
+	}
+
+
+	public static final int mdbx_txn_begin_ex( long env, long parent, long flags, long[] txn, long ctx) {
+		return FfmDispatch.mdbx_txn_begin_ex(env, parent, flags, txn, ctx);
+	}
 
 	/**
 	 * Marks transaction as broken.
@@ -2865,42 +2901,50 @@ public class JNI {
 	 * @see #mdbx_txn_reset(long)
 	 * @see #mdbx_txn_commit(long)
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_break(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn);
 
-	@JniMethod(cast = "MDBX_env *")
-	public static final native long mdbx_txn_env(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn);
+	public static final int mdbx_txn_break( long txn) {
+		return FfmDispatch.mdbx_txn_break(txn);
+	}
 
-	@JniMethod
-	public static final native int mdbx_txn_flags(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn);
 
-	@JniMethod(cast = "uint64_t")
-	public static final native long mdbx_txn_id(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn);
+	public static final long mdbx_txn_env( long txn) {
+		return FfmDispatch.mdbx_txn_env(txn);
+	}
 
-	@JniMethod
-	public static final native int mdbx_txn_commit(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn);
 
-	@JniMethod
-	public static final native int mdbx_txn_commit_ex(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_commit_latency *") MDBX_commit_latency latency);
+	public static final int mdbx_txn_flags( long txn) {
+		return FfmDispatch.mdbx_txn_flags(txn);
+	}
 
-	@JniMethod
-	public static final native void mdbx_txn_abort(
-			@JniArg(cast = "MDBX_txn *") long txn);
 
-	@JniMethod
-	public static final native void mdbx_txn_reset(
-			@JniArg(cast = "MDBX_txn *") long txn);
+	public static final long mdbx_txn_id( long txn) {
+		return FfmDispatch.mdbx_txn_id(txn);
+	}
 
-	@JniMethod
-	public static final native int mdbx_txn_renew(
-			@JniArg(cast = "MDBX_txn *") long txn);
+
+	public static final int mdbx_txn_commit( long txn) {
+		return FfmDispatch.mdbx_txn_commit(txn);
+	}
+
+
+	public static final int mdbx_txn_commit_ex( long txn, MDBX_commit_latency latency) {
+		return FfmDispatch.mdbx_txn_commit_ex(txn, latency);
+	}
+
+
+	public static final void mdbx_txn_abort( long txn) {
+		FfmDispatch.mdbx_txn_abort(txn);
+	}
+
+
+	public static final void mdbx_txn_reset( long txn) {
+		FfmDispatch.mdbx_txn_reset(txn);
+	}
+
+
+	public static final int mdbx_txn_renew( long txn) {
+		return FfmDispatch.mdbx_txn_renew(txn);
+	}
 
 	/**
 	 * Puts the reading transaction in the "parked" state.
@@ -2936,10 +2980,10 @@ public class JNI {
 	 * @see #mdbx_env_set_hsr(long, long)
 	 * @see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_park(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "int") int autounpark);  //Bool
+
+	public static final int mdbx_txn_park( long txn, int autounpark) {
+		return FfmDispatch.mdbx_txn_park(txn, autounpark);
+	}  //Bool
 
 	/**
 	 * Unparks a previously parked read transaction.
@@ -2973,10 +3017,10 @@ public class JNI {
 	 * @see #mdbx_txn_flags(long)
 	 * @see <a href="intro.html#long-lived-read">Long-lived read transactions</a>
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_unpark(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "int") int restart_if_ousted);  //Bool
+
+	public static final int mdbx_txn_unpark( long txn, int restart_if_ousted) {
+		return FfmDispatch.mdbx_txn_unpark(txn, restart_if_ousted);
+	}  //Bool
 
 	/** Unbind or closes all cursors of a given transaction and of all its parent transactions if ones are.
 	 * \ingroup c_cursors
@@ -2999,12 +3043,10 @@ public class JNI {
 	 * \retval MDBX_BAD_TXN          Given transaction is invalid or has
 	 *                               a child/nested transaction transaction.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_release_all_cursors_ex(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "int") int unbind,  //Bool
-			@JniArg(cast = "size_t") long count
-	);
+
+	public static final int mdbx_txn_release_all_cursors_ex( long txn, int unbind, long count ) {
+		return FfmDispatch.mdbx_txn_release_all_cursors_ex(txn, unbind, count);
+	}
 
 	/**
 	 * Unbind or closes all cursors of a given transaction and of all its parent transactions if ones are.
@@ -3024,11 +3066,10 @@ public class JNI {
 	 * @see #mdbx_cursor_unbind(long)
 	 * @see #mdbx_cursor_close(long)
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_release_all_cursors(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "int") int unbind  //Bool
-	);
+
+	public static final int mdbx_txn_release_all_cursors( long txn, int unbind ) {
+		return FfmDispatch.mdbx_txn_release_all_cursors(txn, unbind);
+	}
 
 	/**
 	 * Return information about the MDBX transaction.
@@ -3043,11 +3084,10 @@ public class JNI {
 	 *          description of MDBX_txn_info.
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_info(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "MDBX_txn_info *", flags = {NO_IN}) MDBX_txn_info info,
-			@JniArg(cast = "int") int scanRlt);  //_Bool
+
+	public static final int mdbx_txn_info( long txn, MDBX_txn_info info, int scanRlt) {
+		return FfmDispatch.mdbx_txn_info(txn, info, scanRlt);
+	}  //_Bool
 
 	/**
 	 * Sets application information associated (a context pointer) with the transaction.
@@ -3059,10 +3099,10 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_set_userctx(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "void *") long ctx);
+
+	public static final int mdbx_txn_set_userctx( long txn, long ctx) {
+		return FfmDispatch.mdbx_txn_set_userctx(txn, ctx);
+	}
 
 	/**
 	 * Returns an application information (a context pointer) associated with the transaction.
@@ -3073,9 +3113,10 @@ public class JNI {
 	 * @return The pointer which was passed via the `context` parameter of `mdbx_txn_begin_ex()` or set by
 	 *          \ref mdbx_txn_set_userctx(), or `NULL` if something wrong.
 	 */
-	@JniMethod(cast = "void *")
-	public static final native long mdbx_txn_get_userctx(
-			@JniArg(cast = "MDBX_txn *") long txn);
+
+	public static final long mdbx_txn_get_userctx( long txn) {
+		return FfmDispatch.mdbx_txn_get_userctx(txn);
+	}
 
 	/**
 	 * \brief Acquires write-transaction lock.
@@ -3085,10 +3126,10 @@ public class JNI {
 	 * @param dont_wait Don't wait boolean
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_lock(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "int") int dont_wait);  //_Bool
+
+	public static final int mdbx_txn_lock( long env, int dont_wait) {
+		return FfmDispatch.mdbx_txn_lock(env, dont_wait);
+	}  //_Bool
 
 	/**
 	 * \brief Releases write-transaction lock.
@@ -3097,66 +3138,53 @@ public class JNI {
 	 * @param env environment
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_txn_unlock(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env);
+
+	public static final int mdbx_txn_unlock( long env) {
+		return FfmDispatch.mdbx_txn_unlock(env);
+	}
 
 	//====================================================//
 	// DBI methods
 	//====================================================//
-	@JniMethod
-	public static final native int mdbx_dbi_open(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "const char *") String name,
-			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "uint32_t *") long[] dbi);
 
-	@JniMethod
-	public static final native int mdbx_dbi_open_ex(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "const char *") String name,
-			@JniArg(cast = "unsigned") int flags,
-			@JniArg(cast = "uint32_t *") long[] dbi,
-			@JniArg(cast = "int(*)(const MDBX_val *, const MDBX_val *)", flags = ArgFlag.POINTER_ARG) long keycmp,
-			@JniArg(cast = "int(*)(const MDBX_val *, const MDBX_val *)", flags = ArgFlag.POINTER_ARG) long datacmp);
+	public static final int mdbx_dbi_open( long txn, String name, int flags, long[] dbi) {
+		return FfmDispatch.mdbx_dbi_open(txn, name, flags, dbi);
+	}
 
-	@JniMethod
-	public static final native int mdbx_dbi_stat(
-			@JniArg(cast = "const MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_stat *", flags = {NO_IN}) MDBX_stat stat,
-			@JniArg(cast = "size_t") long bytes);
 
-	@JniMethod
-	public static final native int mdbx_dbi_flags(
-			@JniArg(cast = "const MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "unsigned *") long[] flags);
+	public static final int mdbx_dbi_open_ex( long txn, String name, int flags, long[] dbi, long keycmp, long datacmp) {
+		return FfmDispatch.mdbx_dbi_open_ex(txn, name, flags, dbi, keycmp, datacmp);
+	}
 
-	@JniMethod
-	public static final native int mdbx_dbi_flags_ex(
-			@JniArg(cast = "const MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "unsigned *") long[] flags,
-			@JniArg(cast = "unsigned *") long[] state);
 
-	@JniMethod
-	public static final native void mdbx_dbi_close(
-			@JniArg(cast = "MDBX_env *") long env,
-			@JniArg(cast = "uint32_t") long dbi);
+	public static final int mdbx_dbi_stat( long txn, long dbi, MDBX_stat stat, long bytes) {
+		return FfmDispatch.mdbx_dbi_stat(txn, dbi, stat, bytes);
+	}
 
-	@JniMethod
-	public static final native int mdbx_dbi_dupsort_depthmask(
-			@JniArg(cast = "const MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "uint32_t *", flags = {NO_IN}) long[] mask);
 
-	@JniMethod
-	public static final native int mdbx_dbi_sequence(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "uint64_t *", flags = {NO_IN}) long[] result,
-			@JniArg(cast = "uint64_t") long increment);
+	public static final int mdbx_dbi_flags( long txn, long dbi, long[] flags) {
+		return FfmDispatch.mdbx_dbi_flags(txn, dbi, flags);
+	}
+
+
+	public static final int mdbx_dbi_flags_ex( long txn, long dbi, long[] flags, long[] state) {
+		return FfmDispatch.mdbx_dbi_flags_ex(txn, dbi, flags, state);
+	}
+
+
+	public static final void mdbx_dbi_close( long env, long dbi) {
+		FfmDispatch.mdbx_dbi_close(env, dbi);
+	}
+
+
+	public static final int mdbx_dbi_dupsort_depthmask( long txn, long dbi, long[] mask) {
+		return FfmDispatch.mdbx_dbi_dupsort_depthmask(txn, dbi, mask);
+	}
+
+
+	public static final int mdbx_dbi_sequence( long txn, long dbi, long[] result, long increment) {
+		return FfmDispatch.mdbx_dbi_sequence(txn, dbi, result, increment);
+	}
 
 	/**
 	 * Rename a table by DBI handle.
@@ -3172,17 +3200,15 @@ public class JNI {
 	 *
 	 * @return A non-zero error code value, or 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_dbi_rename(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "const char *") String name);
 
-	@JniMethod
-	public static final native int mdbx_dbi_rename2(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_IN}) MDBX_val name);
+	public static final int mdbx_dbi_rename( long txn, long dbi, String name) {
+		return FfmDispatch.mdbx_dbi_rename(txn, dbi, name);
+	}
+
+
+	public static final int mdbx_dbi_rename2( long txn, long dbi, MDBX_val name) {
+		return FfmDispatch.mdbx_dbi_rename2(txn, dbi, name);
+	}
 
 	/*
 	 * Callback function for enumerating user-defined named tables.
@@ -3256,12 +3282,10 @@ public class JNI {
 	 * \retval MDBX_NOTFOUND  The key was not in the table.
 	 * \retval MDBX_EINVAL    An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_get(
-			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data);
+
+	public static final int mdbx_get( long txn, long dbi, MDBX_val key, MDBX_val data) {
+		return FfmDispatch.mdbx_get(txn, dbi, key, data);
+	}
 
 	/**
 	 * Get items from a table and optionally number of data items for a given key.
@@ -3290,21 +3314,15 @@ public class JNI {
 	 * \retval MDBX_NOTFOUND  The key was not in the table.
 	 * \retval MDBX_EINVAL    An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_get_ex(
-			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *") MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "size_t *") long[] values_count);
 
-//	@JniMethod
-//	public static final native int mdbx_get_attr(
-//			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-//			@JniArg(cast = "uint32_t") long dbi,
-//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-//			@JniArg(cast = "MDBX_val *") MDBX_val data,
-//			@JniArg(cast = "uint_fast64_t *") long[] pattr);
+	public static final int mdbx_get_ex( long txn, long dbi, MDBX_val key, MDBX_val data, long[] values_count) {
+		return FfmDispatch.mdbx_get_ex(txn, dbi, key, data, values_count);
+	}
+
+//
+//	public static final int mdbx_get_attr(long txn, long dbi, MDBX_val key, MDBX_val data, long[] pattr) {
+//		return FfmDispatch.mdbx_get_attr(txn, dbi, key, data, pattr);
+//	}
 
 	/**
 	 * Get equal or great item from a table.
@@ -3330,12 +3348,10 @@ public class JNI {
 	 *                               by current thread.
 	 * \retval MDBX_NOTFOUND      The key was not in the table.
 	 * \retval MDBX_EINVAL        An invalid parameter was specified. */
-	@JniMethod
-	public static final native int mdbx_get_equal_or_great(
-			@JniArg(cast = "const MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *") MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data);
+
+	public static final int mdbx_get_equal_or_great( long txn, long dbi, MDBX_val key, MDBX_val data) {
+		return FfmDispatch.mdbx_get_equal_or_great(txn, dbi, key, data);
+	}
 
 	/**
 	 * Store items into a table.
@@ -3414,13 +3430,10 @@ public class JNI {
 	 * \retval MDBX_EACCES    An attempt was made to write in a read-only transaction.
 	 * \retval MDBX_EINVAL    An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_put(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "unsigned") int flags);
+
+	public static final int mdbx_put( long txn, long dbi, MDBX_val key, MDBX_val data, int flags) {
+		return FfmDispatch.mdbx_put(txn, dbi, key, data, flags);
+	}
 
 	/**
 	 * Store multiple items into a table.
@@ -3441,23 +3454,15 @@ public class JNI {
 	 *
 	 * @see #mdbx_put(long, long, MDBX_val, MDBX_val, int)
 	 */
-	@JniMethod
-	public static final native int mdbx_put_multiple(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data1,
-			@JniArg(cast = "MDBX_val *") MDBX_val data2,
-			@JniArg(cast = "unsigned") int flags);
 
-//	@JniMethod
-//	public static final native int mdbx_put_attr(
-//			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-//			@JniArg(cast = "uint32_t") long dbi,
-//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-//			@JniArg(cast = "MDBX_val *") MDBX_val data,
-//			@JniArg(cast = "uint_fast64_t *") long[] attr,
-//			@JniArg(cast = "unsigned") int flags);
+	public static final int mdbx_put_multiple( long txn, long dbi, MDBX_val key, MDBX_val data1, MDBX_val data2, int flags) {
+		return FfmDispatch.mdbx_put_multiple(txn, dbi, key, data1, data2, flags);
+	}
+
+//
+//	public static final int mdbx_put_attr(long txn, long dbi, MDBX_val key, MDBX_val data, long[] attr, int flags) {
+//		return FfmDispatch.mdbx_put_attr(txn, dbi, key, data, attr, flags);
+//	}
 
 	/**
 	 * Replace items in a table.
@@ -3493,14 +3498,10 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_replace(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val new_data,
-			@JniArg(cast = "MDBX_val *") MDBX_val old_data,
-			@JniArg(cast = "unsigned") int flags);
+
+	public static final int mdbx_replace( long txn, long dbi, MDBX_val key, MDBX_val new_data, MDBX_val old_data, int flags) {
+		return FfmDispatch.mdbx_replace(txn, dbi, key, new_data, old_data, flags);
+	}
 
 	/**
 	 * Delete items from a table.
@@ -3525,12 +3526,10 @@ public class JNI {
 	 * \retval MDBX_EACCES   An attempt was made to write in a read-only transaction.
 	 * \retval MDBX_EINVAL   An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_del(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val data);
+
+	public static final int mdbx_del( long txn, long dbi, MDBX_val key, MDBX_val data) {
+		return FfmDispatch.mdbx_del(txn, dbi, key, data);
+	}
 
 	/**
 	 * Empty or delete and close a table.
@@ -3546,11 +3545,10 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_drop(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			int del);
+
+	public static final int mdbx_drop( long txn, long dbi, int del) {
+		return FfmDispatch.mdbx_drop(txn, dbi, del);
+	}
 
 	/**
 	 * Returns fours integers markers (aka "canary") associated with the environment.
@@ -3563,10 +3561,10 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_canary_get(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_canary *") MDBX_canary canary);
+
+	public static final int mdbx_canary_get( long txn, MDBX_canary canary) {
+		return FfmDispatch.mdbx_canary_get(txn, canary);
+	}
 
 	/**
 	 * Set integers markers (aka "canary") associated with the environment.
@@ -3584,10 +3582,10 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_canary_put(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_canary *", flags={NO_OUT}) MDBX_canary canary);
+
+	public static final int mdbx_canary_put( long txn, MDBX_canary canary) {
+		return FfmDispatch.mdbx_canary_put(txn, canary);
+	}
 
 
 	//====================================================//
@@ -3629,11 +3627,10 @@ public class JNI {
 	 *                               by current thread.
 	 * \retval MDBX_EINVAL  An invalid parameter was specified. 	 *
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_open(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_cursor **", flags={NO_IN}) long[] cursor);
+
+	public static final int mdbx_cursor_open( long txn, long dbi, long[] cursor) {
+		return FfmDispatch.mdbx_cursor_open(txn, dbi, cursor);
+	}
 
 	/**
 	 * Closes a cursor handle without returning error code.
@@ -3655,9 +3652,10 @@ public class JNI {
 	 *
 	 * @param cursor  [in] A cursor handle returned by \ref mdbx_cursor_open() or \ref mdbx_cursor_create().
 	 */
-	@JniMethod
-	public static final native void mdbx_cursor_close(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final void mdbx_cursor_close( long cursor) {
+		FfmDispatch.mdbx_cursor_close(cursor);
+	}
 
 	/**
 	 * Closes a cursor handle with returning error code.
@@ -3678,9 +3676,10 @@ public class JNI {
 	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
 	 * \retval MDBX_EINVAL  An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_close2(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_close2( long cursor) {
+		return FfmDispatch.mdbx_cursor_close2(cursor);
+	}
 
 	/**
 	 * Renew a cursor handle for use within the given transaction.
@@ -3702,10 +3701,10 @@ public class JNI {
 	 * \retval MDBX_EINVAL  An invalid parameter was specified.
 	 * \retval MDBX_BAD_DBI The cursor was not bound to a DBI-handle or such a handle became invalid.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_renew(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_renew( long txn, long cursor) {
+		return FfmDispatch.mdbx_cursor_renew(txn, cursor);
+	}
 
 	/**
 	 * Bind cursor to specified transaction and DBI-handle.
@@ -3734,11 +3733,10 @@ public class JNI {
 	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
 	 * \retval MDBX_EINVAL  An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_bind(
-			@JniArg(cast = "MDBX_txn *", flags={NO_OUT}) long txn,
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "uint32_t") long dbi);
+
+	public static final int mdbx_cursor_bind( long txn, long cursor, long dbi) {
+		return FfmDispatch.mdbx_cursor_bind(txn, cursor, dbi);
+	}
 
 	/**
 	 * Unbind cursor from a transaction.
@@ -3765,9 +3763,10 @@ public class JNI {
 	 * @see #mdbx_cursor_close(long)
 	 * @see #mdbx_cursor_reset(long)
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_unbind(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_unbind( long cursor) {
+		return FfmDispatch.mdbx_cursor_unbind(cursor);
+	}
 
 	/**
 	 * Resets the cursor state.
@@ -3781,9 +3780,10 @@ public class JNI {
 	 *
 	 * @return The result of the scan operation, or an error code.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_reset(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_reset( long cursor) {
+		return FfmDispatch.mdbx_cursor_reset(cursor);
+	}
 
 	/**
 	 * Copy cursor position and state.
@@ -3796,10 +3796,10 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_copy(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long src,
-			@JniArg(cast = "MDBX_cursor *") long dest);
+
+	public static final int mdbx_cursor_copy( long src, long dest) {
+		return FfmDispatch.mdbx_cursor_copy(src, dest);
+	}
 
 	/**
 	 * Compares cursor positions.
@@ -3819,11 +3819,10 @@ public class JNI {
 	 * @return A signed value in the semantics of the `&lt;=&gt;` operator (less than zero, zero, or greater
 	 *          than zero) as a result of comparing cursor positions.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_compare(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long left,
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long right,
-			@JniArg(cast = "int") int ignore_multival);  //bool
+
+	public static final int mdbx_cursor_compare( long left, long right, int ignore_multival) {
+		return FfmDispatch.mdbx_cursor_compare(left, right, ignore_multival);
+	}  //bool
 
 	/**
 	 * Retrieve by cursor.
@@ -3854,12 +3853,10 @@ public class JNI {
 	 * \retval MDBX_NOTFOUND  No matching key found.
 	 * \retval MDBX_EINVAL    An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_get(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "MDBX_val *") MDBX_val key,  //in,out
-			@JniArg(cast = "MDBX_val *") MDBX_val data, //in,out
-			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int op);
+
+	public static final int mdbx_cursor_get( long cursor, MDBX_val key, MDBX_val data, int op) {
+		return FfmDispatch.mdbx_cursor_get(cursor, key, data, op);
+	}
 
 	/**
 	 * Retrieve multiple non-dupsort key/value pairs by cursor.
@@ -3898,13 +3895,10 @@ public class JNI {
 	 *                               and there are no pairs left.
 	 * \retval MDBX_EINVAL           An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_get_batch(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "size_t *") long[] count,
-			@JniArg(cast = "MDBX_val *") MDBX_val pairs, //in,out
-			@JniArg(cast = "size_t") long limit,
-			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int op);
+
+	public static final int mdbx_cursor_get_batch( long cursor, long[] count, MDBX_val pairs, long limit, int op) {
+		return FfmDispatch.mdbx_cursor_get_batch(cursor, count, pairs, limit, op);
+	}
 
 	/**
 	 * Utility function for use in utilities.
@@ -3920,9 +3914,10 @@ public class JNI {
 	 * @param cursor cursor pointer
 	 * @return The result of the scanning operation, or an error code.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_ignord(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_ignord( long cursor) {
+		return FfmDispatch.mdbx_cursor_ignord(cursor);
+	}
 
 	/**
 	 * The type of the predicative callback functions used \ref mdbx_cursor_scan() and \ref
@@ -3953,9 +3948,10 @@ public class JNI {
 	 * @see mdbx_cursor_scan()
 	 * @see mdbx_cursor_scan_from()
 	 */
-//	@JniMethod
-//	public static final native int mdbx_cursor_ignor2d(
-//			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+//
+//	public static final int mdbx_cursor_ignor2d(long cursor) {
+//		return FfmDispatch.mdbx_cursor_ignor2d(cursor);
+//	}
 //	typedef int(MDBX_predicate_func)(void *context, MDBX_val *key, MDBX_val *value, void *arg) MDBX_CXX17_NOEXCEPT;
 
 /**
@@ -4008,14 +4004,10 @@ public class JNI {
  * see MDBX_predicate_func
  * @see #mdbx_cursor_scan_from(long, long, long, int, MDBX_val, MDBX_val, int, long)
  */
-	@JniMethod
-	public static final native int mdbx_cursor_scan(
-			@JniArg(cast = "MDBX_cursor *") long cursor,
-			@JniArg(cast = "int(*)(void *, const MDBX_val *, const MDBX_val *, void *)", flags = ArgFlag.POINTER_ARG) long predicate,
-			@JniArg(cast="void *") long context,
-			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int start_op,
-			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int turn_op,
-			@JniArg(cast="void *") long arg);
+
+	public static final int mdbx_cursor_scan( long cursor, long predicate, long context, int start_op, int turn_op, long arg) {
+		return FfmDispatch.mdbx_cursor_scan(cursor, predicate, context, start_op, turn_op, arg);
+	}
 //	LIBMDBX_API int mdbx_cursor_scan(MDBX_cursor *cursor,
 //	                                 MDBX_predicate_func *predicate, void *context,
 //	                                 MDBX_cursor_op start_op,
@@ -4086,16 +4078,10 @@ public class JNI {
  * see #MDBX_predicate_func
  * @see #mdbx_cursor_scan(long, long, long, int, int, long)
  */
-	@JniMethod
-	public static final native int mdbx_cursor_scan_from(
-			@JniArg(cast = "MDBX_cursor *") long cursor,
-			@JniArg(cast = "int(*)(void *, const MDBX_val *, const MDBX_val *, void *)", flags = ArgFlag.POINTER_ARG) long predicate,
-			@JniArg(cast="void *") long context,
-			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int from_op,
-			@JniArg(cast = "MDBX_val *") MDBX_val from_key,
-			@JniArg(cast = "MDBX_val *") MDBX_val from_value,
-			@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int turn_op,
-			@JniArg(cast="void *") long arg);
+
+	public static final int mdbx_cursor_scan_from( long cursor, long predicate, long context, int from_op, MDBX_val from_key, MDBX_val from_value, int turn_op, long arg) {
+		return FfmDispatch.mdbx_cursor_scan_from(cursor, predicate, context, from_op, from_key, from_value, turn_op, arg);
+	}
 //	LIBMDBX_API int mdbx_cursor_scan_from(MDBX_cursor *cursor,
 //	                                      MDBX_predicate_func *predicate,
 //	                                      void *context,
@@ -4105,28 +4091,20 @@ public class JNI {
 //	                                      MDBX_cursor_op turn_op,
 //	                                      void *arg);
 
-	@JniMethod
-	public static final native int mdbx_cursor_put(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "MDBX_val *") MDBX_val key, //in,out
-			@JniArg(cast = "MDBX_val *") MDBX_val data, //in,out
-			@JniArg(cast = "unsigned") int flags);
 
-//@JniMethod
-//public static final native int mdbx_cursor_get_attr(
-//		@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-//		@JniArg(cast = "MDBX_val *") MDBX_val key,
-//		@JniArg(cast = "MDBX_val *") MDBX_val data,
-//		@JniArg(cast = "uint_fast64_t *") long[] pattr,
-//		@JniArg(cast = "MDBX_cursor_op", flags={NO_OUT}) int op);
+	public static final int mdbx_cursor_put( long cursor, MDBX_val key, MDBX_val data, int flags) {
+		return FfmDispatch.mdbx_cursor_put(cursor, key, data, flags);
+	}
 
-//	@JniMethod
-//	public static final native int mdbx_cursor_put_attr(
-//			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val key,
-//			@JniArg(cast = "MDBX_val *", flags={NO_OUT}) MDBX_val data,
-//			@JniArg(cast = "uint_fast64_t") long attr,
-//			@JniArg(cast = "unsigned") int flags);
+//
+//public static final int mdbx_cursor_get_attr(long cursor, MDBX_val key, MDBX_val data, long[] pattr, int op) {
+//		return FfmDispatch.mdbx_cursor_get_attr(cursor, key, data, pattr, op);
+//	}
+
+//
+//	public static final int mdbx_cursor_put_attr(long cursor, MDBX_val key, MDBX_val data, long attr, int flags) {
+//		return FfmDispatch.mdbx_cursor_put_attr(cursor, key, data, attr, flags);
+//	}
 
 	/**
 	 * Return the cursor's transaction handle.
@@ -4135,9 +4113,10 @@ public class JNI {
 	 * @param cursor [in] A cursor handle returned by \ref mdbx_cursor_open().
 	 * @return cursor transaction handle
 	 */
-	@JniMethod(cast = "MDBX_txn *")
-	public static final native long mdbx_cursor_txn(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final long mdbx_cursor_txn( long cursor) {
+		return FfmDispatch.mdbx_cursor_txn(cursor);
+	}
 
 	/**
 	 * Return the cursor's table handle.
@@ -4146,9 +4125,10 @@ public class JNI {
 	 * @param cursor  [in] A cursor handle returned by \ref mdbx_cursor_open().
 	 * @return cursor table handle
 	 */
-	@JniMethod(cast = "uint32_t")
-	public static final native long mdbx_cursor_dbi(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final long mdbx_cursor_dbi( long cursor) {
+		return FfmDispatch.mdbx_cursor_dbi(cursor);
+	}
 
 	/**
 	 * Delete current key/data pair.
@@ -4175,10 +4155,10 @@ public class JNI {
 	 * \retval MDBX_EACCES        An attempt was made to write in a read-only transaction.
 	 * \retval MDBX_EINVAL        An invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_del(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "unsigned") int flags);
+
+	public static final int mdbx_cursor_del( long cursor, int flags) {
+		return FfmDispatch.mdbx_cursor_del(cursor, flags);
+	}
 
 	/**
 	 * Return count values (aka duplicates) for current key.
@@ -4196,10 +4176,10 @@ public class JNI {
 	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
 	 * \retval MDBX_EINVAL   Cursor is not initialized, or an invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_count(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "size_t *") long[] count);
+
+	public static final int mdbx_cursor_count( long cursor, long[] count) {
+		return FfmDispatch.mdbx_cursor_count(cursor, count);
+	}
 
 	/**
 	 * Return count values (aka duplicates) and nested b-tree statistics for current key.
@@ -4222,12 +4202,10 @@ public class JNI {
 	 * \retval MDBX_THREAD_MISMATCH  Given transaction is not owned by current thread.
 	 * \retval MDBX_EINVAL   Cursor is not initialized, or an invalid parameter was specified.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_count_ex(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "size_t *") long[] count,
-			@JniArg(cast = "MDBX_stat *") MDBX_stat stat,
-			@JniArg(cast = "size_t") long bytes);
+
+	public static final int mdbx_cursor_count_ex( long cursor, long[] count, MDBX_stat stat, long bytes) {
+		return FfmDispatch.mdbx_cursor_count_ex(cursor, count, stat, bytes);
+	}
 
 	/**
 	 * Determines whether the cursor is pointed to a key-value pair or not, i.e. was not positioned or points to
@@ -4240,9 +4218,10 @@ public class JNI {
 	 * \retval MDBX_RESULT_TRUE    No more data available or cursor not positioned
 	 * \retval MDBX_RESULT_FALSE   A data is available
 	 * \retval Otherwise the error code */
-	@JniMethod
-	public static final native int mdbx_cursor_eof(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_eof( long cursor) {
+		return FfmDispatch.mdbx_cursor_eof(cursor);
+	}
 
 	/**
 	 * Determines whether the cursor is pointed to the first key-value pair or not.
@@ -4255,9 +4234,10 @@ public class JNI {
 	 * retval MDBX_RESULT_FALSE Cursor NOT positioned to the first key-value pair \retval Otherwise the error
 	 *         code
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_on_first(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_on_first( long cursor) {
+		return FfmDispatch.mdbx_cursor_on_first(cursor);
+	}
 
 	/**
 	 * Determines whether the cursor is on the first or only multi-value matching the key.
@@ -4269,9 +4249,10 @@ public class JNI {
 	 * retval MDBX_RESULT_FALSE the cursor is NOT positioned on the first or only multi-value matching the key.
 	 * retval OTHERWISE the error code.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_on_first_dup(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_on_first_dup( long cursor) {
+		return FfmDispatch.mdbx_cursor_on_first_dup(cursor);
+	}
 
 	/**
 	 * Determines whether the cursor is on the last or only multi-value matching the key.
@@ -4283,9 +4264,10 @@ public class JNI {
 	 * retval MDBX_RESULT_FALSE the cursor is NOT positioned on the last or only multi-value matching the key.
 	 * retval OTHERWISE the error code.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_on_last_dup(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_on_last_dup( long cursor) {
+		return FfmDispatch.mdbx_cursor_on_last_dup(cursor);
+	}
 
 	/**
 	 * Determines whether the cursor is pointed to the last key-value pair or not.
@@ -4298,9 +4280,10 @@ public class JNI {
 	 * \retval MDBX_RESULT_FALSE  Cursor NOT positioned to the last key-value pair
 	 * \retval Otherwise the error code
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_on_last(
-			@JniArg(cast = "MDBX_cursor *", flags={NO_OUT}) long cursor);
+
+	public static final int mdbx_cursor_on_last( long cursor) {
+		return FfmDispatch.mdbx_cursor_on_last(cursor);
+	}
 
 	/**
 	 * Create a cursor handle but not bind it to transaction nor DBI-handle.
@@ -4323,9 +4306,10 @@ public class JNI {
 	 *
 	 * @return Created cursor handle or NULL in case out of memory.
 	 */
-	@JniMethod(cast = "MDBX_cursor *")
-	public static final native long mdbx_cursor_create(
-			@JniArg(cast = "void *") long ctx);
+
+	public static final long mdbx_cursor_create( long ctx) {
+		return FfmDispatch.mdbx_cursor_create(ctx);
+	}
 
 	/**
 	 * Get the application information associated with the MDBX_cursor.
@@ -4335,9 +4319,10 @@ public class JNI {
 	 * @param cursor  [in] An cursor handle returned by \ref mdbx_cursor_create() or \ref mdbx_cursor_open().
 	 * @return The pointer which was passed via the `context` parameter of `mdbx_cursor_create()` or set by
 	 *         \ref mdbx_cursor_set_userctx(), or `NULL` if something wrong. */
-	@JniMethod(cast = "void *")
-	public static final native long mdbx_cursor_get_userctx(
-			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long cursor);
+
+	public static final long mdbx_cursor_get_userctx( long cursor) {
+		return FfmDispatch.mdbx_cursor_get_userctx(cursor);
+	}
 
 	/**
 	 * Set application information associated with the cursor.
@@ -4350,94 +4335,106 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_cursor_set_userctx(
-			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long cursor,
-			@JniArg(cast = "void *") long ctx);
+
+	public static final int mdbx_cursor_set_userctx( long cursor, long ctx) {
+		return FfmDispatch.mdbx_cursor_set_userctx(cursor, ctx);
+	}
 
 	//====================================================//
 	// Compare methods (and K2V and V2K functions)
 	//====================================================//
-	@JniMethod
-	public static final native int mdbx_cmp(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags = {NO_OUT}) MDBX_val a,
-			@JniArg(cast = "MDBX_val *", flags = {NO_OUT}) MDBX_val b);
 
-	@JniMethod
-	public static final native int mdbx_dcmp(
-			@JniArg(cast = "MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "MDBX_val *", flags = {NO_OUT}) MDBX_val a,
-			@JniArg(cast = "MDBX_val *", flags = {NO_OUT}) MDBX_val b);
+	public static final int mdbx_cmp( long txn, long dbi, MDBX_val a, MDBX_val b) {
+		return FfmDispatch.mdbx_cmp(txn, dbi, a, b);
+	}
 
-	@JniMethod(cast = "int *")
-	public static final native long mdbx_get_keycmp(
-			@JniArg(cast = "unsigned") int flags);
 
-	@JniMethod(cast = "int *")
-	public static final native long mdbx_get_datacmp(
-			@JniArg(cast = "unsigned") int flags);
+	public static final int mdbx_dcmp( long txn, long dbi, MDBX_val a, MDBX_val b) {
+		return FfmDispatch.mdbx_dcmp(txn, dbi, a, b);
+	}
 
-	@JniMethod(cast = "uint64_t")
-	public static final native long mdbx_key_from_jsonInteger(
-			@JniArg(cast = "const int64_t") long json_integer);
 
-	@JniMethod(cast = "uint64_t")
-	public static final native long mdbx_key_from_double(
-			@JniArg(cast = "const double") double ieee754_64bit);
+	public static final long mdbx_get_keycmp( int flags) {
+		return FfmDispatch.mdbx_get_keycmp(flags);
+	}
 
-	@JniMethod(cast = "uint64_t")
-	public static final native long mdbx_key_from_ptrdouble(
-			@JniArg(cast = "const double *const") long[] ieee754_64bit);
 
-	@JniMethod(cast = "uint32_t")
-	public static final native int mdbx_key_from_float(
-			@JniArg(cast = "const float") float ieee754_32bit);
+	public static final long mdbx_get_datacmp( int flags) {
+		return FfmDispatch.mdbx_get_datacmp(flags);
+	}
 
-	@JniMethod(cast = "uint32_t")
-	public static final native int mdbx_key_from_ptrfloat(
-			@JniArg(cast = "const float *const") long[] ieee754_32bit);
 
-	@JniMethod(cast = "uint64_t")
-	public static final native long mdbx_key_from_int64(
-			@JniArg(cast = "const int64_t") long i64);
+	public static final long mdbx_key_from_jsonInteger( long json_integer) {
+		return FfmDispatch.mdbx_key_from_jsonInteger(json_integer);
+	}
 
-	@JniMethod(cast = "uint32_t")
-	public static final native int mdbx_key_from_int32(
-			@JniArg(cast = "const int32_t") int i32);
 
-	@JniMethod(cast = "int64_t")
-	public static final native long mdbx_jsonInteger_from_key(
-			@JniArg(flags={BY_VALUE}) MDBX_val val);
+	public static final long mdbx_key_from_double( double ieee754_64bit) {
+		return FfmDispatch.mdbx_key_from_double(ieee754_64bit);
+	}
 
-	@JniMethod
-	public static final native double mdbx_double_from_key(
-			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
-	@JniMethod
-	public static final native float mdbx_float_from_key(
-			@JniArg(flags={BY_VALUE}) MDBX_val val);
+	public static final long mdbx_key_from_ptrdouble( long[] ieee754_64bit) {
+		return FfmDispatch.mdbx_key_from_ptrdouble(ieee754_64bit);
+	}
 
-	@JniMethod(cast = "int32_t")
-	public static final native int mdbx_int32_from_key(
-			@JniArg(flags={BY_VALUE}) MDBX_val val);
 
-	@JniMethod(cast = "int64_t")
-	public static final native long mdbx_int64_from_key(
-			@JniArg(flags={BY_VALUE}) MDBX_val val);
+	public static final int mdbx_key_from_float( float ieee754_32bit) {
+		return FfmDispatch.mdbx_key_from_float(ieee754_32bit);
+	}
+
+
+	public static final int mdbx_key_from_ptrfloat( long[] ieee754_32bit) {
+		return FfmDispatch.mdbx_key_from_ptrfloat(ieee754_32bit);
+	}
+
+
+	public static final long mdbx_key_from_int64( long i64) {
+		return FfmDispatch.mdbx_key_from_int64(i64);
+	}
+
+
+	public static final int mdbx_key_from_int32( int i32) {
+		return FfmDispatch.mdbx_key_from_int32(i32);
+	}
+
+
+	public static final long mdbx_jsonInteger_from_key( MDBX_val val) {
+		return FfmDispatch.mdbx_jsonInteger_from_key(val);
+	}
+
+
+	public static final double mdbx_double_from_key( MDBX_val val) {
+		return FfmDispatch.mdbx_double_from_key(val);
+	}
+
+
+	public static final float mdbx_float_from_key( MDBX_val val) {
+		return FfmDispatch.mdbx_float_from_key(val);
+	}
+
+
+	public static final int mdbx_int32_from_key( MDBX_val val) {
+		return FfmDispatch.mdbx_int32_from_key(val);
+	}
+
+
+	public static final long mdbx_int64_from_key( MDBX_val val) {
+		return FfmDispatch.mdbx_int64_from_key(val);
+	}
 
 	//====================================================//
 	// Limits methods
 	//====================================================//
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_dbsize_min(
-			@JniArg(cast = "intptr_t") long pagesize);
 
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_dbsize_max(
-			@JniArg(cast = "intptr_t") long pagesize);
+	public static final long mdbx_limits_dbsize_min( long pagesize) {
+		return FfmDispatch.mdbx_limits_dbsize_min(pagesize);
+	}
+
+
+	public static final long mdbx_limits_dbsize_max( long pagesize) {
+		return FfmDispatch.mdbx_limits_dbsize_max(pagesize);
+	}
 
 	/**
 	 * Returns minimal key size in bytes for given table flags.
@@ -4446,20 +4443,25 @@ public class JNI {
 	 * @param flags flags
 	 * @return size in bytes
 	 */
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_keysize_min(
-			@JniArg(cast = "unsigned") long flags);
 
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_keysize_max(
-			@JniArg(cast = "intptr_t") long pagesize,
-			@JniArg(cast = "unsigned") long flags);
+	public static final long mdbx_limits_keysize_min( long flags) {
+		return FfmDispatch.mdbx_limits_keysize_min(flags);
+	}
 
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_pgsize_min();
 
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_pgsize_max();
+	public static final long mdbx_limits_keysize_max( long pagesize, long flags) {
+		return FfmDispatch.mdbx_limits_keysize_max(pagesize, flags);
+	}
+
+
+	public static final long mdbx_limits_pgsize_min() {
+		return FfmDispatch.mdbx_limits_pgsize_min();
+	}
+
+
+	public static final long mdbx_limits_pgsize_max() {
+		return FfmDispatch.mdbx_limits_pgsize_max();
+	}
 
 	/**
 	 * Returns maximal write transaction size (i.e. limit for summary volume of dirty pages) in bytes for given
@@ -4468,9 +4470,10 @@ public class JNI {
 	 * @param pagesize page size
 	 * @return maximum write transaction size in bytes
 	 */
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_txnsize_max(
-			@JniArg(cast = "intptr_t") long pagesize);
+
+	public static final long mdbx_limits_txnsize_max( long pagesize) {
+		return FfmDispatch.mdbx_limits_txnsize_max(pagesize);
+	}
 
 	/**
 	 * brief Returns minimal data size in bytes for given table flags.
@@ -4479,9 +4482,10 @@ public class JNI {
 	 * @param flags flags
 	 * @return size in bytes
 	 */
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_valsize_min(
-			@JniArg(cast = "unsigned") long flags);
+
+	public static final long mdbx_limits_valsize_min( long flags) {
+		return FfmDispatch.mdbx_limits_valsize_min(flags);
+	}
 
 	/**
 	 * Returns maximal data size in bytes for given page size and table flags, or -1 if pagesize is invalid.
@@ -4491,10 +4495,10 @@ public class JNI {
 	 * @param flags flags
 	 * @return size in bytes
 	 */
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_valsize_max(
-			@JniArg(cast = "intptr_t") long pagesize,
-			@JniArg(cast = "unsigned") long flags);
+
+	public static final long mdbx_limits_valsize_max( long pagesize, long flags) {
+		return FfmDispatch.mdbx_limits_valsize_max(pagesize, flags);
+	}
 
 	/**
 	 * Returns maximal size of key-value pair to fit in a single page with the given size and table flags, or -1
@@ -4505,10 +4509,10 @@ public class JNI {
 	 * @param flags flags
 	 * @return size in bytes
 	 */
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_pairsize4page_max(
-			@JniArg(cast = "intptr_t") long pagesize,
-			@JniArg(cast = "unsigned") long flags);
+
+	public static final long mdbx_limits_pairsize4page_max( long pagesize, long flags) {
+		return FfmDispatch.mdbx_limits_pairsize4page_max(pagesize, flags);
+	}
 
 	/**
 	 * Returns maximal data size in bytes to fit in a leaf-page or single large/overflow-page with the given
@@ -4519,51 +4523,41 @@ public class JNI {
 	 * @param flags flags
 	 * @return size in bytes
 	 */
-	@JniMethod(cast = "intptr_t")
-	public static final native long mdbx_limits_valsize4page_max(
-			@JniArg(cast = "intptr_t") long pagesize,
-			@JniArg(cast = "unsigned") long flags);
+
+	public static final long mdbx_limits_valsize4page_max( long pagesize, long flags) {
+		return FfmDispatch.mdbx_limits_valsize4page_max(pagesize, flags);
+	}
 
 	//====================================================//
 	// Reader methods
 	//====================================================//
-	@JniMethod
-	public static final native int mdbx_reader_check(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "int *") int[] dead);
 
-	@JniMethod
-	public static final native int mdbx_reader_list(
-			@JniArg(cast = "MDBX_env *", flags = {NO_OUT}) long env,
-			@JniArg(cast = "int(*)(void *, int, int, mdbx_pid_t, mdbx_tid_t, uint64_t, uint64_t, size_t, size_t)", flags = ArgFlag.POINTER_ARG) long func,
-			@JniArg(cast = "void *") long ctx);
+	public static final int mdbx_reader_check( long env, int[] dead) {
+		return FfmDispatch.mdbx_reader_check(env, dead);
+	}
+
+
+	public static final int mdbx_reader_list( long env, long func, long ctx) {
+		return FfmDispatch.mdbx_reader_list(env, func, ctx);
+	}
 
 	//====================================================//
 	// Range Estimation methods
 	//====================================================//
-	@JniMethod
-	public static final native int mdbx_estimate_distance(
-			@JniArg(cast = "const MDBX_cursor *", flags={NO_OUT}) long first,
-			@JniArg(cast = "const MDBX_cursor *", flags={NO_OUT}) long last,
-			@JniArg(cast = "ptrdiff_t *") long[] distance_items);
 
-	@JniMethod
-	public static final native int mdbx_estimate_move(
-			@JniArg(cast = "const MDBX_cursor *", flags={NO_OUT}) long cursor,
-			@JniArg(cast = "MDBX_val *") MDBX_val key,
-			@JniArg(cast = "MDBX_val *") MDBX_val data,
-			@JniArg(cast = "unsigned") long move_op,
-			@JniArg(cast = "ptrdiff_t *") long[] distance_items);
+	public static final int mdbx_estimate_distance( long first, long last, long[] distance_items) {
+		return FfmDispatch.mdbx_estimate_distance(first, last, distance_items);
+	}
 
-	@JniMethod
-	public static final native int mdbx_estimate_range(
-			@JniArg(cast = "const MDBX_txn *", flags = {NO_OUT}) long txn,
-			@JniArg(cast = "uint32_t") long dbi,
-			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val begin_key,
-			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val begin_data,
-			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val end_key,
-			@JniArg(cast = "const MDBX_val *", flags = {NO_OUT}) MDBX_val end_data,
-			@JniArg(cast = "ptrdiff_t *") long[] distance_items);
+
+	public static final int mdbx_estimate_move( long cursor, MDBX_val key, MDBX_val data, long move_op, long[] distance_items) {
+		return FfmDispatch.mdbx_estimate_move(cursor, key, data, move_op, distance_items);
+	}
+
+
+	public static final int mdbx_estimate_range( long txn, long dbi, MDBX_val begin_key, MDBX_val begin_data, MDBX_val end_key, MDBX_val end_data, long[] distance_items) {
+		return FfmDispatch.mdbx_estimate_range(txn, dbi, begin_key, begin_data, end_key, end_data, distance_items);
+	}
 
 	//====================================================//
 	// Extra operation methods
@@ -4572,8 +4566,10 @@ public class JNI {
 
 	//TODO: mdbx_reader_list
 
-	@JniMethod(cast = "size_t")
-	public static final native long mdbx_default_pagesize();
+
+	public static final long mdbx_default_pagesize() {
+		return FfmDispatch.mdbx_default_pagesize();
+	}
 
 
 	//TODO: mdbx_dkey
@@ -4586,10 +4582,10 @@ public class JNI {
 
 	//TODO: debug and page visit functions
 
-	@JniMethod
-	public static final native int mdbx_is_dirty(
-			@JniArg(cast = "MDBX_txn *") long txn,
-			@JniArg(cast = "const void *") long ptr);
+
+	public static final int mdbx_is_dirty( long txn, long ptr) {
+		return FfmDispatch.mdbx_is_dirty(txn, ptr);
+	}
 
 	/**
 	 * Returns basic information about system RAM. This function provides a portable way to get information
@@ -4602,22 +4598,146 @@ public class JNI {
 	 *
 	 * @return A non-zero error value on failure and 0 on success.
 	 */
-	@JniMethod
-	public static final native int mdbx_get_sysraminfo(
-			@JniArg(cast = "intptr_t *") long[] page_size,
-			@JniArg(cast = "intptr_t *") long[] total_pages,
-			@JniArg(cast = "intptr_t *") long[] avail_pages);
 
-//  @JniMethod
-//  public static final native int mdbx_set_compare(
-//  		@JniArg(cast = "MDBX_txn *") long txn,
-//  		@JniArg(cast = "uint32_t") long dbi,
-//  		@JniArg(cast = "MDBX_cmp_func *") long cmp);
+	public static final int mdbx_get_sysraminfo( long[] page_size, long[] total_pages, long[] avail_pages) {
+		return FfmDispatch.mdbx_get_sysraminfo(page_size, total_pages, avail_pages);
+	}
+
+	public static final void mdbx_assert_fail(String msg, String func, int line) {
+		FfmDispatch.mdbx_assert_fail(msg, func, line);
+	}
+
+	public static final void mdbx_set_panic(long panicFunc) {
+		FfmDispatch.mdbx_set_panic(panicFunc);
+	}
+
+	public static final long mdbx_dump_val(MDBX_val key, long buf, long bufsize) {
+		return FfmDispatch.mdbx_dump_val(key, buf, bufsize);
+	}
+
+	public static final long mdbx_liberr2str(int errnum) {
+		return FfmDispatch.mdbx_liberr2str(errnum);
+	}
+
+	public static final int mdbx_is_readahead_reasonable(long volume, long redundancy) {
+		return FfmDispatch.mdbx_is_readahead_reasonable(volume, redundancy);
+	}
+
+	public static final int mdbx_thread_register(long env) {
+		return FfmDispatch.mdbx_thread_register(env);
+	}
+
+	public static final int mdbx_thread_unregister(long env) {
+		return FfmDispatch.mdbx_thread_unregister(env);
+	}
+
+	public static final long mdbx_env_get_hsr(long env) {
+		return FfmDispatch.mdbx_env_get_hsr(env);
+	}
+
+	public static final long mdbx_ratio2digits(long numerator, long denominator, int precision, long buffer, long bufferSize) {
+		return FfmDispatch.mdbx_ratio2digits(numerator, denominator, precision, buffer, bufferSize);
+	}
+
+	public static final long mdbx_ratio2percents(long value, long whole, long buffer, long bufferSize) {
+		return FfmDispatch.mdbx_ratio2percents(value, whole, buffer, bufferSize);
+	}
+
+	public static final int mdbx_gc_info(long txn, MDBX_gc_info info, long bytes, long iterFunc, long iterCtx) {
+		return FfmDispatch.mdbx_gc_info(txn, info, bytes, iterFunc, iterCtx);
+	}
+
+	public static final int mdbx_env_defrag(long env, long defragAtLeast, long timeAtLeastDot16, long defragEnough,
+			long timeLimitDot16, long acceptableBacklash, long preferredBatch, long progressCallback, long ctx,
+			MDBX_defrag_result result) {
+		return FfmDispatch.mdbx_env_defrag(env, defragAtLeast, timeAtLeastDot16, defragEnough, timeLimitDot16,
+				acceptableBacklash, preferredBatch, progressCallback, ctx, result);
+	}
+
+	public static final int mdbx_txn_clone(long origin, long[] inOutClone, long context) {
+		return FfmDispatch.mdbx_txn_clone(origin, inOutClone, context);
+	}
+
+	public static final int mdbx_txn_checkpoint(long txn, long weakeningDurability, MDBX_commit_latency latency) {
+		return FfmDispatch.mdbx_txn_checkpoint(txn, weakeningDurability, latency);
+	}
+
+	public static final int mdbx_txn_commit_embark_read(long[] ptxn, MDBX_commit_latency latency) {
+		return FfmDispatch.mdbx_txn_commit_embark_read(ptxn, latency);
+	}
+
+	public static final int mdbx_txn_amend(long readTxn, long[] ptrWriteTxn, long flags, long context) {
+		return FfmDispatch.mdbx_txn_amend(readTxn, ptrWriteTxn, flags, context);
+	}
+
+	public static final int mdbx_txn_rollback(long txn) {
+		return FfmDispatch.mdbx_txn_rollback(txn);
+	}
+
+	public static final int mdbx_txn_abort_ex(long txn, MDBX_commit_latency latency) {
+		return FfmDispatch.mdbx_txn_abort_ex(txn, latency);
+	}
+
+	public static final int mdbx_txn_refresh(long txn) {
+		return FfmDispatch.mdbx_txn_refresh(txn);
+	}
+
+	public static final int mdbx_dbi_open2(long txn, MDBX_val name, int flags, long[] dbi) {
+		return FfmDispatch.mdbx_dbi_open2(txn, name, flags, dbi);
+	}
+
+	public static final int mdbx_dbi_open_ex2(long txn, MDBX_val name, int flags, long[] dbi, long keycmp, long datacmp) {
+		return FfmDispatch.mdbx_dbi_open_ex2(txn, name, flags, dbi, keycmp, datacmp);
+	}
+
+	public static final int mdbx_enumerate_tables(long txn, long func, long ctx) {
+		return FfmDispatch.mdbx_enumerate_tables(txn, func, ctx);
+	}
+
+	public static final void mdbx_cache_init(MDBX_cache_entry entry) {
+		FfmDispatch.mdbx_cache_init(entry);
+	}
+
+	public static final MDBX_cache_result mdbx_cache_get(long txn, long dbi, MDBX_val key, MDBX_val data, MDBX_cache_entry entry) {
+		return FfmDispatch.mdbx_cache_get(txn, dbi, key, data, entry);
+	}
+
+	public static final MDBX_cache_result mdbx_cache_get_SingleThreaded(long txn, long dbi, MDBX_val key, MDBX_val data, MDBX_cache_entry entry) {
+		return FfmDispatch.mdbx_cache_get_SingleThreaded(txn, dbi, key, data, entry);
+	}
+
+	public static final int mdbx_replace_ex(long txn, long dbi, MDBX_val key, MDBX_val newData, MDBX_val oldData, int flags, long preserver, long preserverContext) {
+		return FfmDispatch.mdbx_replace_ex(txn, dbi, key, newData, oldData, flags, preserver, preserverContext);
+	}
+
+	public static final int mdbx_cursor_delete_range(long begin, long end, int endIncluding, long[] numberOfAffected) {
+		return FfmDispatch.mdbx_cursor_delete_range(begin, end, endIncluding, numberOfAffected);
+	}
+
+	public static final int mdbx_cursor_distance(long first, long last, long[] distance, int deepness) {
+		return FfmDispatch.mdbx_cursor_distance(first, last, distance, deepness);
+	}
+
+	public static final int mdbx_cursor_scroll(long cursor, long amount, int deepness) {
+		return FfmDispatch.mdbx_cursor_scroll(cursor, amount, deepness);
+	}
+
+	public static final int mdbx_cursor_distribute(long first, long last, long[] cursors, int deepness) {
+		return FfmDispatch.mdbx_cursor_distribute(first, last, cursors, deepness);
+	}
+
+	public static final int mdbx_cursor_bunch_delete(long cursor, int action, long[] numberOfAffected) {
+		return FfmDispatch.mdbx_cursor_bunch_delete(cursor, action, numberOfAffected);
+	}
+
 //
-//  @JniMethod
-//  public static final native int mdbx_set_dupsort(
-//  		@JniArg(cast = "MDBX_txn *") long txn,
-//  		@JniArg(cast = "uint32_t") long dbi,
-//  		@JniArg(cast = "MDBX_cmp_func *") long cmp);
+//  public static final int mdbx_set_compare(long txn, long dbi, long cmp) {
+//		return FfmDispatch.mdbx_set_compare(txn, dbi, cmp);
+//	}
+//
+//
+//  public static final int mdbx_set_dupsort(long txn, long dbi, long cmp) {
+//		return FfmDispatch.mdbx_set_dupsort(txn, dbi, cmp);
+//	}
 
 }

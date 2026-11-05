@@ -22,6 +22,7 @@ import static com.castortech.mdbxjni.JNI.*;
 import static com.castortech.mdbxjni.Util.checkArgNotNull;
 import static com.castortech.mdbxjni.Util.checkErrorCode;
 
+import java.lang.foreign.MemorySegment;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -30,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.castortech.mdbxjni.JNIIntern.MDBX_cursor;
+import com.castortech.mdbxjni.ffm.gen.mdbx_h;
 
 /**
  * A cursor handle.
@@ -533,7 +535,19 @@ public class Cursor extends NativeObject implements AutoCloseable {
 	 */
 	public MDBX_cursor internCursor() {
 		MDBX_cursor rc = new MDBX_cursor();
-		JNIIntern.ptr_2_cursor(pointer(), rc, JNIIntern.SIZEOF_CURSOR);
+		rc.txn = tx == null ? 0 : tx.pointer();
+		MemorySegment cursor = MemorySegment.ofAddress(pointer());
+		short flags = 0;
+		if (mdbx_h.mdbx_cursor_on_first(cursor) == mdbx_h.MDBX_RESULT_TRUE()) {
+			flags |= 1;
+		}
+		if (mdbx_h.mdbx_cursor_on_last(cursor) == mdbx_h.MDBX_RESULT_TRUE()) {
+			flags |= 2;
+		}
+		if (mdbx_h.mdbx_cursor_eof(cursor) == mdbx_h.MDBX_RESULT_TRUE()) {
+			flags |= 4;
+		}
+		rc.flags = flags;
 		return rc;
 	}
 

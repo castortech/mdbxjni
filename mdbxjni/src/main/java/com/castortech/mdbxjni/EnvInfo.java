@@ -6,6 +6,8 @@ package com.castortech.mdbxjni;
 public class EnvInfo {
 	private final Geo geo;
 	private final long mapSize;
+	private final long dxbFileSize;
+	private final long dxbAllocated;
 	private final long lastPgNo;
 	private final long recentTxnId;
 	private final long latterReaderTxnId;
@@ -20,6 +22,8 @@ public class EnvInfo {
 	private final long numReaders;
 	private final long dxbPageSize;
 	private final long sysPageSize;
+	private final long sysUpcBlock;
+	private final long sysIoBlock;
 	private final BootId bootId;
 	private final long unsyncVolume;
 	private final long autosyncThreshold;
@@ -28,10 +32,13 @@ public class EnvInfo {
 	private final long sinceReaderCheckSeconds16dot16;
 	private final long mode;
 	private final PgopStat pgopStat;
+	private final Point dxbId;
 
 	EnvInfo(JNI.MDBX_envinfo rc) {
 		geo = new Geo(rc.mi_geo_lower, rc.mi_geo_upper, rc.mi_geo_current, rc.mi_geo_shrink, rc.mi_geo_grow);
 		mapSize = rc.mi_mapsize;
+		dxbFileSize = rc.mi_dxb_fsize;
+		dxbAllocated = rc.mi_dxb_fallocated;
 		lastPgNo = rc.mi_last_pgno;
 		recentTxnId = rc.mi_recent_txnid;
 		latterReaderTxnId = rc.mi_latter_reader_txnid;
@@ -46,6 +53,8 @@ public class EnvInfo {
 		numReaders = rc.mi_numreaders;
 		dxbPageSize = rc.mi_dxb_pagesize;
 		sysPageSize = rc.mi_sys_pagesize;
+		sysUpcBlock = rc.mi_sys_upcblk;
+		sysIoBlock = rc.mi_sys_ioblk;
 
 		Point current = new Point(rc.mi_bootid_current_x, rc.mi_bootid_current_y);
 		Point meta0 = new Point(rc.mi_bootid_meta0_x, rc.mi_bootid_meta0_y);
@@ -63,6 +72,7 @@ public class EnvInfo {
 				rc.mi_pgop_stat_split, rc.mi_pgop_stat_merge, rc.mi_pgop_stat_spill, rc.mi_pgop_stat_unspill,
 				rc.mi_pgop_stat_wops, rc.mi_pgop_stat_prefault, rc.mi_pgop_stat_mincore, rc.mi_pgop_stat_msync,
 				rc.mi_pgop_stat_fsync);
+		dxbId = new Point(rc.mi_dxbid_x, rc.mi_dxbid_y);
 	}
 
 	public Geo getGeo() {
@@ -74,6 +84,20 @@ public class EnvInfo {
 	 */
 	public long getMapSize() {
 		return mapSize;
+	}
+
+	/**
+	 * @return Current database file size.
+	 */
+	public long getDxbFileSize() {
+		return dxbFileSize;
+	}
+
+	/**
+	 * @return Space allocated for the database file in the filesystem.
+	 */
+	public long getDxbAllocated() {
+		return dxbAllocated;
 	}
 
 	/**
@@ -131,6 +155,20 @@ public class EnvInfo {
 	}
 
 	/**
+	 * @return System unified page-cache block size.
+	 */
+	public long getSysUpcBlock() {
+		return sysUpcBlock;
+	}
+
+	/**
+	 * @return Filesystem I/O block size.
+	 */
+	public long getSysIoBlock() {
+		return sysIoBlock;
+	}
+
+	/**
 	 * @return max reader slots in the environment.
 	 */
 	public long getMaxReaders() {
@@ -180,12 +218,21 @@ public class EnvInfo {
 		return pgopStat;
 	}
 
+	/**
+	 * @return GUID of the database file, as two 64-bit halves.
+	 */
+	public Point getDxbId() {
+		return dxbId;
+	}
+
 	@SuppressWarnings("nls")
 	@Override
 	public String toString() {
 		return "EnvInfo [" +
 				"geo=" + geo +
 				", mapSize=" + mapSize +
+				", dxbFileSize=" + dxbFileSize +
+				", dxbAllocated=" + dxbAllocated +
 				", lastPgNo=" + lastPgNo +
 				", lastTxnId=" + recentTxnId +
 				", latterReaderTxnId=" + latterReaderTxnId +
@@ -200,6 +247,8 @@ public class EnvInfo {
 				", numReaders=" + numReaders +
 				", dxbPageSize=" + dxbPageSize +
 				", sysPageSize=" + sysPageSize +
+				", sysUpcBlock=" + sysUpcBlock +
+				", sysIoBlock=" + sysIoBlock +
 				", bootId=" + bootId +
 				", unsyncVolume=" + unsyncVolume +
 				", autosyncThreshold=" + autosyncThreshold +
@@ -208,6 +257,7 @@ public class EnvInfo {
 				", sinceReaderCheckSeconds16dot16=" + sinceReaderCheckSeconds16dot16 +
 				", mode=" + mode +
 				", pgopStat=" + pgopStat +
+				", dxbId=" + dxbId +
 				"]";
 	}
 

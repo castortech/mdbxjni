@@ -1,1 +1,3 @@
 /target/
+src/ffm/mdbx.dump.includes
+src/ffm/mdbx.jextract.args

@@ -52,18 +52,26 @@ import static com.castortech.mdbxjni.JNI.mdbx_env_stat_ex;
 import static com.castortech.mdbxjni.JNI.mdbx_env_sync;
 import static com.castortech.mdbxjni.JNI.mdbx_env_sync_ex;
 import static com.castortech.mdbxjni.JNI.mdbx_env_sync_poll;
-import static com.castortech.mdbxjni.JNI.mdbx_setup_debug;
 import static com.castortech.mdbxjni.JNI.mdbx_txn_begin;
 import static com.castortech.mdbxjni.JNI.mdbx_txn_begin_ex;
 import static com.castortech.mdbxjni.Util.checkArgNotNull;
 import static com.castortech.mdbxjni.Util.checkErrorCode;
 
 import java.io.Closeable;
+import java.io.File;
+import java.lang.foreign.Arena;
+import java.lang.foreign.FunctionDescriptor;
+import java.lang.foreign.Linker;
+import java.lang.foreign.MemorySegment;
+import java.lang.foreign.ValueLayout;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
-import org.fusesource.hawtjni.runtime.Callback;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +79,7 @@ import com.castortech.mdbxjni.JNI.MDBX_build_info;
 import com.castortech.mdbxjni.JNI.MDBX_envinfo;
 import com.castortech.mdbxjni.JNI.MDBX_stat;
 import com.castortech.mdbxjni.JNI.MDBX_version_info;
+import com.castortech.mdbxjni.ffm.gen.mdbx_h;
 import com.castortech.mdbxjni.pool.CursorPool;
 import com.castortech.mdbxjni.pool.CursorPoolConfig;
 import com.castortech.mdbxjni.pool.CursorPoolImpl;
@@ -94,9 +103,11 @@ public class Env extends NativeObject implements Closeable {
 
 	private static final String MAIN_DB = "MAIN_DB"; //$NON-NLS-1$
 
-	private Callback keyCmpCallback = null;
-	private Callback dataCmpCallback = null;
-	private Callback loggerCallback = null;
+	private Arena comparatorArena;
+	private MemorySegment keyCmpStub;
+	private MemorySegment dataCmpStub;
+	private static MemorySegment loggerStub;
+	private static MemorySegment loggerBuffer;
 	private Comparator<byte[]> keyComparator;
 	private Comparator<byte[]> dataComparator;
 	private Database mainDb;  //represents the main DB used by MDBX to maintain the list of databases
@@ -123,25 +134,21 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	public static String version() {
-		return "" + JNI.MDBX_VERSION_MAJOR + '.' + JNI.MDBX_VERSION_MINOR; //$NON-NLS-1$
+		VersionInfo vi = versionInfo();
+		return "" + vi.getMajor() + '.' + vi.getMinor() + '.' + vi.getPatch(); //$NON-NLS-1$
 	}
 
 	public static VersionInfo versionInfo() {
 		MDBX_version_info rc = new MDBX_version_info();
-
-		NativeBuffer buffer = NativeBuffer.create(JNI.SIZEOF_VERSIONINFO);
-//		mdbx_build();
+		JNI.readVersion(rc);
 		return new VersionInfo(rc);
 	}
 
 	public static BuildInfo buildInfo() {
 		MDBX_build_info rc = new MDBX_build_info();
-
-		NativeBuffer buffer = NativeBuffer.create(JNI.SIZEOF_BUILDINFO);
-//		mdbx_build();
+		JNI.readBuild(rc);
 		return new BuildInfo(rc);
 	}
-
 
 //	printf("mdbx_copy version %d.%d.%d.%d\n"
 //      " - source: %s %s, commit %s, tree %s\n"
@@ -322,14 +329,11 @@ public class Env extends NativeObject implements Closeable {
 			self = 0;
 		}
 
-		if (keyCmpCallback != null) {
-			keyCmpCallback.dispose();
-			keyCmpCallback = null;
-		}
-
-		if (dataCmpCallback != null) {
-			dataCmpCallback.dispose();
-			dataCmpCallback = null;
+		if (comparatorArena != null) {
+			comparatorArena.close();
+			comparatorArena = null;
+			keyCmpStub = null;
+			dataCmpStub = null;
 		}
 	}
 
@@ -352,7 +356,11 @@ public class Env extends NativeObject implements Closeable {
 
 	public void copy(String path, int flags) {
 		checkArgNotNull(path, "path"); //$NON-NLS-1$
-		checkErrorCode(this, mdbx_env_copy(pointer(), path, flags));
+		File dest = new File(path);
+		if (dest.isDirectory()) {
+			dest = new File(dest, "mdbx.dat");
+		}
+		checkErrorCode(this, mdbx_env_copy(pointer(), dest.getPath(), flags));
 	}
 
 	/**
@@ -531,7 +539,9 @@ public class Env extends NativeObject implements Closeable {
 	 */
 	public void setGeometry(long lower, long now, long upper, long growthStep, long shrinkThreshold,
 			long pageSize) {
-		checkErrorCode(this, mdbx_env_set_geometry(pointer(), lower, now, upper, growthStep, shrinkThreshold,
+		// A growth step with no ceiling otherwise stops at about twice the current size.
+		long ceiling = upper < 0 && growthStep > 0 ? Long.MAX_VALUE : upper;
+		checkErrorCode(this, mdbx_env_set_geometry(pointer(), lower, now, ceiling, growthStep, shrinkThreshold,
 				pageSize));
 	}
 
@@ -990,6 +1000,10 @@ public class Env extends NativeObject implements Closeable {
 
 	public Database openDatabase(Transaction tx, String name, int flags, Comparator<byte[]> keyComp,
 			Comparator<byte[]> dataComp) {
+		// The main table already has its comparator once the environment is open.
+		if (name == null && (keyComp != null || dataComp != null)) {
+			name = "mdbxjni.compared"; //$NON-NLS-1$
+		}
 		if (log.isDebugEnabled())
 			log.debug("Opening database for {} with flags:{}", name, flags); //$NON-NLS-1$
 
@@ -1005,19 +1019,58 @@ public class Env extends NativeObject implements Closeable {
 		long[] dbi = new long[1];
 
 		if (keyComp != null) {
-			keyCmpCallback = new Callback(this, "compareKey", 2); //$NON-NLS-1$
-			keyCmpAddr = keyCmpCallback.getAddress();
 			keyComparator = keyComp;
+			keyCmpStub = comparatorStub(this::compareKeyUpcall);
+			keyCmpAddr = keyCmpStub.address();
 		}
 
 		if (dataComp != null) {
-			dataCmpCallback = new Callback(dataComp.getClass(), "compareData", 2); //$NON-NLS-1$
-			dataCmpAddr = dataCmpCallback.getAddress();
 			dataComparator = dataComp;
+			dataCmpStub = comparatorStub(this::compareDataUpcall);
+			dataCmpAddr = dataCmpStub.address();
 		}
 
 		checkErrorCode(this, tx, mdbx_dbi_open_ex(tx.pointer(), name, flags, dbi, keyCmpAddr, dataCmpAddr));
 		return new Database(this, dbi[0], name);
+	}
+
+	private int compareKeyUpcall(MemorySegment left, MemorySegment right) {
+		try {
+			return (int) compareKey(left.address(), right.address());
+		}
+		catch (RuntimeException failure) {
+			return -1;
+		}
+	}
+
+	private int compareDataUpcall(MemorySegment left, MemorySegment right) {
+		try {
+			return (int) compareData(left.address(), right.address());
+		}
+		catch (RuntimeException failure) {
+			return -1;
+		}
+	}
+
+	private MemorySegment comparatorStub(NativeCompare compare) {
+		try {
+			if (comparatorArena == null) {
+				comparatorArena = Arena.ofShared();
+			}
+			MethodHandle handle = MethodHandles.lookup().findVirtual(NativeCompare.class, "compare", //$NON-NLS-1$
+					MethodType.methodType(int.class, MemorySegment.class, MemorySegment.class)).bindTo(compare);
+			FunctionDescriptor descriptor = FunctionDescriptor.of(ValueLayout.JAVA_INT, ValueLayout.ADDRESS,
+					ValueLayout.ADDRESS);
+			return Linker.nativeLinker().upcallStub(handle, descriptor, comparatorArena);
+		}
+		catch (ReflectiveOperationException failure) {
+			throw new IllegalStateException(failure);
+		}
+	}
+
+	@FunctionalInterface
+	private interface NativeCompare {
+		int compare(MemorySegment left, MemorySegment right);
 	}
 
 	public long compareKey(long o1, long o2) {  //NOUCD: Called via Callback constructor in openDatabase
@@ -1199,15 +1252,46 @@ public class Env extends NativeObject implements Closeable {
 	}
 
 	public DebugState setupDebug(MdbxLogLevel logLevel, int debugFlags) {
-		long logDebugAddr = 0L;
-
-		if (loggerCallback == null) {
-			loggerCallback = new Callback(this, "logDebug", 5); //$NON-NLS-1$
-			logDebugAddr = loggerCallback.getAddress();
-		}
-
-		int rc = mdbx_setup_debug(logLevel.getValue(), debugFlags, logDebugAddr);
+		installLogger();
+		int rc = mdbx_h.mdbx_setup_debug_nofmt(logLevel.getValue(), debugFlags, loggerStub, loggerBuffer,
+				loggerBuffer.byteSize());
 		return new DebugState(rc);
+	}
+
+	private static void installLogger() {
+		if (loggerStub != null) {
+			return;
+		}
+		try {
+			loggerBuffer = Arena.global().allocate(1024);
+			MethodHandle handle = MethodHandles.lookup().findStatic(Env.class, "logNofmt", //$NON-NLS-1$
+					MethodType.methodType(void.class, int.class, long.class, int.class, long.class, int.class));
+			FunctionDescriptor descriptor = FunctionDescriptor.ofVoid(ValueLayout.JAVA_INT, ValueLayout.JAVA_LONG,
+					ValueLayout.JAVA_INT, ValueLayout.JAVA_LONG, ValueLayout.JAVA_INT);
+			loggerStub = Linker.nativeLinker().upcallStub(handle, descriptor, Arena.global());
+		}
+		catch (ReflectiveOperationException failure) {
+			throw new IllegalStateException(failure);
+		}
+	}
+
+	private static void logNofmt(int level, long function, int line, long message, int length) {
+		try {
+			String name = function == 0 ? "" : MemorySegment.ofAddress(function).reinterpret(256).getString(0); //$NON-NLS-1$
+			String text = ""; //$NON-NLS-1$
+			if (message != 0 && length > 0) {
+				byte[] raw = MemorySegment.ofAddress(message).reinterpret(Integer.toUnsignedLong(length))
+						.toArray(ValueLayout.JAVA_BYTE);
+				text = new String(raw, StandardCharsets.UTF_8);
+			}
+			if (text.contains("MDBX_NOTFOUND")) { //$NON-NLS-1$
+				return;
+			}
+			MdbxLogLevel.log(level, log, "Function:{}, line:{}, msg:{}", name, line, text); //$NON-NLS-1$
+		}
+		catch (RuntimeException _) {
+			// An exception leaving an upcall aborts the JVM.
+		}
 	}
 
 

@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>com.castortech.mdbxjni</groupId>
 		<artifactId>mdbxjni-project</artifactId>
-		<version>0.13.5-SNAPSHOT</version>
+		<version>0.14.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mdbxjni-all</artifactId>
@@ -71,7 +71,7 @@
 							org.iq80.leveldb;resolution:=optional
 						</Import-Package>
 						<DynamicImport-Package></DynamicImport-Package>
-						<Private-Package>org.fusesource.hawtjni*,!*</Private-Package>
+						<Private-Package>!*</Private-Package>
 						<Implementation-Title>LevelDB JNI</Implementation-Title>
 						<Implementation-Version>${project.version}</Implementation-Version>
 						<Embed-Dependency>
@@ -79,9 +79,9 @@
 						</Embed-Dependency>
 						<Embed-Transitive>true</Embed-Transitive>
 						<Bundle-NativeCode>
-							META-INF/native/windows64/mdbxjni.dll;osname=Win32;processor=x86-64,
-							META-INF/native/osx64/libmdbjni.dylib;osname=macosx;processor=x86-64,
-							META-INF/native/linux64/libmdbxjni.so;osname=Linux;processor=x86-64
+							META-INF/native/windows64/mdbx.dll;osname=Win32;processor=x86-64,
+							META-INF/native/osx64/libmdbx.dylib;osname=macosx;processor=x86-64,
+							META-INF/native/linux64/libmdbx.so;osname=Linux;processor=x86-64
 						</Bundle-NativeCode>
 					</instructions>
 				</configuration>

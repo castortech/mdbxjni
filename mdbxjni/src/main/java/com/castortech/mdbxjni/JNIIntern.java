@@ -18,32 +18,14 @@
 
 package com.castortech.mdbxjni;
 
-import org.fusesource.hawtjni.runtime.*;
-
-import static org.fusesource.hawtjni.runtime.ArgFlag.NO_IN;
-import static org.fusesource.hawtjni.runtime.ArgFlag.NO_OUT;
-import static org.fusesource.hawtjni.runtime.ClassFlag.STRUCT;
-import static org.fusesource.hawtjni.runtime.ClassFlag.TYPEDEF;
-import static org.fusesource.hawtjni.runtime.FieldFlag.CONSTANT;
-import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
-
 /**
  * This class holds all the native constant, structure and function mappings.
  *
  * @author <a href="http://hiramchirino.com">Hiram Chirino</a>
  */
 @SuppressWarnings( {"java:S1444", "java:S3008", "java:S101", "java:S116", "java:S117", "squid:S00100" })
-@JniClass
 public class JNIIntern {
-	static {
-		init();
-	}
-
-	@JniField(flags = { CONSTANT })
 	public static int CURSOR_STACK_SIZE;
-
-	@JniMethod(flags = {CONSTANT_INITIALIZER})
-	private static final native void init();
 
 //	//====================================================//
 //	// Db
@@ -116,52 +98,30 @@ public class JNIIntern {
 	 * track their cursors and keep them up to date when data moves.
 	 * Exception: An xcursor's pointer to a P_SUBP page can be stale.
 	 * (A node with F_DUPDATA but no F_SUBDATA contains a subpage). */
-	@JniClass(flags = {STRUCT, TYPEDEF})
 	public static class MDBX_cursor {
-		@JniField(cast = "int32_t")
 		public int signature;
-		@JniField(cast = "int8_t")
 		public short top;
-		@JniField(cast = "int8_t")
 		public short flags;
 		/** Cursor checking flags. */
-		@JniField(cast = "uint8_t")
 		public short checking;
 		/** The mt_dbistate for this database */
-		@JniField(cast = "uint8_t *")
 		public short dbi_state;
 		/** The transaction that owns this cursor */
-		@JniField(cast = "MDBX_txn *")
 		public long txn;
 		/* Points to tree->dbs[] for this cursor's DBI. */
-		@JniField(cast = "tree_t *")
 		public long tree;
 		/* Points to env->kvs[] for this cursor's DBI. */
-		@JniField(cast = "clc2_t *")
 		public long clc;
-		@JniField(cast = "subcur_t *")
 		public long subcur;
 		/** stack of pushed pages */
-		@JniField(cast = "page_t *[32]")
 		public long[] pg;
 		/** stack of page indices */
-		@JniField(cast = "uint16_t[32]")  //coded as indx_t
 		public int[] ki;
 		/** Next cursor on this DB in this txn */
-		@JniField(cast = "MDBX_cursor *")
 		public long next;
 		/** Backup of the original cursor if this cursor is a shadow */
-		@JniField(cast = "MDBX_cursor *")
 		public long backup;
 	}
 
-	@JniField(accessor="sizeof(struct MDBX_cursor)", flags={CONSTANT})
 	public static int SIZEOF_CURSOR;
-
-	@JniMethod
-	public static final native int ptr_2_cursor(
-			@JniArg(cast = "MDBX_cursor *", flags = {NO_OUT}) long ptr,
-			@JniArg(cast = "MDBX_cursor *", flags = {NO_IN}) MDBX_cursor cursor,
-			@JniArg(cast = "size_t") long bytes);
-
 }

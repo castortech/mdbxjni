@@ -17,12 +17,16 @@ public class VersionInfo {
 		minor = rc.minor;
 		patch = rc.patch;
 		tweak = rc.tweak;
-		semverPrerelease = new String(rc.semver_prerelease);
-		git_datetime = new String(rc.git_datetime);
-		git_tree = new String(rc.git_tree);
-		git_commit = new String(rc.git_commit);
-		git_describe = new String(rc.git_describe);
-		sourcery = new String(rc.sourcery);
+		semverPrerelease = text(rc.semver_prerelease);
+		git_datetime = text(rc.git_datetime);
+		git_tree = text(rc.git_tree);
+		git_commit = text(rc.git_commit);
+		git_describe = text(rc.git_describe);
+		sourcery = text(rc.sourcery);
+	}
+
+	private static String text(char[] value) {
+		return value == null ? "" : new String(value);
 	}
 
 	public int getMajor() {

@@ -236,9 +236,7 @@ public class Transaction extends NativeObject implements Closeable {
 
 	@Override
 	public void close() {
-		if (isReadOnly())
-			abort();
-		commit();
+		abort();
 	}
 
 	@SuppressWarnings("nls")

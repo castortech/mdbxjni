@@ -377,7 +377,7 @@ public class EnvConfig implements Cloneable {
 		try {
 			return (EnvConfig)super.clone();
 		}
-		catch (CloneNotSupportedException willNeverOccur) {
+		catch (CloneNotSupportedException _) {
 			return null;
 		}
 	}

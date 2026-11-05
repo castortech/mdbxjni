@@ -45,7 +45,7 @@ class Util {
 	 * @return error number
 	 */
 	public static int errno() {
-		return errno();
+		return JNI.errno();
 	}
 
 	public static String strerror() {

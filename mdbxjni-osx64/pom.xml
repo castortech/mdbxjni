@@ -21,7 +21,7 @@
 	<parent>
 		<groupId>com.castortech.mdbxjni</groupId>
 		<artifactId>mdbxjni-project</artifactId>
-		<version>0.13.5-SNAPSHOT</version>
+		<version>0.14.4-SNAPSHOT</version>
 	</parent>
 
 	<artifactId>mdbxjni-osx64</artifactId>
@@ -56,53 +56,8 @@
 				<artifactId>maven-jar-plugin</artifactId>
 				<version>${mvn-jar-version}</version>
 				<configuration>
-					<classesDirectory>${basedir}/target/generated-sources/hawtjni/lib</classesDirectory>
+					<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.fusesource.hawtjni</groupId>
-				<artifactId>hawtjni-maven-plugin</artifactId>
-				<version>${hawtjni-version}</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>build</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<name>mdbxjni</name>
-					<classified>false</classified>
-					<nativeSrcDependency>
-						<groupId>com.castortech.mdbxjni</groupId>
-						<artifactId>mdbxjni</artifactId>
-						<version>${project.version}</version>
-						<classifier>native-src</classifier>
-						<type>zip</type>
-					</nativeSrcDependency>
-					<configureArgs>
-						<arg>--with-mdbx=${env.MDBX_HOME}</arg>
-					</configureArgs>
-				</configuration>
-			</plugin>
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<version>3.5.1</version>
-				<executions>
-					<execution>
-						<id>fixlibdep</id>
-						<phase>prepare-package</phase>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-						<configuration>
-							<workingDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/osx64</workingDirectory>
-							<executable>install_name_tool</executable>
-							<commandlineArgs>-change libmdbx.dylib @loader_path/libmdbx.dylib libmdbxjni.dylib</commandlineArgs>
-						</configuration>
-					</execution>
-				</executions>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -115,7 +70,7 @@
 							<goal>copy-resources</goal>
 						</goals>
 						<configuration>
-							<outputDirectory>${basedir}/target/generated-sources/hawtjni/lib/META-INF/native/osx64</outputDirectory>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/native/osx64</outputDirectory>
 							<overwrite>true</overwrite>
 							<resources>
 								<resource>
