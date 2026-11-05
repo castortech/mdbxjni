@@ -1,8 +1,8 @@
-# MDBX JNI
+# MDBX FFM
 
 ## Description
 
-MDBX JNI gives you a Java interface to the 
+MDBX FFM gives you a Java 25+ interface to the 
 [libmdbx](https://gitflic.ru/project/erthink/libmdbx) library
 which is a fast key-value storage library written for ReOpenLDAP project
 that provides an ordered mapping from string keys to string values.
